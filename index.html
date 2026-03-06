@@ -15,6 +15,14 @@
     <link rel="stylesheet" href="css/dashboard.css?v=12">
     <link rel="stylesheet" href="css/pages.css?v=12">
     <link rel="stylesheet" href="css/responsive.css?v=12">
+
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GBD">
 </head>
 
 <body>
@@ -354,6 +362,15 @@
     <script src="js/pages/detox.js?v=20"></script>
     <script src="js/pages/reports.js?v=20"></script>
     <script src="js/pages/profile.js?v=20"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.error('Service Worker registration failed: ', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
