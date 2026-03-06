@@ -1,17 +1,17 @@
 {
-  "name": "GBD Dashboard",
+  "name": "GBD — Good Bye Dopamine",
   "short_name": "GBD",
-  "description": "Good Bye Dopamine (GBD) Student Dashboard",
+  "description": "All-in-one student productivity dashboard with focus timer, planner, exam tracker, and wellness tools.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#a855f7",
+  "background_color": "#0f1117",
+  "theme_color": "#22d3ee",
+  "orientation": "any",
   "icons": [
     {
       "src": "icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }

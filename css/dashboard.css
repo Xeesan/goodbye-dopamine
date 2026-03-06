@@ -90,7 +90,7 @@
     transform: translateY(-50%);
     font-size: 12rem;
     font-weight: 900;
-    color: rgba(0, 255, 136, 0.06);
+    color: rgba(34, 211, 238, 0.06);
     line-height: 1;
     font-family: Georgia, serif;
     pointer-events: none;
@@ -256,7 +256,7 @@
 }
 
 .stat-card .stat-icon.green {
-    background: rgba(0, 255, 136, 0.15);
+    background: rgba(34, 211, 238, 0.15);
     color: var(--accent);
 }
 

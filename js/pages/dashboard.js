@@ -62,9 +62,12 @@ function renderDashboard(container) {
       <div class="inspiration-card">
         <div class="inspiration-tag">
           <span style="font-size:1.2rem">❝</span> DAILY INSPIRATION
+          <button class="quote-refresh-btn" onclick="refreshQuote()" title="New Quote">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
         </div>
-        <div class="inspiration-quote">"${quote.text}"</div>
-        <div class="inspiration-author">— ${quote.author}</div>
+        <div class="inspiration-quote" id="inspiration-quote-text">"${quote.text}"</div>
+        <div class="inspiration-author" id="inspiration-author-text">— ${quote.author}</div>
         <div class="big-quote">❞</div>
       </div>
 

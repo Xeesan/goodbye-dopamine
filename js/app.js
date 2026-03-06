@@ -1,7 +1,16 @@
 // ============================
-// Main App Router & Utilities
+// Main App Router & Utilities — Production
 // ============================
 let currentPage = 'dashboard';
+
+// Global error handler
+window.onerror = function (msg, url, line, col, error) {
+    console.error('[GBD Error]', msg, 'at', url, ':', line, ':', col, error);
+    return false; // let the browser also log it
+};
+window.addEventListener('unhandledrejection', function (e) {
+    console.error('[GBD Unhandled Promise]', e.reason);
+});
 
 function navigateTo(page) {
     currentPage = page;
@@ -17,27 +26,41 @@ function navigateTo(page) {
 
     // Render page
     const container = document.getElementById('page-container');
+    if (!container) return;
     container.scrollTop = 0;
 
-    switch (page) {
-        case 'dashboard': renderDashboard(container); break;
-        case 'planner': renderPlanner(container); break;
-        case 'routine': renderRoutine(container); break;
-        case 'exams': renderExams(container); break;
-        case 'academic-hub': renderAcademicHub(container); break;
-        case 'money': renderMoney(container); break;
-        case 'notes': renderNotes(container); break;
-        case 'detox': renderDetox(container); break;
-        case 'reports': renderReports(container); break;
-        case 'profile': renderProfile(container); break;
-        default: renderDashboard(container);
+    try {
+        switch (page) {
+            case 'dashboard': renderDashboard(container); break;
+            case 'planner': renderPlanner(container); break;
+            case 'routine': renderRoutine(container); break;
+            case 'exams': renderExams(container); break;
+            case 'academic-hub': renderAcademicHub(container); break;
+            case 'money': renderMoney(container); break;
+            case 'notes': renderNotes(container); break;
+            case 'detox': renderDetox(container); break;
+            case 'health': renderHealth(container); break;
+            case 'reports': renderReports(container); break;
+            case 'profile': renderProfile(container); break;
+            default: renderDashboard(container);
+        }
+    } catch (err) {
+        console.error('[GBD] Page render error:', err);
+        container.innerHTML = `
+            <div class="empty-state" style="padding:80px 20px">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <h3 style="margin-top:16px">Something went wrong</h3>
+                <p>Try refreshing the page or <a href="#" onclick="navigateTo('dashboard')" style="color:var(--accent)">go to Dashboard</a></p>
+            </div>`;
     }
 }
 
 function updateHeaderDate() {
     const now = new Date();
-    const formatted = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-    document.getElementById('header-date').textContent = formatted;
+    const el = document.getElementById('header-date');
+    if (el) {
+        el.textContent = formatDateShort(now);
+    }
 }
 
 // ============================
@@ -52,24 +75,32 @@ function showDailySummary() {
 
     const tasks = Storage.getTasks();
     const completedToday = tasks.filter(t => {
-        const d = new Date(t.createdAt);
-        return t.status === 'done' && d.toDateString() === today;
+        try {
+            const d = new Date(t.createdAt);
+            return t.status === 'done' && d.toDateString() === today;
+        } catch { return false; }
     }).length;
 
     const sessions = Storage.getFocusSessions();
     const todaySessions = sessions.filter(s => {
-        const d = new Date(s.date);
-        return d.toDateString() === today;
+        try {
+            const d = new Date(s.date);
+            return d.toDateString() === today;
+        } catch { return false; }
     });
     const totalFocusMin = todaySessions.reduce((acc, s) => acc + (s.duration || 0), 0);
 
-    document.getElementById('modal-focus').textContent = (totalFocusMin / 60).toFixed(1) + 'h';
-    document.getElementById('modal-planner').textContent = completedToday;
-    document.getElementById('daily-summary-modal').style.display = 'flex';
+    const focusEl = document.getElementById('modal-focus');
+    const plannerEl = document.getElementById('modal-planner');
+    const modalEl = document.getElementById('daily-summary-modal');
+    if (focusEl) focusEl.textContent = (totalFocusMin / 60).toFixed(1) + 'h';
+    if (plannerEl) plannerEl.textContent = completedToday;
+    if (modalEl) modalEl.style.display = 'flex';
 }
 
 function closeDailySummary() {
-    document.getElementById('daily-summary-modal').style.display = 'none';
+    const el = document.getElementById('daily-summary-modal');
+    if (el) el.style.display = 'none';
     // Mark as shown for today
     Storage.set('daily_summary_last_shown', new Date().toDateString());
 }
@@ -80,8 +111,8 @@ function closeDailySummary() {
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('active');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
 }
 
 function closeSidebar() {
@@ -92,7 +123,7 @@ function closeSidebar() {
 }
 
 // ============================
-// Utilities
+// Utilities — DD/MM/YYYY Date Format
 // ============================
 function toggleLanguage() {
     alert('Language toggle is a visual feature. Bengali translation coming soon!');
@@ -100,8 +131,25 @@ function toggleLanguage() {
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    } catch { return dateStr; }
+}
+
+function formatDateShort(dateOrStr) {
+    try {
+        const d = typeof dateOrStr === 'string' ? new Date(dateOrStr) : dateOrStr;
+        if (isNaN(d.getTime())) return '';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    } catch { return ''; }
 }
 
 function formatTime(timeStr) {
@@ -113,12 +161,26 @@ function getCurrentDayName() {
     return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
 }
 
+// Notification permission request
+function requestNotifications() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(p => {
+            if (p === 'granted') alert('Notifications enabled!');
+        });
+    }
+}
+
 // Initialize app on load
 document.addEventListener('DOMContentLoaded', () => {
-    const user = Storage.getUser();
-    if (user) {
-        showApp();
-    } else {
+    try {
+        const user = Storage.getUser();
+        if (user) {
+            showApp();
+        } else {
+            showAuth();
+        }
+    } catch (err) {
+        console.error('[GBD] Init error:', err);
         showAuth();
     }
 });
