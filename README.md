@@ -1,77 +1,120 @@
-<h1 align="center">Good Bye Dopamine (GBD) Student Dashboard</h1>
+<h1 align="center">Good Bye Dopamine (GBD)</h1>
 
 <p align="center">
-  <strong>A futuristic, all-in-one academic and personal dashboard built for the ultimate student experience.</strong>
+  <strong>Your all-in-one student dashboard for academics, focus, finances, and wellness.</strong><br/>
+  <em>Built by <a href="#">Zia Uddin Zisan</a></em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Active-brightgreen" alt="Status" />
-  <img src="https://img.shields.io/badge/Platform-Web-blue" alt="Platform" />
-  <img src="https://img.shields.io/badge/License-MIT-orange" alt="License" />
+  <img src="https://img.shields.io/badge/Status-Active-22d3ee?style=flat-square" alt="Status" />
+  <img src="https://img.shields.io/badge/PWA-Installable-a78bfa?style=flat-square" alt="PWA" />
+  <img src="https://img.shields.io/badge/Backend-None-f43f5e?style=flat-square" alt="No Backend" />
+  <img src="https://img.shields.io/badge/License-Proprietary-fb923c?style=flat-square" alt="License" />
 </p>
 
 ---
 
-## 🌟 Overview
+## What is GBD?
 
-The **Good Bye Dopamine (GBD)** Dashboard is an incredibly powerful, fully client-side web application designed to help students track their academic progress, finances, and mental clarity in one stunning interface. 
+**Good Bye Dopamine** is a personal challenge wrapped inside a student dashboard. The idea is simple — stop doomscrolling, stop chasing cheap dopamine hits, and start actually getting things done.
 
-It features a unique, futuristic cyberpunk aesthetic with fluid animations, native dark-mode styling, and—best of all—**no database or backend required**. All of your data is stored completely privately and directly inside your browser's local storage.
+It's a single web app that replaces a dozen tabs you'd normally have open. Your planner, class routine, exam schedule, CGPA tracker, budget manager, focus timer, and wellness journal — all in one place, all inside your browser.
 
-## ✨ Core Features
+**No sign-ups. No servers. No data leaves your device.** Everything lives in your browser's localStorage. You own your data, always.
 
-### 📅 The Planner
-- **Intelligent Kanban Board**: Separate tasks between *To Do*, *In Progress*, and *Done*.
-- **Drag & Drop**: Native, ultra-smooth drag and drop capability across columns.
-- **Urgency Tags**: Tag assignments by severity (Low, Medium, High) with visual color coordination.
+---
 
-### 🏫 Class Routine & Exams Tracker
-- **Visual Schedule Grid**: See exactly what classes you have on any given day.
-- **Smart Exam Tracker**: Log upcoming tests, their target grades, and their credit weightings.
-- **🪄 ✨ Magic AI Import**:
-  - Don't want to type your routine out? Just snap a picture of your class routine or exam schedule.
-  - The built-in **Gemini Multimodal Vision API** will scan the image, perfectly rebuild the table structure, and automatically import every class directly into your planner.
+## Features
 
-### 🎓 Academic Hub
-- **CGPA Calculator**: Track your cumulative GPA over multiple semesters.
-- **Semester Tracking**: Keep track of every course taken, its credit weight, and your final grade to simulate the exact impact on your target GPA graduation goal.
+### 📋 Planner
+A clean kanban-style task board with three columns: *To Do*, *In Progress*, and *Done*. You drag tasks between columns, tag them by priority, and the app tracks your completion rate. Every task you finish earns you XP.
+
+### 🏫 Class Routine
+A visual weekly timetable. You add your classes once and they show up every week — room number, teacher name, time slot, everything. The current day is always highlighted so you know what's coming up.
+
+### 📝 Exam Tracker
+Log upcoming exams with their dates, target grades, and credit weights. The tracker shows you a countdown to each exam and keeps them sorted by urgency. No more "wait, when was that midterm again?" moments.
+
+### 🎓 Academic Hub (CGPA Calculator)
+Track your GPA across multiple semesters. Add courses, credit hours, and grades — and the app calculates your cumulative CGPA in real time. You can set a target GPA and see exactly how far off you are.
 
 ### 💰 Finance Tracker
-- **Smart Dashboard**: Instantly view your total balance, recent spending, and a beautiful financial chart.
-- **Transactions**: Add expenses and incomes to see where your money is going.
-- **Debts (Lend & Borrow)**: Keep a ledger of friends who owe you money or money you owe others.
-- **Savings Goals**: Set up distinct goals (like an emergency fund or a new laptop) and contribute to them visually over time.
+A straightforward money manager built for students:
+- **Transactions** — log income and expenses, see your balance at a glance
+- **Debts** — track who owes you money and who you owe (with settle/unsettled status)
+- **Savings Goals** — set a target (like "new laptop" or "emergency fund") and contribute to it over time with a visual progress bar
 
-### 🧘 Digital Detox & Notes
-- **Focus Timer**: Lock in and get work done with a completely un-interruptable focus mode. Stop scrolling and start building.
-- **Rich Text Notes**: Maintain an active log of your thoughts, lecture notes, and ideas with a futuristic markdown editor.
+### 📒 Notes
+A simple, fast note-taking tool. Write down lecture notes, ideas, or to-do lists. Notes are saved automatically and searchable by title.
+
+### 🧘 Detox (Focus Timer)
+This is the heart of GBD. A proper focus session tool with:
+- **Preset durations** — 25 min, 50 min, 90 min, or custom
+- **Countdown timer** — not a stopwatch, a real countdown that tells you "stay focused for X more minutes"
+- **Focus sounds** — Rain, White Noise, or Lofi music playing in the background during your session
+- **Distraction Guard** — a list of domains you're "blocking" (as a reminder to yourself — Facebook, YouTube, Instagram, etc.)
+- **Focus Tree 🌳** — a gamified tree that grows through 5 stages based on your total focus hours. The more you focus, the bigger it grows
+- **Session history** — every completed session is logged with its duration and date
+
+### 💚 Health & Wellness
+A brand new wellness tracker with three tabs:
+- **Overview** — your Daily Wellness Score (0-100) as a circular progress ring, plus quick-action buttons
+- **Physical** — hydration tracker (glasses of water with +/- buttons), sleep tracker (bedtime & wake-up with quality rating), and step counter
+- **Mental** — mood journal with 6 emoji moods (Happy, Energetic, Calm, Neutral, Tired, Stressed) plus a free-text notes area, and a guided **4-7-8 breathing exercise** with an animated circle
+
+### 📊 Reports
+Visual charts showing your productivity trends — tasks completed, focus hours, and streaks over time.
+
+### 🤖 AI-Powered Import (Magic Import)
+Don't want to type your routine or exam schedule by hand? Just snap a photo:
+1. Take a picture of your class routine or exam schedule (printed or handwritten)
+2. The app uses **Google Gemini Vision API** to read the image
+3. It extracts every class/exam into structured data
+4. You review, select what to import, and it's done
+
+Your API key stays in your browser. It never touches a server.
 
 ### 🎮 Gamification
-- Every task completed, exam scheduled, and focus hour achieved earns you **XP**. Level up your dashboard profile as you crush your academic goals.
+Every task you complete, every focus session you finish, every exam you log — it all earns you **XP**. You level up your profile as you go. It's a small thing, but it makes the grind feel like progress.
 
-## 🚀 How to Run
+---
 
-This project is a deeply optimized, zero-dependency static site. There is no complicated `npm install`, `node`, or Docker container required.
+## Tech Stack
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/gbd-app.git
-   ```
-2. **Open `index.html`:**
-   Simply double click the `index.html` file in the folder, or serve it using any ultra-light static server (e.g. VSCode Live Server).
-3. **Alternatively, Host it Free:**
-   Upload the folder to **GitHub Pages**, **Vercel**, or **Netlify** for instant, free, permanent hosting.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Vanilla HTML, CSS, JavaScript |
+| Storage | Browser localStorage |
+| AI | Google Gemini Vision API (client-side) |
+| OCR | Tesseract.js (client-side) |
+| PWA | Service Worker + Web App Manifest |
+| Hosting | Any static host (GitHub Pages, Vercel, Netlify) |
 
-## 🔑 AI Features Privacy Note
-The "Magic AI Import" routine feature utilizes the Google Gemini Vision API to instantly process images into schedule data. 
+**Zero dependencies. Zero build steps. Zero backend.**
 
-**This app respects your privacy.**
-- You must generate a free Gemini API key from Google AI Studio.
-- The app asks you to paste it into the UI.
-- The key is **only ever stored in your local browser storage**. It is never sent to a backend server (because there is no backend server!). It talks directly from your browser to Google.
+---
 
-## 🤝 Contributing
-Contributions are always welcome. If you want to add a new tab, enhance the dark mode, or fix a bug, feel free to fork the repository and submit a Pull Request.
+## Install as App
 
-## 📝 License
-This project is open-source and freely available under the [MIT License](LICENSE).
+GBD is a **Progressive Web App (PWA)**. Open it in Chrome or Safari on your phone, and you'll get an "Install" or "Add to Home Screen" prompt. It works offline and feels like a native app — no app store needed.
+
+---
+
+## Privacy
+
+- **No accounts.** You pick a username on first launch, but it's just saved locally.
+- **No database.** Everything is stored in `localStorage` — your browser, your data.
+- **No tracking.** No analytics, no cookies, no third-party scripts (except Google Fonts and the optional Gemini API).
+- **The AI key** you enter for Magic Import is stored *only* in your browser. There is no backend to leak it to.
+
+---
+
+## Developer
+
+Built with ☕ and late nights by **Zia Uddin Zisan**.
+
+If you want to contribute, fork the repo and submit a PR. Bug fixes, new features, translations — all welcome.
+
+## License
+
+© 2026 Zia Uddin Zisan. All rights reserved.
