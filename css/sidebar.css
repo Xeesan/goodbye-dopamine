@@ -173,7 +173,6 @@
     min-height: var(--header-height);
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 0 24px;
     border-bottom: 1px solid var(--border);
 }
@@ -188,16 +187,17 @@
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
     color: var(--text-secondary);
-    margin-left: auto;
-    margin-right: auto;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .header-actions {
     display: flex;
     align-items: center;
     gap: 4px;
+    margin-left: auto;
 }
-
 .page-container {
     flex: 1;
     overflow-y: auto;
