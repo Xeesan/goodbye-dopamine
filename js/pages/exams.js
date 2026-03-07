@@ -95,6 +95,10 @@ function renderExams(container) {
             <input type="number" id="exam-credits" class="input-simple" value="3" min="1" max="10">
           </div>
           <div class="exam-field">
+            <label>TEACHER</label>
+            <input type="text" id="exam-teacher" class="input-simple" placeholder="e.g. Dr. Smith">
+          </div>
+          <div class="exam-field">
             <label>ROOM / HALL</label>
             <input type="text" id="exam-room" class="input-simple" placeholder="e.g. Room 301">
           </div>
@@ -137,6 +141,7 @@ function renderExams(container) {
                   ${e.time || '—'}
                 </span>
                 ${e.room ? `<span class="exam-meta-item">📍 ${e.room}</span>` : ''}
+                ${e.teacher ? `<span class="exam-meta-item">🎓 ${e.teacher}</span>` : ''}
               </div>
             </div>
             <div class="exam-card-right">
@@ -173,6 +178,7 @@ function addExamSubmit() {
     time: document.getElementById('exam-time').value,
     grade: document.getElementById('exam-grade').value,
     credits: parseInt(document.getElementById('exam-credits').value) || 3,
+    teacher: document.getElementById('exam-teacher') ? document.getElementById('exam-teacher').value.trim() : '',
     room: document.getElementById('exam-room') ? document.getElementById('exam-room').value.trim() : '',
     type: examTab
   };
@@ -234,6 +240,7 @@ function editExam(id) {
     }
     if (el('exam-grade')) el('exam-grade').value = exam.grade || 'A+';
     if (el('exam-credits')) el('exam-credits').value = exam.credits || 3;
+    if (el('exam-teacher')) el('exam-teacher').value = exam.teacher || '';
     if (el('exam-room')) el('exam-room').value = exam.room || '';
     // Scroll to form
     el('exam-subject').scrollIntoView({ behavior: 'smooth', block: 'center' });

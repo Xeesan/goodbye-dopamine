@@ -11,8 +11,9 @@ function renderMoney(container) {
   const income = txns.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
   const expense = txns.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
   const balance = income - expense;
-  const totalLent = debts.filter(d => d.debtType === 'lend').reduce((a, d) => a + d.amount, 0);
-  const totalBorrowed = debts.filter(d => d.debtType === 'borrow').reduce((a, d) => a + d.amount, 0);
+  const activeDebts = debts.filter(d => !d.settled);
+  const totalLent = activeDebts.filter(d => d.debtType === 'lend').reduce((a, d) => a + d.amount, 0);
+  const totalBorrowed = activeDebts.filter(d => d.debtType === 'borrow').reduce((a, d) => a + d.amount, 0);
 
   // Dynamic add button based on tab
   const addBtnLabel = moneyTab === 'transactions' ? '+ Add Transaction' :
@@ -120,7 +121,7 @@ function renderTransactionsTab(txns, income, expense, balance) {
             <span style="font-weight:600;color:${t.type === 'income' ? 'var(--accent)' : 'var(--danger)'}">
               ${t.type === 'income' ? '+' : '-'}৳${t.amount}
             </span>
-            <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteTransactionItem(${t.id})">✕</button>
+            <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteTransactionItem('${t.id}')">✕</button>
           </div>
         </div>
       `).join('')}
@@ -130,8 +131,8 @@ function renderTransactionsTab(txns, income, expense, balance) {
 
 // ========== LEND/BORROW TAB ==========
 function renderLendBorrowTab(debts, totalLent, totalBorrowed) {
-  const lentDebts = debts.filter(d => d.debtType === 'lend');
-  const borrowedDebts = debts.filter(d => d.debtType === 'borrow');
+  const activeDebts = debts.filter(d => !d.settled);
+  const historyDebts = debts.filter(d => d.settled);
 
   return `
     <!-- Summary Cards -->
@@ -180,13 +181,14 @@ function renderLendBorrowTab(debts, totalLent, totalBorrowed) {
       </div>
     </div>
 
-    <!-- Debt List -->
-    <div class="glass-card" style="min-height:100px;padding:24px">
-      ${debts.length === 0 ? `
+    <!-- Active Debt List -->
+    <div class="glass-card" style="min-height:100px;padding:24px;margin-bottom:24px">
+      <h2 style="font-size:1.1rem;margin-bottom:20px">Active Debts</h2>
+      ${activeDebts.length === 0 ? `
         <div class="empty-state" style="border:1px dashed var(--border);border-radius:var(--radius);padding:40px">
-          <p>No debts recorded yet.</p>
+          <p>No active debts.</p>
         </div>
-      ` : debts.slice().reverse().map(d => `
+      ` : activeDebts.slice().reverse().map(d => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:12px">
             <div class="money-icon ${d.debtType === 'lend' ? 'green' : 'red'}">
@@ -202,7 +204,36 @@ function renderLendBorrowTab(debts, totalLent, totalBorrowed) {
               ৳${d.amount}
             </span>
             <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.06em">${d.debtType}</span>
-            <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteDebtItem(${d.id})">✕</button>
+            <button class="btn-outline" style="color:var(--accent);border-color:var(--border);padding:4px 8px;font-size:0.75rem;margin-left:8px;" onclick="settleDebtItem('${d.id}')">Settle</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Settled Debt List -->
+    <div class="glass-card" style="min-height:100px;padding:24px;opacity:0.8">
+      <h2 style="font-size:1.1rem;margin-bottom:20px">Settled History</h2>
+      ${historyDebts.length === 0 ? `
+        <div class="empty-state" style="border:1px dashed var(--border);border-radius:var(--radius);padding:40px">
+          <p>No settled debts.</p>
+        </div>
+      ` : historyDebts.slice().reverse().map(d => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="money-icon" style="background:var(--border);color:var(--text-muted)">
+              ✓
+            </div>
+            <div>
+              <div style="font-weight:500">${d.person} <span style="font-size:0.7rem;color:var(--text-muted)">(Settled)</span></div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">${d.description || ''} · ${formatDate(d.date)}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-weight:600;color:var(--text-muted);text-decoration:line-through">
+              ৳${d.amount}
+            </span>
+            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.06em">${d.debtType}</span>
+            <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteDebtItem('${d.id}')">✕</button>
           </div>
         </div>
       `).join('')}
@@ -247,7 +278,7 @@ function renderSavingsGoalsTab(goals) {
             </div>
             <div style="display:flex;align-items:center;gap:12px">
               <span style="font-weight:600;color:var(--accent)">৳${g.currentAmount} / ৳${g.targetAmount}</span>
-              <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteSavingsGoalItem(${g.id})">✕</button>
+              <button class="icon-btn" style="color:var(--danger);width:28px;height:28px" onclick="deleteSavingsGoalItem('${g.id}')">✕</button>
             </div>
           </div>
           <div class="xp-bar" style="height:8px">
@@ -359,8 +390,15 @@ function addDebtSubmit() {
 }
 
 function deleteDebtItem(id) {
-  if (confirm('Delete this debt?')) {
+  if (confirm('Delete this debt from history?')) {
     Storage.deleteDebt(id);
+    navigateTo('money');
+  }
+}
+
+function settleDebtItem(id) {
+  if (confirm('Settle this debt? This will move it to your history.')) {
+    Storage.settleDebt(id);
     navigateTo('money');
   }
 }

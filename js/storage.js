@@ -92,7 +92,7 @@ const Storage = {
   },
   deleteExam(id) {
     if (!id) return;
-    this.setExams(this.getExams().filter(e => e.id !== id));
+    this.setExams(this.getExams().filter(e => String(e.id) !== String(id)));
   },
   updateExam(exam) {
     if (!exam || !exam.id) return;
@@ -167,7 +167,12 @@ const Storage = {
   },
   deleteDebt(id) {
     if (!id) return;
-    this.setDebts(this.getDebts().filter(d => d.id !== id));
+    this.setDebts(this.getDebts().filter(d => String(d.id) !== String(id)));
+  },
+  settleDebt(id) {
+    if (!id) return;
+    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: new Date().toISOString() } : d);
+    this.setDebts(debts);
   },
 
   // Savings Goals

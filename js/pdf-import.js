@@ -52,7 +52,10 @@ function openPdfImportModal(mode) {
           <p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:16px">
             Get a free key from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a>
           </p>
-          <button class="btn-green" style="width:100%" onclick="saveApiKeyAndContinue()">Continue →</button>
+          <div style="display:flex;gap:12px">
+            <button class="btn-outline" style="flex:1" onclick="skipApiKeyAndContinue()">Skip AI</button>
+            <button class="btn-green" style="flex:2" onclick="saveApiKeyAndContinue()">Continue →</button>
+          </div>
         </div>
       </div>
 
@@ -133,6 +136,12 @@ function saveApiKeyAndContinue() {
   document.getElementById('pdf-step-upload').style.display = 'block';
 }
 
+function skipApiKeyAndContinue() {
+  document.getElementById('gemini-api-key-input').value = '';
+  document.getElementById('pdf-step-apikey').style.display = 'none';
+  document.getElementById('pdf-step-upload').style.display = 'block';
+}
+
 function resetApiKey() {
   localStorage.removeItem(GEMINI_API_KEY_STORAGE);
   document.getElementById('pdf-step-upload').style.display = 'none';
@@ -201,7 +210,25 @@ async function extractTextFromImage(file) {
 // ============================
 async function sendToGemini(extractedText, base64Image, mimeType) {
   const apiKey = getGeminiApiKey();
-  if (!apiKey) { alert('Gemini API key not set'); closeModal('pdf-import-modal'); return; }
+  if (!apiKey) {
+    updatePdfStatus('Extracting basic text...', 100, 100);
+    const lines = extractedText.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+    pdfExtractedEntries = lines.map((line, i) => ({
+      selected: true,
+      day: 'monday',
+      startTime: '09:00',
+      endTime: '10:30',
+      date: new Date().toISOString().split('T')[0],
+      time: '09:00',
+      courseCode: 'TXT-' + (i + 1),
+      courseName: line.substring(0, 50),
+      room: 'TBA',
+      department: 'OCR'
+    }));
+    pdfDetectedDepartments = ['OCR'];
+    showPdfPreview();
+    return;
+  }
 
   updatePdfStatus('Gemini AI is analyzing the routine...', 100, 100);
 
@@ -234,22 +261,22 @@ Extract ALL exam entries and return a JSON array. Each entry must have:
 - "date": exam date (e.g. "06-03-2026")
 - "time": exam time (e.g. "02:00pm-03:30pm" or "03:00pm-04:30pm")
 - "courseCode": course code (e.g. "CSE-121", "HUM-123")
-- "courseName": course name/subject and/or teacher name (e.g. "Engineering Economics")
+- "courseName": the subject/course name ONLY (e.g. "Engineering Economics"). DO NOT include the teacher's name here.
+- "teacher": the teacher's name or initials (e.g. "Dr. John Doe"). Provide empty string "" if not found.
 - "department": department prefix extracted from the course code (e.g. "CSE", "HUM")
 - "room": room/venue. If missing from the text, use an empty string "".
 
 Follow these strict rules:
 1. Map each course to its correct Date and Time based on proximity in the text.
-2. Extract EVERY SINGLE exam. Do not skip any.
+2. Ensure courseName ONLY contains the subject, and teacher ONLY contains the teacher.
+3. Extract EVERY SINGLE exam. Do not skip any.
 
 Extracted OCR text:
 ${extractedText}`;
 
   const models = [
     { api: 'v1beta', model: 'gemini-2.5-flash' },
-    { api: 'v1beta', model: 'gemini-2.0-flash' },
-    { api: 'v1beta', model: 'gemini-1.5-flash-latest' },
-    { api: 'v1beta', model: 'gemini-1.5-pro-latest' }
+    { api: 'v1beta', model: 'gemini-1.5-flash' }
   ];
 
   let lastError = '';
@@ -283,6 +310,7 @@ ${extractedText}`;
               time: { type: "STRING" },
               courseCode: { type: "STRING" },
               courseName: { type: "STRING" },
+              teacher: { type: "STRING" },
               room: { type: "STRING" },
               department: { type: "STRING" }
             },
@@ -312,8 +340,7 @@ ${extractedText}`;
           generationConfig: {
             temperature: 0.1,
             maxOutputTokens: 8192,
-            responseMimeType: "application/json",
-            responseSchema: schema
+            responseMimeType: "application/json"
           }
         })
       });
@@ -333,6 +360,7 @@ ${extractedText}`;
         } catch {
           lastError = `HTTP ${resp.status}: ${rawText.substring(0, 100)}`;
         }
+        alert(`Model ${m.model} failed internally:\n\n${lastError}`);
         console.warn(`Model ${m.model} failed:`, lastError);
         continue;
       }
@@ -358,6 +386,7 @@ ${extractedText}`;
 
   if (!responseText) {
     if (lastError.includes('API key')) resetApiKey();
+    alert("CRITICAL API ERROR DUMP:\n\n" + lastError);
     throw new Error('All models failed. Last error: ' + lastError);
   }
 
@@ -448,7 +477,7 @@ function renderPdfPreviewTable() {
 
   const isExam = pdfImportMode === 'exam';
   const headers = isExam
-    ? '<th style="width:30px"></th><th>Date</th><th>Time</th><th>Code</th><th>Course Name</th><th>Room</th><th>Dept</th>'
+    ? '<th style="width:30px"></th><th>Date</th><th>Time</th><th>Code</th><th>Course Name</th><th>Teacher</th><th>Room</th><th>Dept</th>'
     : '<th style="width:30px"></th><th>Day</th><th>Start</th><th>End</th><th>Code</th><th>Course / Teacher</th><th>Room</th><th>Dept</th>';
 
   const rows = pdfExtractedEntries.map((e, i) => {
@@ -461,6 +490,7 @@ function renderPdfPreviewTable() {
         <td><input type="text" class="pdf-cell-input" value="${esc(e.time)}" onchange="updatePdfEntry(${i},'time',this.value)"></td>
         <td><input type="text" class="pdf-cell-input" value="${esc(e.courseCode)}" onchange="updatePdfEntry(${i},'courseCode',this.value)" style="width:70px"></td>
         <td><input type="text" class="pdf-cell-input" value="${esc(e.courseName)}" onchange="updatePdfEntry(${i},'courseName',this.value)"></td>
+        <td><input type="text" class="pdf-cell-input" value="${esc(e.teacher || '')}" onchange="updatePdfEntry(${i},'teacher',this.value)" placeholder="Teacher"></td>
         <td><input type="text" class="pdf-cell-input" value="${esc(e.room)}" onchange="updatePdfEntry(${i},'room',this.value)" style="width:60px"></td>
         <td><span class="dept-badge">${esc(e.department)}</span></td>
       </tr>`;
@@ -502,10 +532,31 @@ function confirmPdfImport() {
 
   if (pdfImportMode === 'exam') {
     selected.forEach(e => {
+      // Format date to YYYY-MM-DD
+      let d = e.date || '';
+      if (d.includes('/')) {
+        const parts = d.split('/');
+        if (parts.length === 3) d = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      } else if (d.includes('-') && d.split('-')[0].length === 2) {
+        const parts = d.split('-');
+        if (parts.length === 3) d = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+
+      // Format time to HH:mm
+      let t = e.time || '09:00';
+      if (t.toLowerCase().includes('pm') || t.toLowerCase().includes('am')) {
+        const firstTime = t.split('-')[0].trim();
+        let [hours, minutes] = firstTime.replace(/[^\d:]/g, '').split(':');
+        hours = parseInt(hours || 0);
+        if (firstTime.toLowerCase().includes('pm') && hours < 12) hours += 12;
+        if (firstTime.toLowerCase().includes('am') && hours === 12) hours = 0;
+        t = `${String(hours).padStart(2, '0')}:${(minutes || '00').padStart(2, '0')}`;
+      }
+
       Storage.addExam({
         subject: e.courseName || e.courseCode,
         courseCode: e.courseCode,
-        date: e.date, time: e.time, room: e.room,
+        date: d, time: t, room: e.room || '', teacher: e.teacher || '',
         type: 'exams', grade: 'A+', credits: 3, reminder: '2'
       });
     });

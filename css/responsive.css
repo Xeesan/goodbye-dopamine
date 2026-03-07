@@ -116,6 +116,11 @@
 
     .header-date {
         font-size: 0.75rem;
+        position: static;
+        transform: none;
+        margin-left: 0;
+        padding: 6px 10px;
+        gap: 6px;
     }
 
     /* Page container */
