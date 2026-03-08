@@ -524,7 +524,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       ☑️
                     </div>
                     <div>
-                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">Settled</span></div>
+                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">{t('money.settled')}</span></div>
                       <div className="text-[0.65rem] text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
                     </div>
                   </div>
