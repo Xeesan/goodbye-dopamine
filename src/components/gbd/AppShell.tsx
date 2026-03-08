@@ -53,27 +53,29 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   };
 
   return (
-    <DialogProvider>
-      <div className="flex h-screen overflow-hidden">
-        {sidebarOpen && (
-          <div className="sidebar-overlay active" onClick={() => setSidebarOpen(false)} />
-        )}
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigateTo}
-          user={user}
-          onLogout={onLogout}
-          isOpen={sidebarOpen}
-        />
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} onNavigate={navigateTo} />
-          <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
-            {renderPage()}
-          </div>
-        </main>
-      </div>
-      <InstallPrompt />
-    </DialogProvider>
+    <GamificationProvider>
+      <DialogProvider>
+        <div className="flex h-screen overflow-hidden">
+          {sidebarOpen && (
+            <div className="sidebar-overlay active" onClick={() => setSidebarOpen(false)} />
+          )}
+          <Sidebar
+            currentPage={currentPage}
+            onNavigate={navigateTo}
+            user={user}
+            onLogout={onLogout}
+            isOpen={sidebarOpen}
+          />
+          <main className="flex-1 flex flex-col overflow-hidden">
+            <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} onNavigate={navigateTo} />
+            <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
+              {renderPage()}
+            </div>
+          </main>
+        </div>
+        <InstallPrompt />
+      </DialogProvider>
+    </GamificationProvider>
   );
 };
 
