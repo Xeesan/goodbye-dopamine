@@ -37,6 +37,11 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const { addXP } = useGamification();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
+  // Hydrate from DB on mount
+  useEffect(() => {
+    syncExamsFromDB().then(() => refresh());
+  }, []);
+
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))
@@ -64,11 +69,20 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     };
     if (editingId) {
       Storage.updateExam({ ...examData, id: editingId });
+      updateExamInDB({ ...examData, id: editingId });
       setEditingId(null);
       refresh();
       toast({ title: 'Exam updated', description: subject });
     } else {
       Storage.addExam(examData);
+      addExamToDB(examData).then(dbId => {
+        // Update local ID with DB ID for future syncs
+        if (dbId) {
+          const current = Storage.getExams();
+          const last = current[current.length - 1];
+          if (last) { last.id = dbId; Storage.setExams(current); refresh(); }
+        }
+      });
       addXP(15);
       (document.getElementById('exam-subject') as HTMLInputElement).value = '';
       refresh();
@@ -81,6 +95,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     const confirmed = await showDialog({ title: 'Delete Exam', message: 'Are you sure you want to delete this exam?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteExam(id);
+      deleteExamFromDB(id);
       if (editingId === id) setEditingId(null);
       refresh();
       toast({ title: 'Exam deleted', description: exam?.subject || '' });
@@ -91,9 +106,9 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     const label = examTab === 'exams' ? 'exams' : 'assignments';
     const confirmed = await showDialog({ title: `Clear All ${label}`, message: `Are you sure you want to delete ALL ${filtered.length} ${label}? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
     if (confirmed) {
-      // Remove only items matching current tab type
       const remaining = exams.filter(e => (e.type || 'exams') !== examTab);
       Storage.setExams(remaining);
+      clearExamsInDB(examTab);
       setEditingId(null);
       refresh();
       toast({ title: `All ${label} cleared`, description: `${filtered.length} item(s) removed` });
