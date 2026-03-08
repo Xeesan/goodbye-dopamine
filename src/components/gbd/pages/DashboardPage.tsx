@@ -162,7 +162,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         <h3 className="flex items-center gap-2 font-semibold text-foreground mb-3">
           <Star className="w-4 h-4" /> RECENT ACHIEVEMENTS
         </h3>
-        <p className="text-sm text-muted-foreground">No badges earned yet. Keep pushing!</p>
+        <p className="text-sm text-muted-foreground"><span className="text-xl mr-1">🏆</span> No badges earned yet. Keep pushing!</p>
       </div>
 
       {/* Stats Row */}
