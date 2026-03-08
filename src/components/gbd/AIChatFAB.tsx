@@ -56,7 +56,8 @@ function executeToolCall(toolCall: ToolCall): string {
           priority: args.priority || 'medium',
           status: 'todo',
         });
-        return `✅ Task "${args.title}" added${args.date ? ` for ${args.date}` : ''}.`;
+        const hype = ['Locked in! 🔥', 'On it, boss! 💪', 'Added, let\'s get it! ⚡', 'Done! You\'re being productive fr 🫡'][Math.floor(Math.random() * 4)];
+        return `${hype} Task **"${args.title}"** added${args.date ? ` for ${args.date}` : ''}. Now go crush it!`;
       }
 
       if (section === 'exam') {
@@ -70,12 +71,13 @@ function executeToolCall(toolCall: ToolCall): string {
           type: args.examType || 'exams',
           grade: '',
         });
-        return `✅ Exam "${args.subject}" added for ${args.date || 'today'}.`;
+        const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
+        return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
 
       if (section === 'routine') {
         if (!args.day || !args.subject || !args.startTime || !args.endTime) {
-          return '❌ Routine needs day, subject, startTime, and endTime.';
+          return '😅 I need the **day**, **subject**, **startTime**, and **endTime** to set up your routine!';
         }
         Storage.addPeriod(args.day, {
           subject: args.subject,
@@ -83,10 +85,10 @@ function executeToolCall(toolCall: ToolCall): string {
           endTime: args.endTime,
           room: args.room || '',
         });
-        return `✅ Added ${args.subject} on ${args.day} (${args.startTime}-${args.endTime}).`;
+        return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
-      return '❌ Unknown section.';
+      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, or **routine**!';
     }
 
     if (toolCall.function.name === 'query_data') {
@@ -108,9 +110,10 @@ function executeToolCall(toolCall: ToolCall): string {
           tasks = tasks.filter((t: any) => t.status !== 'done');
         }
         const summary = tasks.slice(0, 10).map((t: any) =>
-          `• ${t.title}${t.date ? ` (${t.date})` : ''} [${t.priority || 'medium'}] — ${t.status}`
+          `• **${t.title}**${t.date ? ` (${t.date})` : ''} — ${t.priority || 'medium'} priority, ${t.status}`
         ).join('\n');
-        return `📋 **Tasks** (${tasks.length} total):\n${summary || 'No tasks found.'}`;
+        if (tasks.length === 0) return '✨ Your task list is squeaky clean! Either you\'re super productive or in denial 😄';
+        return `📋 You\'ve got **${tasks.length} task${tasks.length > 1 ? 's' : ''}** on deck:\n${summary}`;
       }
 
       if (section === 'exams' || section === 'all') {
@@ -121,9 +124,10 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = exams.slice(0, 10).map((e: any) =>
-          `• ${e.subject} — ${e.date} ${e.time || ''}`
+          `• **${e.subject}** — ${e.date} ${e.time || ''}`
         ).join('\n');
-        return `📝 **Exams** (${exams.length} total):\n${summary || 'No exams found.'}`;
+        if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet... 👀';
+        return `📝 You\'ve got **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n${summary}\n\nTime to hit the books! 📖`;
       }
 
       if (section === 'routine') {
@@ -137,16 +141,17 @@ function executeToolCall(toolCall: ToolCall): string {
             summary += `**${day}**: ${periods.map((p: any) => `${p.subject} (${p.startTime}-${p.endTime})`).join(', ')}\n`;
           }
         }
-        return `🗓️ **Routine**:\n${summary || 'No routine set.'}`;
+        if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
+        return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
       }
 
-      return '❌ Unknown section to query.';
+      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, or **routine**!';
     }
 
-    return '❌ Unknown tool.';
+    return '🤔 Hmm, that one went over my head. Try again?';
   } catch (e) {
     console.error('Tool execution error:', e);
-    return '❌ Failed to process command.';
+    return '😅 Something went wrong on my end. Mind trying that again?';
   }
 }
 
