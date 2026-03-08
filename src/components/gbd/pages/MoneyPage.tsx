@@ -16,6 +16,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
