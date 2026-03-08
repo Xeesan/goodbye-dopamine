@@ -25,7 +25,7 @@ const ALL_TILES = [
   { id: 'reports', name: 'Reports', icon: BarChart3, tokenColor: 'var(--orange)' },
 ];
 
-const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
+const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
