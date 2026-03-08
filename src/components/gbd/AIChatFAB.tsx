@@ -329,7 +329,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         const txns = Storage.getTransactions();
         const matches = idLower === 'all' ? txns : txns.filter((t: any) => t.description?.toLowerCase().includes(idLower));
         if (matches.length === 0) return `🤔 Couldn't find any transaction matching **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteTransaction(m.id));
+        for (const m of matches) { Storage.deleteTransaction(m.id); await deleteTransactionFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** transaction${matches.length > 1 ? 's' : ''}.`;
       }
 
