@@ -47,7 +47,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const renderPage = () => {
     const props = { navigateTo, refreshKey };
     switch (currentPage) {
-      case 'dashboard': return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
+      case 'dashboard': return <DashboardPage {...props} user={user} />;
       case 'planner': return <PlannerPage {...props} />;
       case 'routine': return <RoutinePage {...props} />;
       case 'exams': return <ExamsPage {...props} />;
