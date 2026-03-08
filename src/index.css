@@ -384,6 +384,7 @@ body {
   justify-content: center;
   z-index: 200;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-card {
@@ -393,6 +394,9 @@ body {
   padding: 32px;
   max-width: 440px;
   width: 100%;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   animation: slideUp 0.3s ease;
 }
 
