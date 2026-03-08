@@ -92,7 +92,7 @@ export function exportExamsToICS(exams: any[], label = 'Exams') {
   if (!exams || exams.length === 0) return false;
 
   const events = exams
-    .filter(e => e.date && e.subject)
+    .filter(e => e.date && e.subject && /^\d{4}-\d{2}-\d{2}$/.test(e.date))
     .map(e => {
       const start = toICSDate(e.date, e.time);
       // Default 2hr duration for exams

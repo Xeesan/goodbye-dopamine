@@ -49,9 +49,9 @@ function lwwMerge<T extends { id: string; updatedAt?: string; updated_at?: strin
         merged.push(local);
         toUpload.push(local);
       } else {
+        // Remote wins (equal timestamps → prefer server authority)
         merged.push(remote);
         if (remoteTs > localTs) toDownload.push(remote);
-        else merged[merged.length - 1] = remote; // equal → prefer remote (server authority)
       }
     } else if (local) {
       merged.push(local);
