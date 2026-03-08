@@ -462,7 +462,7 @@ export async function addTransactionToDB(txn: any): Promise<string | null> {
 
 export async function deleteTransactionFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_transactions').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
