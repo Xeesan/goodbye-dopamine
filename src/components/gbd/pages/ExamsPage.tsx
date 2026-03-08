@@ -136,18 +136,18 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{upcoming.length}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">UPCOMING</div>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold text-primary">{upcoming.length}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">UPCOMING</div>
         </div>
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold" style={{ color: thisWeek.length > 0 ? 'hsl(var(--warning))' : undefined }}>{thisWeek.length}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">THIS WEEK</div>
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold" style={{ color: thisWeek.length > 0 ? 'hsl(var(--warning))' : undefined }}>{thisWeek.length}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">THIS WEEK</div>
         </div>
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{totalCredits}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">TOTAL CREDITS</div>
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{totalCredits}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">CREDITS</div>
         </div>
       </div>
 
