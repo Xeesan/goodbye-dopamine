@@ -414,21 +414,21 @@ If you cannot read anything, return an empty array: []`;
               </div>
             </div>
 
-            {/* OCR Mode Toggle */}
-            <div className="flex items-center gap-2 mb-3 p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
+            {/* OCR Mode Toggle - 3 tabs */}
+            <div className="flex items-center gap-1 mb-3 p-1.5 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
               <button
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  ocrMode === 'offline'
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
+                  ocrMode === 'lovable'
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                onClick={() => setOcrMode('offline')}
+                onClick={() => setOcrMode('lovable')}
               >
-                <WifiOff className="w-3.5 h-3.5" />
-                Offline OCR
+                <Sparkles className="w-3.5 h-3.5" />
+                AI (Free)
               </button>
               <button
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
                   ocrMode === 'online'
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -436,11 +436,35 @@ If you cannot read anything, return an empty array: []`;
                 onClick={() => setOcrMode('online')}
               >
                 <Wifi className="w-3.5 h-3.5" />
-                AI API
+                Your API
+              </button>
+              <button
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
+                  ocrMode === 'offline'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setOcrMode('offline')}
+              >
+                <WifiOff className="w-3.5 h-3.5" />
+                Offline
               </button>
             </div>
 
-            {/* Settings Panel */}
+            {/* Lovable AI info */}
+            {ocrMode === 'lovable' && (
+              <div className="mb-4 p-3 rounded-lg border" style={{ borderColor: 'hsl(var(--primary) / 0.3)', background: 'hsl(var(--primary) / 0.05)' }}>
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-1">
+                  <Sparkles className="w-4 h-4" />
+                  Powered by AI
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Best accuracy — no API key needed. Uses advanced vision AI to extract structured data from your images.
+                </p>
+              </div>
+            )}
+
+            {/* Settings Panel for online mode */}
             {showSettings && ocrMode === 'online' && (
               <div className="mb-4 p-3 rounded-lg space-y-3 border" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}>
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
