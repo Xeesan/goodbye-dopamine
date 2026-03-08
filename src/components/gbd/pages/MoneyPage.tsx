@@ -286,7 +286,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 {netTotal > 0 ? '+' : netTotal < 0 ? '-' : ''}৳{Math.abs(netTotal).toLocaleString()}
               </div>
               <div className="text-[0.6rem] text-muted-foreground mt-0.5">
-                {netTotal > 0 ? 'You are owed' : netTotal < 0 ? 'You owe' : 'All even'}
+                {netTotal > 0 ? t('money.you_are_owed') : netTotal < 0 ? t('money.you_owe') : t('money.all_even')}
               </div>
             </div>
           </div>
