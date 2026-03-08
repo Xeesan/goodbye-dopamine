@@ -1,54 +1,74 @@
-import { useState, useCallback } from 'react';
-import Storage from '@/lib/storage';
-import { generateUniqueId } from '@/lib/helpers';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import AuthScreen from '@/components/gbd/AuthScreen';
 import AppShell from '@/components/gbd/AppShell';
 
 const Index = () => {
-  const [user, setUser] = useState(() => Storage.getUser());
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
 
-  const handleLogin = useCallback((uid: string, password: string) => {
-    if (!uid || !password) {
-      alert('Please enter both Unique ID and Password');
-      return;
-    }
-    const users = Storage.get('users', []);
-    const found = users.find((u: any) => u.uid === uid && u.password === password);
-    if (found) {
-      Storage.setUser(found);
-      setUser(found);
-    } else {
-      alert('Invalid credentials. Please check your Unique ID and Password.');
-    }
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session?.user) {
+        // Defer profile fetch to avoid deadlock
+        setTimeout(() => fetchProfile(session.user.id), 0);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) fetchProfile(session.user.id);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignup = useCallback((name: string, password: string) => {
-    if (!name || !password) {
-      alert('Please enter both Full Name and Password');
-      return;
-    }
-    if (password.length < 3) {
-      alert('Password must be at least 3 characters');
-      return;
-    }
-    const uid = generateUniqueId();
-    const newUser = { name, password, uid, createdAt: new Date().toISOString() };
-    const users = Storage.get('users', []);
-    users.push(newUser);
-    Storage.set('users', users);
-    Storage.setUser(newUser);
-    alert(`Account created! Your Unique ID is: ${uid}\nSave this ID to login later.`);
-    setUser(newUser);
-  }, []);
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (data) setProfile(data);
+  };
 
-  const handleLogout = useCallback(() => {
-    Storage.clearUser();
-    setUser(null);
-  }, []);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setProfile(null);
+  };
 
-  if (!user) {
-    return <AuthScreen onLogin={handleLogin} onSignup={handleSignup} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'hsl(var(--bg-primary))' }}>
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
+          }}>
+            <span className="text-black font-extrabold text-lg">G</span>
+          </div>
+          <p className="text-muted-foreground text-sm animate-pulse">Loading...</p>
+        </div>
+      </div>
+    );
   }
+
+  if (!session) {
+    return <AuthScreen onAuthSuccess={() => {}} />;
+  }
+
+  const user = {
+    id: session.user.id,
+    email: session.user.email,
+    username: profile?.username || session.user.user_metadata?.username || 'user',
+    name: profile?.full_name || session.user.user_metadata?.full_name || '',
+    ...profile,
+  };
 
   return <AppShell user={user} onLogout={handleLogout} />;
 };

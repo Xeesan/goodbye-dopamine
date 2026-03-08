@@ -38,7 +38,7 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
       {/* Welcome */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(' ')[0] || 'User'}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
           <p className="text-muted-foreground text-sm">Here's your productivity overview for this week.</p>
         </div>
         <div className="flex items-center gap-3">
