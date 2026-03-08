@@ -24,7 +24,7 @@ const ALL_TILES = [
 
 const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
-  const xp = Storage.getXP();
+  const { xp } = useGamification();
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const sessions = Storage.getFocusSessions();
