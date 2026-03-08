@@ -30,6 +30,7 @@ TOOL RULES:
 - For exams: subject and date are required; time, room, teacher, credits, type are optional.
 - For routine: day (monday-sunday), subject, startTime (HH:MM), endTime (HH:MM) are required; room is optional.
 - For transactions: description and amount are required; type (income/expense) defaults to expense.
+- For lend/borrow (debt): person and amount are required; debtType (lend/borrow) is required. Use "lend" when user gave money to someone, "borrow" when user took money from someone.
 - For notes: title and content are required.
 - When querying, specify the section and any filters.
 - Respond in the same language the user writes in.
