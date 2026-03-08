@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import Storage from '@/lib/storage';
-import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus } from 'lucide-react';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
