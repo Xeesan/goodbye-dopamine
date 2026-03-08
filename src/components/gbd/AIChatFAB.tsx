@@ -104,11 +104,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (!args.description || !args.amount) {
           return '😅 I need at least a **description** and **amount** for the transaction!';
         }
-        Storage.addTransaction({
+        const txnData = {
           description: args.description,
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
-        });
+        };
+        Storage.addTransaction(txnData);
+        addTransactionToDB(txnData).catch(() => {});
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
