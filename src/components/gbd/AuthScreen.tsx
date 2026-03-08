@@ -96,6 +96,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       }
     } else {
       showToast('Verification code sent to your email! 📬', 'success');
+      setResendCooldown(60);
       setMode('verify');
     }
   };
