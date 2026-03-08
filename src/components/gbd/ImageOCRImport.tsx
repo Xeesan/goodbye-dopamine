@@ -113,10 +113,13 @@ If you cannot read anything, return an empty array: []`;
   };
 
   const processOnlineGemini = async (base64: string): Promise<any[]> => {
-    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent?key=${apiConfig.apiKey}`;
+    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiConfig.apiKey,
+      },
       body: JSON.stringify({
         contents: [{
           parts: [
@@ -347,9 +350,32 @@ If you cannot read anything, return an empty array: []`;
     }
   };
 
+  const validateRoutineItem = (item: any) => ({
+    day: String(item.day ?? '').toLowerCase().slice(0, 20),
+    subject: String(item.subject ?? 'Unknown').slice(0, 100),
+    startTime: String(item.startTime ?? '09:00').slice(0, 5),
+    endTime: String(item.endTime ?? '10:00').slice(0, 5),
+    room: String(item.room ?? '').slice(0, 50),
+  });
+
+  const validateExamItem = (item: any) => ({
+    subject: String(item.subject ?? 'Unknown Subject').slice(0, 100),
+    date: String(item.date ?? new Date().toISOString().split('T')[0]).slice(0, 10),
+    time: String(item.time ?? '09:00').slice(0, 5),
+    room: String(item.room ?? '').slice(0, 50),
+    teacher: String(item.teacher ?? '').slice(0, 100),
+    credits: Math.min(Math.max(parseInt(item.credits) || 3, 0), 20),
+    grade: String(item.grade ?? '').slice(0, 5),
+  });
+
   const confirmImport = () => {
     if (results && results.length > 0) {
-      onImport(results);
+      const validated = mode === 'routine'
+        ? results.map(validateRoutineItem).filter(item => item.day && item.subject !== 'Unknown')
+        : results.map(validateExamItem).filter(item => item.subject !== 'Unknown Subject');
+      if (validated.length > 0) {
+        onImport(validated);
+      }
       close();
     }
   };
