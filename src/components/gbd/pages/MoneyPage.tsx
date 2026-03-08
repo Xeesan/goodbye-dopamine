@@ -314,8 +314,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           </button>
                         </div>
                         <div className="text-[0.65rem] text-muted-foreground flex gap-2">
-                          {p.lent > 0 && <span className="text-primary">Lent ৳{p.lent.toLocaleString()}</span>}
-                          {p.borrowed > 0 && <span className="text-destructive">Borrowed ৳{p.borrowed.toLocaleString()}</span>}
+                          {p.lent > 0 && <span className="text-primary">{t('money.lent_label')} ৳{p.lent.toLocaleString()}</span>}
+                          {p.borrowed > 0 && <span className="text-destructive">{t('money.borrowed_label')} ৳{p.borrowed.toLocaleString()}</span>}
                         </div>
                       </div>
                     </div>
