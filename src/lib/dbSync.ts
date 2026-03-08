@@ -77,6 +77,7 @@ export async function syncExamsFromDB(): Promise<any[]> {
       .from('user_exams')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('date', { ascending: true });
 
     if (error) {
