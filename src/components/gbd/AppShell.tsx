@@ -9,6 +9,7 @@ import ExamsPage from './pages/ExamsPage';
 import AcademicHubPage from './pages/AcademicHubPage';
 import MoneyPage from './pages/MoneyPage';
 import NotesPage from './pages/NotesPage';
+import BooklistPage from './pages/BooklistPage';
 import DetoxPage from './pages/DetoxPage';
 import HealthPage from './pages/HealthPage';
 import ReportsPage from './pages/ReportsPage';
