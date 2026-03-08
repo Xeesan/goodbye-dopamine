@@ -122,7 +122,24 @@ function executeToolCall(toolCall: ToolCall): string {
         return `${quips} Note **"${args.title || 'Untitled'}"** saved.`;
       }
 
-      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, or **note**!';
+      if (section === 'debt') {
+        if (!args.person || !args.amount) {
+          return '😅 I need at least a **person** name and **amount** for the lend/borrow entry!';
+        }
+        const debtType = args.debtType || 'lend';
+        Storage.addDebt({
+          person: args.person,
+          amount: Math.abs(args.amount),
+          debt_type: debtType,
+          description: args.description || '',
+        });
+        const quips = debtType === 'lend'
+          ? ['Money out the door! 🚪', 'Generous king/queen! 👑', 'Hope they pay you back fr 🤞'][Math.floor(Math.random() * 3)]
+          : ['IOU noted! 📋', 'Debt recorded, no escaping this one 😤', 'Borrowed and tracked! 🔍'][Math.floor(Math.random() * 3)];
+        return `${quips} **${debtType === 'lend' ? 'Lent' : 'Borrowed'} ${args.amount}** ${debtType === 'lend' ? 'to' : 'from'} **${args.person}**${args.description ? ` — ${args.description}` : ''}`;
+      }
+
+      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
     }
 
     if (toolCall.function.name === 'query_data') {
@@ -210,7 +227,23 @@ function executeToolCall(toolCall: ToolCall): string {
         return `📝 You\'ve got **${notes.length} note${notes.length > 1 ? 's' : ''}**:\n${summary}`;
       }
 
-      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, or **notes**!';
+      if (section === 'debts' || section === 'all') {
+        let debts = Storage.getDebts().filter((d: any) => !d.settled);
+        if (filterLower) {
+          debts = debts.filter((d: any) =>
+            d.person?.toLowerCase().includes(filterLower) || d.description?.toLowerCase().includes(filterLower)
+          );
+        }
+        const summary = debts.slice(0, 10).map((d: any) =>
+          `• ${d.debt_type === 'lend' ? '🟢 Lent' : '🔴 Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — ${d.description}` : ''}`
+        ).join('\n');
+        if (debts.length === 0) return '✨ No outstanding debts! You\'re either debt-free or haven\'t tracked any yet 🎉';
+        const totalLent = debts.filter((d: any) => d.debt_type === 'lend').reduce((s: number, d: any) => s + Number(d.amount), 0);
+        const totalBorrowed = debts.filter((d: any) => d.debt_type === 'borrow').reduce((s: number, d: any) => s + Number(d.amount), 0);
+        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}** (Lent: **${totalLent}**, Borrowed: **${totalBorrowed}**, Net: **${totalLent - totalBorrowed}**):\n${summary}`;
+      }
+
+      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
     }
 
     return '🤔 Hmm, that one went over my head. Try again?';
