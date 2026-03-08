@@ -235,12 +235,12 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = debts.slice(0, 10).map((d: any) =>
-          `• ${d.debt_type === 'lend' ? '🟢 Lent' : '🔴 Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — ${d.description}` : ''}`
+          `- ${d.debt_type === 'lend' ? '🟢' : '🔴'} ${d.debt_type === 'lend' ? 'Lent' : 'Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — _${d.description}_` : ''}`
         ).join('\n');
         if (debts.length === 0) return '✨ No outstanding debts! You\'re either debt-free or haven\'t tracked any yet 🎉';
         const totalLent = debts.filter((d: any) => d.debt_type === 'lend').reduce((s: number, d: any) => s + Number(d.amount), 0);
         const totalBorrowed = debts.filter((d: any) => d.debt_type === 'borrow').reduce((s: number, d: any) => s + Number(d.amount), 0);
-        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}** (Lent: **${totalLent}**, Borrowed: **${totalBorrowed}**, Net: **${totalLent - totalBorrowed}**):\n${summary}`;
+        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}**\n\n> Lent: **${totalLent}** · Borrowed: **${totalBorrowed}** · Net: **${totalLent - totalBorrowed}**\n\n${summary}`;
       }
 
       return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
