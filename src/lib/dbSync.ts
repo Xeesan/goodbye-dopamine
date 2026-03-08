@@ -7,6 +7,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import Storage from './storage';
 
+/** Check if an ID is a valid DB UUID (not a local-only temp ID) */
+function isDbId(id: string): boolean {
+  return !!id && !String(id).includes('_');
+}
+
 let currentUserId: string | null = null;
 
 async function getUserId(): Promise<string | null> {
@@ -186,7 +191,7 @@ export async function addExamToDB(exam: any): Promise<string | null> {
 
 export async function updateExamInDB(exam: any) {
   const userId = await getUserId();
-  if (!userId || !exam.id) return;
+  if (!userId || !exam.id || !isDbId(exam.id)) return;
 
   try {
     await supabase.from('user_exams').update({
@@ -207,7 +212,7 @@ export async function updateExamInDB(exam: any) {
 
 export async function deleteExamFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     // Soft delete
     await supabase.from('user_exams').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
@@ -344,7 +349,7 @@ export async function addPeriodToDB(day: string, period: any): Promise<string | 
 
 export async function deletePeriodFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_routine').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
@@ -457,7 +462,7 @@ export async function addTransactionToDB(txn: any): Promise<string | null> {
 
 export async function deleteTransactionFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_transactions').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
@@ -571,7 +576,7 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
 
 export async function settleDebtInDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_debts').update({
       settled: true,
@@ -584,7 +589,7 @@ export async function settleDebtInDB(id: string) {
 
 export async function deleteDebtFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_debts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {

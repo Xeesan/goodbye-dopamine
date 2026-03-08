@@ -29,6 +29,7 @@ function buildContext() {
     const routine = Storage.getRoutine();
     const transactions = Storage.getTransactions().slice(-10);
     const notes = Storage.getNotes().slice(0, 10);
+    const debts = Storage.getDebts().filter((d: any) => !d.settled);
     const routineSummary: Record<string, number> = {};
     for (const [day, periods] of Object.entries(routine)) {
       routineSummary[day] = (periods as any[]).length;
@@ -43,6 +44,8 @@ function buildContext() {
       recentTransactions: transactions.map((t: any) => ({ id: t.id, description: t.description, amount: t.amount, type: t.type })),
       noteCount: notes.length,
       notes: notes.map((n: any) => ({ id: n.id, title: n.title, preview: n.content?.slice(0, 50) })),
+      debtCount: debts.length,
+      debts: debts.map((d: any) => ({ id: d.id, person: d.person, amount: d.amount, debtType: d.debtType || d.debt_type, description: d.description })),
     };
   } catch {
     return {};
@@ -139,10 +142,11 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           person: args.person,
           amount: Math.abs(args.amount),
           debtType: debtType,
+          debt_type: debtType,
           description: args.description || '',
         };
-        Storage.addDebt({ ...debtData, debt_type: debtType });
-        addDebtToDB(debtData).catch(() => {});
+        Storage.addDebt(debtData);
+        addDebtToDB({ ...debtData, debtType }).catch(() => {});
         const quips = debtType === 'lend'
           ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
           : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
@@ -281,7 +285,8 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           const name = d.person || 'Unknown';
           if (!byPerson[name]) byPerson[name] = { lent: 0, borrowed: 0, count: 0 };
           byPerson[name].count++;
-          if (d.debt_type === 'lend') byPerson[name].lent += Number(d.amount);
+          const dtype = d.debtType || d.debt_type || 'lend';
+          if (dtype === 'lend') byPerson[name].lent += Number(d.amount);
           else byPerson[name].borrowed += Number(d.amount);
         }
 
@@ -587,8 +592,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
         updateAssistant(toolResultText);
 
-        // Notify parent that data changed (delay to allow DB writes to complete)
-        if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in') || r.includes('Settled'))) {
+        // Notify parent that data changed — always trigger after any tool execution
+        if (onDataChanged) {
           setTimeout(() => onDataChanged(), 800);
         }
       } else if (!assistantContent) {
