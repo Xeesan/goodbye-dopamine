@@ -124,9 +124,10 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = exams.slice(0, 10).map((e: any) =>
-          `• ${e.subject} — ${e.date} ${e.time || ''}`
+          `• **${e.subject}** — ${e.date} ${e.time || ''}`
         ).join('\n');
-        return `📝 **Exams** (${exams.length} total):\n${summary || 'No exams found.'}`;
+        if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet... 👀';
+        return `📝 You\'ve got **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n${summary}\n\nTime to hit the books! 📖`;
       }
 
       if (section === 'routine') {
