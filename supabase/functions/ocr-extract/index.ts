@@ -68,6 +68,13 @@ Deno.serve(async (req) => {
     let result: string;
 
     if (provider === "gemini") {
+      // Validate model name to prevent path injection
+      if (!model || typeof model !== "string" || !/^[a-zA-Z0-9._-]+$/.test(model)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid model name" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const allowedEndpoint = "https://generativelanguage.googleapis.com/v1beta";
       const url = `${allowedEndpoint}/models/${encodeURIComponent(model)}:generateContent`;
       const res = await fetch(url, {
