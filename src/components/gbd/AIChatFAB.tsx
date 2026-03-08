@@ -88,7 +88,7 @@ function executeToolCall(toolCall: ToolCall): string {
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
-      return '❌ Unknown section.';
+      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, or **routine**!';
     }
 
     if (toolCall.function.name === 'query_data') {
