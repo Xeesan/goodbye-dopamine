@@ -108,8 +108,8 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
     if (updateError) {
       await showDialog({ title: 'Error', message: updateError.message, type: 'alert' });
     } else {
-      setAvatarUrl(urlWithCacheBust);
-      setProfile((prev: any) => ({ ...prev, avatar_url: publicUrl }));
+      setAvatarUrl(avatarDisplayUrl);
+      setProfile((prev: any) => ({ ...prev, avatar_url: filePath }));
     }
 
     // Reset file input
