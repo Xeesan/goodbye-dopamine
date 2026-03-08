@@ -146,11 +146,12 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: hsl(var(--bg-primary));
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(220 80% 58% / 0.04), transparent),
-    radial-gradient(ellipse 60% 50% at 90% 10%, hsl(263 70% 76% / 0.03), transparent);
+    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(var(--primary) / 0.04), transparent),
+    radial-gradient(ellipse 60% 50% at 90% 10%, hsl(var(--purple) / 0.03), transparent);
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar */
