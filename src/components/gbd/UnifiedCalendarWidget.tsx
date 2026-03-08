@@ -219,26 +219,34 @@ const UnifiedCalendarWidget = ({ navigateTo }: UnifiedCalendarWidgetProps) => {
             <p className="text-xs text-muted-foreground">Nothing scheduled for this day.</p>
           ) : (
             <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
-              {selectedEvents.map((ev, i) => (
-                <div key={i} className="flex items-start gap-2 p-2 rounded-lg text-xs" style={{ background: 'hsl(var(--bg-input))' }}>
-                  <div className="mt-0.5 shrink-0" style={{ color: getEventColor(ev.type) }}>
-                    {getEventIcon(ev.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-foreground truncate">{ev.title}</div>
-                    <div className="text-muted-foreground flex items-center gap-2">
-                      {ev.time && <span>{ev.time}</span>}
-                      {ev.meta && <span>· {ev.meta}</span>}
+              {selectedEvents.map((ev, i) => {
+                const targetPage = ev.type === 'exam' ? 'exams' : ev.type === 'task' ? 'planner' : 'routine';
+                return (
+                  <button
+                    key={i}
+                    onClick={() => navigateTo(targetPage)}
+                    className="w-full flex items-start gap-2 p-2 rounded-lg text-xs text-left hover:scale-[1.02] transition-transform cursor-pointer"
+                    style={{ background: 'hsl(var(--bg-input))' }}
+                  >
+                    <div className="mt-0.5 shrink-0" style={{ color: getEventColor(ev.type) }}>
+                      {getEventIcon(ev.type)}
                     </div>
-                  </div>
-                  <span className="shrink-0 px-1.5 py-0.5 rounded text-[0.55rem] font-semibold uppercase tracking-wider" style={{
-                    background: `${getEventColor(ev.type)}15`,
-                    color: getEventColor(ev.type),
-                  }}>
-                    {ev.type}
-                  </span>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-foreground truncate">{ev.title}</div>
+                      <div className="text-muted-foreground flex items-center gap-2">
+                        {ev.time && <span>{ev.time}</span>}
+                        {ev.meta && <span>· {ev.meta}</span>}
+                      </div>
+                    </div>
+                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[0.55rem] font-semibold uppercase tracking-wider" style={{
+                      background: `${getEventColor(ev.type)}15`,
+                      color: getEventColor(ev.type),
+                    }}>
+                      {ev.type}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
