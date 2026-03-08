@@ -25,6 +25,8 @@ function buildContext() {
     const tasks = Storage.getTasks().filter((t: any) => t.status !== 'done').slice(0, 20);
     const exams = Storage.getExams().slice(0, 15);
     const routine = Storage.getRoutine();
+    const transactions = Storage.getTransactions().slice(-10);
+    const notes = Storage.getNotes().slice(0, 10);
     const routineSummary: Record<string, number> = {};
     for (const [day, periods] of Object.entries(routine)) {
       routineSummary[day] = (periods as any[]).length;
@@ -35,6 +37,10 @@ function buildContext() {
       examCount: exams.length,
       exams: exams.map((e: any) => ({ subject: e.subject, date: e.date, time: e.time })),
       routineSummary,
+      transactionCount: transactions.length,
+      recentTransactions: transactions.map((t: any) => ({ description: t.description, amount: t.amount, type: t.type })),
+      noteCount: notes.length,
+      notes: notes.map((n: any) => ({ title: n.title, preview: n.content?.slice(0, 50) })),
     };
   } catch {
     return {};
