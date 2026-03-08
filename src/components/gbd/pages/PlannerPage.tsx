@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
