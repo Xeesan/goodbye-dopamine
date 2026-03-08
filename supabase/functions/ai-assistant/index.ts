@@ -112,19 +112,59 @@ const TOOLS = [
     type: "function",
     function: {
       name: "delete_entry",
-      description: "Delete a specific task, exam, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
+      description: "Delete a specific task, exam, routine period, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["task", "exam", "transaction", "note", "debt"],
+            enum: ["task", "exam", "routine", "transaction", "note", "debt"],
             description: "Which section to delete from.",
           },
           identifier: {
             type: "string",
             description: "The name/title/subject/person to match against for deletion. Use the exact or partial name from user context.",
           },
+          day: {
+            type: "string",
+            enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+            description: "Day of the week (only for routine deletion, optional).",
+          },
+        },
+        required: ["section", "identifier"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_entry",
+      description: "Update an existing task (change status to done/in-progress/todo), edit a note (title/content), or edit an exam (date/time/room/teacher). Use the identifier to match by title/subject.",
+      parameters: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: ["task", "note", "exam"],
+            description: "Which section to update.",
+          },
+          identifier: {
+            type: "string",
+            description: "The title/subject to match against for finding the entry to update.",
+          },
+          status: {
+            type: "string",
+            enum: ["todo", "in-progress", "done"],
+            description: "New status for a task.",
+          },
+          title: { type: "string", description: "New title (for notes)" },
+          content: { type: "string", description: "New content (for notes)" },
+          date: { type: "string", description: "New date YYYY-MM-DD (for exams)" },
+          time: { type: "string", description: "New time HH:MM (for exams)" },
+          room: { type: "string", description: "New room (for exams)" },
+          teacher: { type: "string", description: "New teacher (for exams)" },
+          subject: { type: "string", description: "New subject name (for exams)" },
         },
         required: ["section", "identifier"],
         additionalProperties: false,
