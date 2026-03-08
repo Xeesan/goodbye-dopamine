@@ -56,7 +56,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
         <button className="icon-btn" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
-        <button className="icon-btn relative" onClick={() => onNavigate('notifications')} aria-label="Notifications">
+        <button className={`icon-btn relative ${unreadCount > 0 ? 'animate-[bellPulse_2s_ease-in-out_infinite]' : ''}`} onClick={() => onNavigate('notifications')} aria-label="Notifications">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[0.6rem] font-bold leading-none px-1"
