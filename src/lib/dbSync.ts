@@ -373,6 +373,7 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
       .from('user_transactions')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('date', { ascending: true });
 
     if (error) {
