@@ -160,7 +160,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
             <Book className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold text-foreground">{totalBooks}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">TOTAL BOOKS</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">TOTAL BOOKS</div>
         </div>
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--primary) / 0.12)', color: 'hsl(var(--primary))' }}>
