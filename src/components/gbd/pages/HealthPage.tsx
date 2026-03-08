@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
+import { ArrowLeft } from 'lucide-react';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
