@@ -226,9 +226,12 @@ serve(async (req) => {
     if (!response.ok) {
       const status = response.status;
       if (status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+        const retryMsg = useCustomGemini
+          ? "Google API rate limit reached. Wait a few seconds and try again."
+          : "AI rate limit reached. Please wait a moment and try again.";
+        return new Response(JSON.stringify({ error: retryMsg }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "10" },
         });
       }
       if (status === 402) {
