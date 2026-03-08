@@ -41,18 +41,34 @@ Install it as an app on your phone or desktop — it works offline too.
 |---|---|
 | **📊 Dashboard** | Personalized welcome, daily quotes, XP progress bar, customizable quick-access tiles & links |
 | **📅 Planner** | Tasks with priority, dates, reminders · Kanban workflow (Todo → In Progress → Done) · XP rewards |
-| **⏰ Routine** | Weekly schedule builder (Mon–Sun) · OCR import from timetable photos |
-| **📝 Exams** | Countdown timers, urgency indicators (critical/warning/safe) · OCR bulk import |
+| **⏰ Routine** | Weekly schedule builder (Mon–Sun) · AI-powered OCR import from timetable photos |
+| **📝 Exams** | Countdown timers, urgency indicators (critical/warning/safe) · AI OCR bulk import |
 | **🎓 Academic Hub** | GPA Tracker (semester + cumulative CGPA) · GPA Calculator · GPA Simulator |
 | **💰 Money Manager** | Income/expense tracker · Debt tracker · Savings goals with progress bars |
 | **📓 Notes** | Rich notes with categories · Full-text search · Inline viewer |
 | **📚 Booklist** | Reading library with status tabs · Page tracking, ratings, genres |
 | **🧘 Digital Detox** | Focus timer (5–120 min) · Ambient sounds (Rain, Forest, Lo-Fi…) · Growing tree visualization |
-| **❤️ Health** | Breathing exercise · Health tracking (extensible) |
+| **❤️ Health** | Breathing exercise · Customizable health reminders (water, posture, eye break, stretching) |
 | **📈 Reports** | Productivity analytics and insights |
 | **📅 Global Calendar** | Unified calendar widget accessible from any page — tap events to jump to their section |
+| **🔔 Notifications** | Push notifications for task reminders & health alerts · In-app notification center |
 | **👤 Profile** | Avatar upload, bio, institution · Account management |
 | **🌗 Theming** | Light & dark mode with smooth transitions, persisted preference |
+| **🌐 i18n** | English & Bengali language support with one-tap toggle |
+
+---
+
+## 🤖 AI-Powered OCR
+
+GBD features a triple-mode OCR system for importing class routines and exam schedules from photos:
+
+| Mode | How it works |
+|---|---|
+| **AI (Free)** | Uses Lovable AI (Gemini) — no API key needed, best accuracy |
+| **Online AI** | Bring your own Gemini / OpenAI / custom API key for cloud-based extraction |
+| **Offline** | Tesseract.js runs entirely in your browser — works without internet |
+
+The AI modes are specifically tuned for university-style timetables (days × time slots) and exam lists (date, subject, faculty, room).
 
 ---
 
@@ -85,6 +101,7 @@ Every productive action earns XP:
 - **Sync queue** — failed writes auto-retry on reconnection
 - **Connection indicator** — visual offline/online badge in header
 - **Responsive** — optimized layouts for mobile and desktop with bottom-sheet dialogs on small screens
+- **Push notifications** — task reminders and health alerts via Web Push API
 
 ---
 
@@ -108,9 +125,12 @@ Every productive action earns XP:
 | **Styling** | Tailwind CSS + shadcn/ui |
 | **Icons** | Lucide React |
 | **Backend** | Supabase (Auth, Database, Storage, Edge Functions) |
-| **OCR** | Tesseract.js (offline, client-side) |
+| **OCR** | Tesseract.js (offline) + Gemini / OpenAI (online) + Lovable AI (free) |
 | **PWA** | vite-plugin-pwa + Workbox |
 | **State** | React Context + localStorage (hybrid) |
+| **Charts** | Recharts |
+| **Markdown** | react-markdown |
+| **i18n** | Custom hook with EN/BN support |
 
 ---
 
@@ -150,12 +170,19 @@ src/
 │   │   ├── AppShell.tsx   # Main app layout
 │   │   ├── AuthScreen.tsx # Login/signup screen
 │   │   ├── Sidebar.tsx    # Navigation sidebar
-│   │   └── TopHeader.tsx  # Top bar with status
+│   │   ├── TopHeader.tsx  # Top bar with status
+│   │   ├── ImageOCRImport # Triple-mode OCR component
+│   │   └── DialogProvider # Responsive modal system
 │   └── ui/                # shadcn/ui components
-├── hooks/                 # Custom hooks
-├── lib/                   # Utilities
+├── hooks/                 # Custom hooks (theme, i18n, gamification, health)
+├── lib/                   # Utilities (storage, sync, OCR, i18n, leveling)
 ├── integrations/          # Supabase client & types
 └── pages/                 # Route-level pages
+supabase/
+├── functions/             # Edge functions (OCR, push notifications)
+└── config.toml            # Supabase configuration
+docs/
+└── index.html             # Landing page (GitHub Pages)
 ```
 
 ---
