@@ -74,8 +74,9 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         </div>
       )}
 
-      {/* Level Progress + Daily Inspiration side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+      {/* Level Progress (togglable) + Daily Inspiration side by side */}
+      <div className={`grid grid-cols-1 ${showXpBadge ? 'lg:grid-cols-2' : ''} gap-4 mb-5`}>
+        {showXpBadge && (
         {/* Level Progress */}
         <div className="glass-card-accent flex items-center gap-6">
           {(() => {
