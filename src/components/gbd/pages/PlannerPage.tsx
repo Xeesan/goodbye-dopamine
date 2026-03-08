@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
+import { supabase } from '@/integrations/supabase/client';
 import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
@@ -36,6 +37,29 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
     (document.getElementById('task-title') as HTMLInputElement).value = '';
     refresh();
     toast({ title: 'Task created', description: title });
+
+    // Save reminder to database if set
+    if (reminder && date && time) {
+      try {
+        const taskDateTime = new Date(`${date}T${time}`);
+        const reminderMinutes = parseInt(reminder, 10);
+        if (!isNaN(taskDateTime.getTime()) && !isNaN(reminderMinutes)) {
+          const remindAt = new Date(taskDateTime.getTime() - reminderMinutes * 60 * 1000);
+          if (remindAt > new Date()) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from('task_reminders').insert({
+                user_id: user.id,
+                task_title: title,
+                remind_at: remindAt.toISOString(),
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to save reminder:', e);
+      }
+    }
   };
 
   const moveTask = (id: string, status: string) => {

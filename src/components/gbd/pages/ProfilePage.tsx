@@ -4,6 +4,7 @@ import Storage from '@/lib/storage';
 import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
+import NotificationToggle from '../NotificationToggle';
 
 interface ProfilePageProps {
   navigateTo: (page: string) => void;
@@ -328,6 +329,12 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
           }}>
             <Trash2 className="w-4 h-4" /> Clear All Data
           </button>
+        </div>
+
+        {/* Notifications */}
+        <div className="glass-card-accent">
+          <h3 className="font-semibold text-foreground mb-5">Notifications</h3>
+          <NotificationToggle />
         </div>
 
         {/* Account */}
