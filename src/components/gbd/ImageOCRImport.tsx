@@ -174,24 +174,65 @@ If you cannot read anything, return an empty array: []`;
     return `${String(h).padStart(2, '0')}:${min}`;
   };
 
-  // -- Offline parsing --
+  // -- Offline parsing (optimized for table-format timetables) --
   const parseRoutineFromText = (text: string): any[] => {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const timeRangeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)\s*[-–to]+\s*(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
+    const courseCodeRegex = /\b([A-Z]{2,5}[-\s]?\d{2,4})\b/;
+    const roomAltRegex = /\b(Room:\s*\S+|[A-Z]\d{1,2}|H\d(?:\+H\d)?|Online|Lab|D\d|E\d|C\d|Chemistry)\b/i;
     const items: any[] = [];
     let currentDay = '';
+
+    // Detect table header with time slots (e.g. "9:30AM-10:10AM 10:10AM-10:50AM ...")
+    let timeSlots: { start: string; end: string }[] = [];
     for (const line of lines) {
       const lower = line.toLowerCase();
-      const foundDay = days.find(d => lower.includes(d));
+      if (lower.includes('day/time') || lower.includes('day time') || lower.includes('time slot')) {
+        const matches = [...line.matchAll(/(\d{1,2}[:.]\d{2}\s*(?:AM|PM|am|pm)?)\s*[-–]\s*(\d{1,2}[:.]\d{2}\s*(?:AM|PM|am|pm)?)/g)];
+        timeSlots = matches.map(m => ({ start: to24h(m[1]), end: to24h(m[2]) }));
+      }
+    }
+
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+      if (lower.includes('day/time') || lower.includes('semester') || lower.includes('batch') || lower.includes('course code') || lower.includes('credit')) continue;
+
+      const foundDay = days.find(d => lower.startsWith(d) || new RegExp(`\\b${d}\\b`).test(lower));
       if (foundDay) currentDay = foundDay;
+      if (!currentDay) continue;
+
+      // Table mode: match course codes by position within segments
+      if (timeSlots.length > 0) {
+        const segments = line.replace(new RegExp(`\\b${currentDay}\\b`, 'i'), '').split(/\s{3,}|\||\t/).map(s => s.trim()).filter(Boolean);
+        let slotIdx = 0;
+        for (const seg of segments) {
+          const codeMatch = seg.match(courseCodeRegex);
+          if (codeMatch && slotIdx < timeSlots.length) {
+            const subject = codeMatch[1].replace(/\s+/g, '-');
+            const roomMatch = seg.match(roomAltRegex);
+            items.push({
+              day: currentDay, subject,
+              startTime: timeSlots[slotIdx]?.start || '09:00',
+              endTime: timeSlots[slotIdx]?.end || '10:00',
+              room: roomMatch?.[1]?.trim() || '',
+            });
+          }
+          slotIdx++;
+        }
+        continue;
+      }
+
+      // Fallback: line-by-line time range detection
       const timeMatch = line.match(timeRangeRegex);
       if (timeMatch && currentDay) {
         const startTime = to24h(timeMatch[1]);
         const endTime = to24h(timeMatch[2]);
-        const subject = line.replace(timeMatch[0], '').replace(new RegExp(currentDay, 'i'), '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
-        const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
-        items.push({ day: currentDay, subject, startTime, endTime, room: roomMatch?.[1] || '' });
+        const codeMatch = line.match(courseCodeRegex);
+        const subject = codeMatch?.[1]?.replace(/\s+/g, '-') ||
+          line.replace(timeMatch[0], '').replace(new RegExp(currentDay, 'i'), '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
+        const roomMatch = line.match(roomAltRegex);
+        items.push({ day: currentDay, subject, startTime, endTime, room: roomMatch?.[1]?.trim() || '' });
       }
     }
     return items;
