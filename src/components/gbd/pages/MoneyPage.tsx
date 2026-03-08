@@ -353,7 +353,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {favoriteContacts.length > 0 && (
               <div className="mb-4">
                 <label className="form-label flex items-center gap-1.5">
-                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> QUICK SELECT
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {t('money.quick_select')}
                 </label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {favoriteContacts.map(name => (
