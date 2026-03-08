@@ -2,17 +2,26 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2 } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2, CreditCard, Plus, CircleCheck } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 import { useI18n } from '@/hooks/useI18n';
-import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
+import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore, isAfter } from 'date-fns';
+
+interface Installment {
+  id: string;
+  amount: number;
+  paidDate: string;
+}
 
 interface SemesterBudget {
-  totalAmount: number;
+  totalFee: number;
+  monthlyInstallment: number;
   startDate: string;
   endDate: string;
+  installments: Installment[];
+  livingBudget: number; // monthly living/spending budget
 }
 
 interface MoneyPageProps {
