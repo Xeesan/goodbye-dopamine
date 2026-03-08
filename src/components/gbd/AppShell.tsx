@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
+import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
@@ -27,6 +28,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
@@ -73,6 +75,8 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               onNavigate={navigateTo}
               calendarOpen={calendarOpen}
               onToggleCalendar={() => setCalendarOpen(prev => !prev)}
+              theme={theme}
+              onToggleTheme={toggleTheme}
             />
             <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
               {renderPage()}

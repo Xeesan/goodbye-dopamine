@@ -1,4 +1,4 @@
-import { Menu, Bell, User, Calendar, WifiOff } from 'lucide-react';
+import { Menu, Bell, User, Calendar, WifiOff, Sun, Moon } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 import { useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -8,9 +8,11 @@ interface TopHeaderProps {
   onNavigate: (page: string) => void;
   calendarOpen?: boolean;
   onToggleCalendar?: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
-const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar }: TopHeaderProps) => {
+const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar, theme, onToggleTheme }: TopHeaderProps) => {
   const [showNotif, setShowNotif] = useState(false);
   const isOnline = useOnlineStatus();
 
@@ -29,10 +31,13 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
       </button>
       <div className="flex items-center justify-end gap-2">
         {!isOnline && (
-          <span className="flex items-center gap-1 text-[0.65rem] font-semibold tracking-wider px-2 py-1 rounded-full text-warning" style={{ background: 'hsl(var(--warning) / 0.15)' }}>
+          <span className="flex items-center gap-1 text-[0.7rem] font-semibold tracking-wider px-2 py-1 rounded-full text-warning" style={{ background: 'hsl(var(--warning) / 0.15)' }}>
             <WifiOff className="w-3.5 h-3.5" /> OFFLINE
           </span>
         )}
+        <button className="icon-btn" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
         <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
           <Bell className="w-5 h-5" />
         </button>
