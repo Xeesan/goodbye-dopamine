@@ -4,6 +4,7 @@ import { formatDate, formatTime12h } from '@/lib/helpers';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;

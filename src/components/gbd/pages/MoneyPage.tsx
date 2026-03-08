@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;

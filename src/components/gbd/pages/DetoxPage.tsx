@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Play, Square, Shield, Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface DetoxPageProps {
   navigateTo: (page: string) => void;

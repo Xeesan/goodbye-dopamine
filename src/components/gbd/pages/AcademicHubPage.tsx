@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface AcademicHubPageProps {
   navigateTo: (page: string) => void;

@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Book, BookOpen, Bookmark, CheckCircle, Search, X, Trash2, Edit, Star, Plus, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface BooklistPageProps {
   navigateTo: (page: string) => void;

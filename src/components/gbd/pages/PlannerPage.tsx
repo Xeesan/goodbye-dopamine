@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { Search, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface PlannerPageProps {
   navigateTo: (page: string) => void;

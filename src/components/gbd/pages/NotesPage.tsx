@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface NotesPageProps {
   navigateTo: (page: string) => void;

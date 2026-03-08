@@ -4,6 +4,7 @@ import { getCurrentDayName } from '@/lib/helpers';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
