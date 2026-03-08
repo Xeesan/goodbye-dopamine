@@ -220,7 +220,8 @@ export async function clearExamsInDB(type?: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    let query = supabase.from('user_exams').delete().eq('user_id', userId);
+    // Soft delete all
+    let query = supabase.from('user_exams').update({ deleted_at: new Date().toISOString() }).eq('user_id', userId).is('deleted_at', null);
     if (type) query = query.eq('type', type);
     await query;
   } catch (e) {
