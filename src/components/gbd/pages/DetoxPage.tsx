@@ -134,7 +134,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
       const durMin = Math.floor((Date.now() - startTimeRef.current) / 60000);
       if (durMin > 0) {
         Storage.addFocusSession({ date: new Date().toISOString(), duration: durMin });
-        Storage.addXP(Math.max(5, durMin));
+        addXP(Math.max(5, durMin));
       }
     }
     setFocusActive(false);
