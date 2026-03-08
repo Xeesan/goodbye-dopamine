@@ -20,7 +20,7 @@ const GamificationContext = createContext<GamificationContextType>({
 
 export const useGamification = () => useContext(GamificationContext);
 
-const calcLevel = (total: number) => Math.floor(total / 100) + 1;
+
 
 export const GamificationProvider = ({ children }: { children: ReactNode }) => {
   const [xp, setXp] = useState<XPData>(() => Storage.getXP());
