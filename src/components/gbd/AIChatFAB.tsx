@@ -170,9 +170,38 @@ function executeToolCall(toolCall: ToolCall): string {
       if (section === 'exams' || section === 'all') {
         let exams = Storage.getExams();
         if (filterLower) {
-          exams = exams.filter((e: any) =>
-            e.subject?.toLowerCase().includes(filterLower) || e.date?.includes(filterLower)
-          );
+          const now = new Date();
+          if (filterLower.includes('this month')) {
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            exams = exams.filter((e: any) => e.date?.startsWith(`${y}-${m}`));
+          } else if (filterLower.includes('next month')) {
+            const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const y = next.getFullYear();
+            const m = String(next.getMonth() + 1).padStart(2, '0');
+            exams = exams.filter((e: any) => e.date?.startsWith(`${y}-${m}`));
+          } else if (filterLower.includes('this week')) {
+            const today = now.toISOString().split('T')[0];
+            const weekEnd = new Date(now);
+            weekEnd.setDate(weekEnd.getDate() + (7 - weekEnd.getDay()));
+            const end = weekEnd.toISOString().split('T')[0];
+            exams = exams.filter((e: any) => e.date >= today && e.date <= end);
+          } else if (filterLower.includes('today')) {
+            const today = now.toISOString().split('T')[0];
+            exams = exams.filter((e: any) => e.date === today);
+          } else if (filterLower.includes('tomorrow')) {
+            const tmr = new Date(now);
+            tmr.setDate(tmr.getDate() + 1);
+            const tmrStr = tmr.toISOString().split('T')[0];
+            exams = exams.filter((e: any) => e.date === tmrStr);
+          } else if (filterLower.includes('upcoming') || filterLower.includes('future')) {
+            const today = now.toISOString().split('T')[0];
+            exams = exams.filter((e: any) => e.date >= today);
+          } else {
+            exams = exams.filter((e: any) =>
+              e.subject?.toLowerCase().includes(filterLower) || e.date?.includes(filterLower)
+            );
+          }
         }
         const summary = exams.slice(0, 10).map((e: any) =>
           `- **${e.subject}** · ${e.date} ${e.time || ''}`
