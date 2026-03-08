@@ -18,7 +18,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
 
   return (
     <header className="grid grid-cols-3 items-center px-3 sm:px-6 h-[56px] sm:h-[60px] min-h-[56px] sm:min-h-[60px] relative" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-      <button className="hamburger-btn" onClick={onToggleSidebar}>
+      <button className="hamburger-btn" onClick={onToggleSidebar} aria-label="Toggle sidebar menu">
         <Menu className="w-5 h-5" />
       </button>
       <button
@@ -38,10 +38,10 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
         <button className="icon-btn" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
-        <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
+        <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)} aria-label="Notifications">
           <Bell className="w-5 h-5" />
         </button>
-        <button className="icon-btn" onClick={() => onNavigate('profile')}>
+        <button className="icon-btn" onClick={() => onNavigate('profile')} aria-label="Profile">
           <User className="w-5 h-5" />
         </button>
       </div>

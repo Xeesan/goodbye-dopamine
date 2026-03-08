@@ -37,7 +37,7 @@ const InstallPrompt = () => {
           <p className="text-sm font-semibold text-foreground">Install GBD</p>
           <p className="text-xs text-muted-foreground">Add to home screen for the best experience</p>
         </div>
-        <button onClick={handleInstall} className="btn-primary !py-1.5 !px-3 !text-xs shrink-0">Install</button>
+        <button onClick={handleInstall} className="btn-green !py-1.5 !px-3 !text-xs shrink-0">Install</button>
         <button onClick={() => setDismissed(true)} className="p-1 text-muted-foreground hover:text-foreground">
           <X className="w-4 h-4" />
         </button>

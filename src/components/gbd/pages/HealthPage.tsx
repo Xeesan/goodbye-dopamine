@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -94,12 +94,16 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
     saveHealthData(data);
   };
 
+  const breathingRef = useRef(false);
+
   const startBreathing = () => {
-    if (breathingActive) {
+    if (breathingRef.current) {
+      breathingRef.current = false;
       setBreathingActive(false);
       setBreathingPhase('START');
       return;
     }
+    breathingRef.current = true;
     setBreathingActive(true);
     const phases = [
       { label: 'INHALE', duration: 4000 },
@@ -108,7 +112,7 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
     ];
     let idx = 0;
     const run = () => {
-      if (!breathingActive) return;
+      if (!breathingRef.current) return;
       setBreathingPhase(phases[idx % 3].label);
       idx++;
       setTimeout(run, phases[(idx - 1) % 3].duration);
