@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { ArrowLeft } from 'lucide-react';
@@ -15,8 +15,10 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [debtType, setDebtType] = useState('lend');
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
@@ -39,7 +41,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     Storage.addTransaction({ type: txnType, description, amount });
     addXP(5);
     setShowTxnModal(false);
-    navigateTo('money');
+    refresh();
   };
 
   const addDebt = async () => {
@@ -53,7 +55,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
     addXP(5);
-    navigateTo('money');
+    (document.getElementById('debt-person') as HTMLInputElement).value = '';
+    (document.getElementById('debt-amount') as HTMLInputElement).value = '';
+    (document.getElementById('debt-description') as HTMLInputElement).value = '';
+    (document.getElementById('debt-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+    refresh();
   };
 
   const addGoal = async () => {
@@ -67,27 +73,27 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const targetDate = (document.getElementById('goal-date') as HTMLInputElement)?.value;
     Storage.addSavingsGoal({ title, targetAmount, initialAmount, targetDate });
     addXP(10);
-    navigateTo('money');
+    refresh();
   };
 
   const deleteTxn = async (id: string) => {
     const confirmed = await showDialog({ title: 'Delete Transaction', message: 'Are you sure you want to delete this transaction?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteTransaction(id); navigateTo('money'); }
+    if (confirmed) { Storage.deleteTransaction(id); refresh(); }
   };
 
   const settleDebt = async (id: string) => {
     const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
-    if (confirmed) { Storage.settleDebt(id); navigateTo('money'); }
+    if (confirmed) { Storage.settleDebt(id); refresh(); }
   };
 
   const deleteDebt = async (id: string) => {
     const confirmed = await showDialog({ title: 'Delete Debt', message: 'Are you sure you want to delete this debt record?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteDebt(id); navigateTo('money'); }
+    if (confirmed) { Storage.deleteDebt(id); refresh(); }
   };
 
   const deleteGoal = async (id: string) => {
     const confirmed = await showDialog({ title: 'Delete Goal', message: 'Are you sure you want to delete this savings goal?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteSavingsGoal(id); navigateTo('money'); }
+    if (confirmed) { Storage.deleteSavingsGoal(id); refresh(); }
   };
 
   return (
