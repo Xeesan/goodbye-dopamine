@@ -7,6 +7,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import Storage from './storage';
 
+/** Check if an ID is a valid DB UUID (not a local-only temp ID) */
+function isDbId(id: string): boolean {
+  return !!id && !String(id).includes('_');
+}
+
 let currentUserId: string | null = null;
 
 async function getUserId(): Promise<string | null> {
