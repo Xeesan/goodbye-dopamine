@@ -120,8 +120,13 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <div className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <BarChart3 className="w-4 h-4" /> QUICK TILES
           </div>
-          <button className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1" onClick={() => {
-            const newTiles = prompt('Enter tile IDs (comma-separated):\nAvailable: planner, routine, exams, academic-hub, money, notes, detox, reports');
+          <button className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1" onClick={async () => {
+            const newTiles = await showPrompt({
+              title: 'Customize Tiles',
+              message: 'Enter tile IDs (comma-separated).\nAvailable: planner, routine, exams, academic-hub, money, notes, detox, reports',
+              placeholder: 'planner, routine, exams, money, notes',
+              defaultValue: Storage.getDashboardTiles().join(', '),
+            });
             if (newTiles) {
               Storage.setDashboardTiles(newTiles.split(',').map(s => s.trim()));
               navigateTo('dashboard');
