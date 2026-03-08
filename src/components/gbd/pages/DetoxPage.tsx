@@ -147,25 +147,189 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); stopSound(); };
   }, [stopSound]);
 
+  // Study media state
+  const [mediaTab, setMediaTab] = useState<'none' | 'youtube' | 'pdf' | 'image'>('none');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [mediaExpanded, setMediaExpanded] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfFileInputRef = useRef<HTMLInputElement>(null);
+
+  const getYoutubeEmbedUrl = (url: string) => {
+    try {
+      let videoId = '';
+      if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1]?.split(/[?&#]/)[0] || '';
+      } else if (url.includes('youtube.com')) {
+        const params = new URL(url).searchParams;
+        videoId = params.get('v') || '';
+      }
+      return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : '';
+    } catch { return ''; }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+      setMediaTab('image');
+    }
+  };
+
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
+      setMediaTab('pdf');
+    }
+  };
+
   if (focusActive) {
     const remaining = Math.max(0, duration * 60 - elapsed);
     const m = String(Math.floor(remaining / 60)).padStart(2, '0');
     const s = String(remaining % 60).padStart(2, '0');
     const progress = duration * 60 > 0 ? ((elapsed / (duration * 60)) * 100).toFixed(1) : '0';
+
+    const mediaContent = () => {
+      if (mediaTab === 'youtube') {
+        const embedUrl = getYoutubeEmbedUrl(youtubeUrl);
+        return (
+          <div className="glass-card !p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold tracking-widest text-muted-foreground flex items-center gap-1.5"><Youtube className="w-4 h-4 text-red-500" /> YOUTUBE</span>
+              <button className="icon-btn !w-7 !h-7" onClick={() => setMediaTab('none')}><X className="w-3.5 h-3.5" /></button>
+            </div>
+            {!embedUrl ? (
+              <div>
+                <input type="text" className="input-simple w-full mb-2" placeholder="Paste YouTube URL..." value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} />
+                <p className="text-[0.65rem] text-muted-foreground">Paste a YouTube link and press Enter to load</p>
+              </div>
+            ) : (
+              <div className={`relative ${mediaExpanded ? 'fixed inset-4 z-50 bg-background rounded-xl p-2' : ''}`}>
+                {mediaExpanded && <button className="absolute top-3 right-3 z-10 icon-btn !w-8 !h-8 bg-background/80" onClick={() => setMediaExpanded(false)}><Minimize2 className="w-4 h-4" /></button>}
+                <div className="relative w-full" style={{ paddingBottom: mediaExpanded ? 'calc(100% - 40px)' : '56.25%' }}>
+                  <iframe src={embedUrl} className="absolute inset-0 w-full h-full rounded-lg" allow="autoplay; encrypted-media" allowFullScreen />
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => { setYoutubeUrl(''); }}>Change video</button>
+                  {!mediaExpanded && <button className="icon-btn !w-7 !h-7" onClick={() => setMediaExpanded(true)}><Maximize2 className="w-3.5 h-3.5" /></button>}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+      if (mediaTab === 'pdf') {
+        return (
+          <div className="glass-card !p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold tracking-widest text-muted-foreground flex items-center gap-1.5"><FileText className="w-4 h-4 text-primary" /> PDF READER</span>
+              <button className="icon-btn !w-7 !h-7" onClick={() => setMediaTab('none')}><X className="w-3.5 h-3.5" /></button>
+            </div>
+            {!pdfUrl ? (
+              <div>
+                <input type="text" className="input-simple w-full mb-2" placeholder="Paste PDF URL..." value={pdfUrl} onChange={e => setPdfUrl(e.target.value)} />
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[0.65rem] text-muted-foreground">or</span>
+                  <button className="btn-outline !py-1 !px-3 !text-xs" onClick={() => pdfFileInputRef.current?.click()}>Upload PDF</button>
+                  <input ref={pdfFileInputRef} type="file" accept="application/pdf" className="hidden" onChange={handlePdfUpload} />
+                </div>
+              </div>
+            ) : (
+              <div className={`relative ${mediaExpanded ? 'fixed inset-4 z-50 bg-background rounded-xl p-2' : ''}`}>
+                {mediaExpanded && <button className="absolute top-3 right-3 z-10 icon-btn !w-8 !h-8 bg-background/80" onClick={() => setMediaExpanded(false)}><Minimize2 className="w-4 h-4" /></button>}
+                <iframe src={pdfUrl} className="w-full rounded-lg border border-border" style={{ height: mediaExpanded ? 'calc(100vh - 60px)' : '400px' }} />
+                <div className="flex items-center justify-between mt-2">
+                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setPdfUrl('')}>Change PDF</button>
+                  {!mediaExpanded && <button className="icon-btn !w-7 !h-7" onClick={() => setMediaExpanded(true)}><Maximize2 className="w-3.5 h-3.5" /></button>}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+      if (mediaTab === 'image') {
+        return (
+          <div className="glass-card !p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold tracking-widest text-muted-foreground flex items-center gap-1.5"><ImageIcon className="w-4 h-4" style={{ color: 'hsl(var(--green))' }} /> IMAGE VIEWER</span>
+              <button className="icon-btn !w-7 !h-7" onClick={() => setMediaTab('none')}><X className="w-3.5 h-3.5" /></button>
+            </div>
+            {!imageUrl ? (
+              <div>
+                <input type="text" className="input-simple w-full mb-2" placeholder="Paste image URL..." value={imageUrl} onChange={e => setImageUrl(e.target.value)} />
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[0.65rem] text-muted-foreground">or</span>
+                  <button className="btn-outline !py-1 !px-3 !text-xs" onClick={() => fileInputRef.current?.click()}>Upload Image</button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                </div>
+              </div>
+            ) : (
+              <div className={`relative ${mediaExpanded ? 'fixed inset-4 z-50 bg-background rounded-xl p-2 flex items-center justify-center' : ''}`}>
+                {mediaExpanded && <button className="absolute top-3 right-3 z-10 icon-btn !w-8 !h-8 bg-background/80" onClick={() => setMediaExpanded(false)}><Minimize2 className="w-4 h-4" /></button>}
+                <img src={imageUrl} alt="Study material" className="max-w-full rounded-lg" style={{ maxHeight: mediaExpanded ? 'calc(100vh - 60px)' : '400px', objectFit: 'contain' }} />
+                <div className="flex items-center justify-between mt-2">
+                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setImageUrl('')}>Change image</button>
+                  {!mediaExpanded && <button className="icon-btn !w-7 !h-7" onClick={() => setMediaExpanded(true)}><Maximize2 className="w-3.5 h-3.5" /></button>}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+      return null;
+    };
+
     return (
-      <div className="page-enter max-w-[800px] mx-auto text-center">
-        <div className="flex items-center justify-between mb-8">
+      <div className="page-enter max-w-[800px] mx-auto">
+        {/* Timer header */}
+        <div className="flex items-center justify-between mb-6">
           <div><h2 className="text-xl font-bold text-primary">🛡️ Detox</h2><p className="text-xs text-muted-foreground">DISTRACTIONS BLOCKED</p></div>
           <div className="flex items-center gap-1 text-4xl font-mono font-bold text-foreground"><span>{m}</span><span className="text-muted-foreground">:</span><span>{s}</span></div>
           <button className="btn-danger" onClick={stopFocus}>EXIT</button>
         </div>
-        <div className="mb-8"><TreeSVG stage={stage} /><div className="mt-3"><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>STAGE {stage}/5</span></div></div>
-        <div className="glass-card !p-6 mb-6"><Shield className="w-16 h-16 text-primary mx-auto mb-4" /><h2 className="text-lg font-bold text-foreground mb-2">Deep Focus Active</h2><p className="text-sm text-muted-foreground">Stay focused. All distractions are blocked.</p></div>
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="glass-card !p-4"><div className="text-2xl font-bold text-primary">{Math.min(100, parseFloat(progress))}%</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">FOCUS LEVEL</div></div>
-          <div className="glass-card !p-4"><div className="text-2xl font-bold text-foreground">5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">SITES BLOCKED</div></div>
+
+        {/* Progress bar */}
+        <div className="xp-bar !h-3 mb-6"><div className="xp-bar-fill" style={{ width: `${Math.min(100, parseFloat(progress))}%` }} /></div>
+
+        {/* Study Media Tabs */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mr-1">STUDY MEDIA</span>
+          {[
+            { id: 'youtube' as const, label: 'YouTube', icon: Youtube, color: '#FF0000' },
+            { id: 'pdf' as const, label: 'PDF', icon: FileText, color: 'hsl(var(--primary))' },
+            { id: 'image' as const, label: 'Image', icon: ImageIcon, color: 'hsl(var(--green))' },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const active = mediaTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setMediaTab(active ? 'none' : tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                style={active ? { background: `${tab.color}15`, color: tab.color, border: `1px solid ${tab.color}33` } : { border: '1px solid hsl(var(--border))' }}>
+                <Icon className="w-3.5 h-3.5" /> {tab.label}
+              </button>
+            );
+          })}
         </div>
-        <div className="xp-bar !h-3"><div className="xp-bar-fill" style={{ width: `${Math.min(100, parseFloat(progress))}%` }} /></div>
+
+        {/* Media content */}
+        {mediaTab !== 'none' && <div className="mb-6">{mediaContent()}</div>}
+
+        {/* Focus info (collapsed when media is open) */}
+        {mediaTab === 'none' && (
+          <>
+            <div className="mb-6 text-center"><TreeSVG stage={stage} /><div className="mt-3"><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>STAGE {stage}/5</span></div></div>
+            <div className="glass-card !p-6 mb-6 text-center"><Shield className="w-16 h-16 text-primary mx-auto mb-4" /><h2 className="text-lg font-bold text-foreground mb-2">Deep Focus Active</h2><p className="text-sm text-muted-foreground">Stay focused. All distractions are blocked.</p></div>
+          </>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-primary">{Math.min(100, parseFloat(progress))}%</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">FOCUS LEVEL</div></div>
+          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-foreground">5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">SITES BLOCKED</div></div>
+        </div>
       </div>
     );
   }
