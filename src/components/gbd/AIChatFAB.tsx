@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
-import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB } from '@/lib/dbSync';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
@@ -69,7 +69,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       }
 
       if (section === 'exam') {
-        Storage.addExam({
+        const examData = {
           subject: args.subject || 'Untitled',
           date: args.date || new Date().toISOString().split('T')[0],
           time: args.time || '09:00',
@@ -78,7 +78,9 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           credits: args.credits || 3,
           type: args.examType || 'exams',
           grade: '',
-        });
+        };
+        Storage.addExam(examData);
+        addExamToDB(examData).catch(() => {});
         const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
         return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
@@ -87,12 +89,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (!args.day || !args.subject || !args.startTime || !args.endTime) {
           return '😅 I need the **day**, **subject**, **startTime**, and **endTime** to set up your routine!';
         }
-        Storage.addPeriod(args.day, {
+        const periodData = {
           subject: args.subject,
           startTime: args.startTime,
           endTime: args.endTime,
           room: args.room || '',
-        });
+        };
+        Storage.addPeriod(args.day, periodData);
+        addPeriodToDB(args.day, periodData).catch(() => {});
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
@@ -100,11 +104,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (!args.description || !args.amount) {
           return '😅 I need at least a **description** and **amount** for the transaction!';
         }
-        Storage.addTransaction({
+        const txnData = {
           description: args.description,
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
-        });
+        };
+        Storage.addTransaction(txnData);
+        addTransactionToDB(txnData).catch(() => {});
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
@@ -129,12 +135,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           return '😅 I need at least a **person** name and **amount** for the lend/borrow entry!';
         }
         const debtType = args.debtType || 'lend';
-        Storage.addDebt({
+        const debtData = {
           person: args.person,
           amount: Math.abs(args.amount),
-          debt_type: debtType,
+          debtType: debtType,
           description: args.description || '',
-        });
+        };
+        Storage.addDebt({ ...debtData, debt_type: debtType });
+        addDebtToDB(debtData).catch(() => {});
         const quips = debtType === 'lend'
           ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
           : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
@@ -557,9 +565,9 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
         updateAssistant(toolResultText);
 
-        // Notify parent that data changed
+        // Notify parent that data changed (delay to allow DB writes to complete)
         if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in'))) {
-          onDataChanged();
+          setTimeout(() => onDataChanged(), 800);
         }
       } else if (!assistantContent) {
         updateAssistant("I couldn't process that. Try something like: *Add a task to study Math tomorrow*");
