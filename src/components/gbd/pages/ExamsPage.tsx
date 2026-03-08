@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Edit, Trash2 } from 'lucide-react';
+import ImageOCRImport from '../ImageOCRImport';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
@@ -67,6 +68,23 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     }
   };
 
+  const handleOCRImport = (items: any[]) => {
+    items.forEach((item: any) => {
+      Storage.addExam({
+        subject: item.subject || 'Unknown',
+        date: item.date || new Date().toISOString().split('T')[0],
+        time: item.time || '09:00',
+        room: item.room || '',
+        teacher: item.teacher || '',
+        credits: item.credits || 3,
+        grade: item.grade || '',
+        type: examTab,
+      });
+    });
+    Storage.addXP(items.length * 15);
+    navigateTo('exams');
+  };
+
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
@@ -74,9 +92,12 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           <h1 className="text-2xl font-bold text-foreground">Exam Tracker</h1>
           <p className="text-muted-foreground text-sm">Stay ahead of your academic schedule.</p>
         </div>
-        <div className="tab-group">
-          <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
-          <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ImageOCRImport mode="exams" onImport={handleOCRImport} />
+          <div className="tab-group">
+            <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
+            <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>
+          </div>
         </div>
       </div>
 

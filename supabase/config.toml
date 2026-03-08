@@ -1,1 +1,4 @@
 project_id = "rgnisvzleszbemmtxafa"
+
+[functions.ocr-extract]
+verify_jwt = false
