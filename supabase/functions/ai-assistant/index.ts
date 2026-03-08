@@ -127,6 +127,24 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "settle_debt",
+      description: "Mark a lend/borrow debt as settled (paid back) by person name. Use when user says settle, paid back, returned money, etc.",
+      parameters: {
+        type: "object",
+        properties: {
+          person: {
+            type: "string",
+            description: "The person whose debt to settle. Use 'all' to settle all debts.",
+          },
+        },
+        required: ["person"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 /** Safe JSON error response */
