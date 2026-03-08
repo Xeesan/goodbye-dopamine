@@ -150,6 +150,23 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     }
   };
 
+  const settleAllForPerson = async (personName: string, personDebts: any[]) => {
+    const confirmed = await showDialog({
+      title: 'Settle All Debts',
+      message: `Mark all ${personDebts.length} debt(s) with ${personName} as settled?`,
+      type: 'confirm',
+      confirmText: 'Settle All'
+    });
+    if (confirmed) {
+      personDebts.forEach(d => {
+        Storage.settleDebt(d.id);
+        settleDebtInDB(d.id);
+      });
+      refresh();
+      toast({ title: `All debts with ${personName} settled ✓`, description: `${personDebts.length} entries cleared` });
+    }
+  };
+
   const deleteGoal = async (id: string) => {
     const goal = goals.find((g: any) => g.id === id);
     const confirmed = await showDialog({ title: 'Delete Goal', message: 'Are you sure you want to delete this savings goal?', type: 'confirm', confirmText: 'Delete' });
