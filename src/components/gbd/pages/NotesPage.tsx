@@ -181,7 +181,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className="note-category-tag">{n.category || 'General'}</span>
                     {noteTags.slice(0, 3).map(tag => (
-                      <span key={tag} className="tag-pill text-[0.55rem]">{tag}</span>
+                      <span key={tag} className="tag-pill text-[0.6rem]">{tag}</span>
                     ))}
                     <span className="text-[0.6rem] text-muted-foreground ml-auto">{formatDate(n.updatedAt)}</span>
                   </div>
