@@ -98,6 +98,13 @@ export type Database = {
         Args: { desired_username: string }
         Returns: boolean
       }
+      increment_xp: {
+        Args: { delta: number }
+        Returns: {
+          level: number
+          total_xp: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
