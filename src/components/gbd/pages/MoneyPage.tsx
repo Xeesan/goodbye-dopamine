@@ -340,7 +340,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               <button
                 className={`py-3 text-sm font-semibold transition-all ${debtType === 'lend' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setDebtType('lend')}>
-                ↑ I Lent Money
+                {t('money.i_lent')}
               </button>
               <button
                 className={`py-3 text-sm font-semibold transition-all ${debtType === 'borrow' ? 'bg-destructive text-destructive-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
