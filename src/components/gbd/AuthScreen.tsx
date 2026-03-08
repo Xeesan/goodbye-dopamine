@@ -164,7 +164,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-5 overflow-y-auto" style={{
+    <div className="fixed inset-0 flex items-start justify-center overflow-y-auto py-5 px-5" style={{
       background: `radial-gradient(ellipse at top left, hsl(187 82% 53% / 0.06) 0%, transparent 50%),
         radial-gradient(ellipse at bottom right, hsl(263 70% 76% / 0.06) 0%, transparent 50%),
         hsl(var(--bg-primary))`
