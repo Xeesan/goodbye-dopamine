@@ -180,7 +180,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
                 <Icon className="w-4 h-4" />
               </div>
-              <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-1">{stat.label}</div>
+              <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground mb-1">{stat.label}</div>
               <div className="text-xl font-bold text-foreground">{stat.value}</div>
             </div>
           );
