@@ -525,6 +525,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
     // Push newer local debts to DB
     for (const d of toUpload) {
       await supabase.from('user_debts').update({
+        debt_type: d.debtType === 'borrow' ? 'borrow' : 'lend',
         settled: d.settled,
         settled_date: d.settledDate || null,
       }).eq('id', d.id).eq('user_id', userId);
@@ -532,9 +533,10 @@ export async function syncDebtsFromDB(): Promise<any[]> {
 
     // Push local-only
     for (const d of localOnly) {
+      const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
       const { data: dd } = await supabase.from('user_debts').insert({
         user_id: userId,
-        debt_type: d.debtType || 'lend',
+        debt_type: debtTypeValue,
         person: d.person,
         amount: d.amount,
         description: d.description || '',
@@ -559,9 +561,10 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
   if (!userId) return null;
 
   try {
+    const debtTypeValue = debt.debtType === 'borrow' ? 'borrow' : 'lend';
     const { data, error } = await supabase.from('user_debts').insert({
       user_id: userId,
-      debt_type: debt.debtType || 'lend',
+      debt_type: debtTypeValue,
       person: debt.person,
       amount: debt.amount,
       description: debt.description || '',
