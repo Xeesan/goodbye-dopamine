@@ -57,10 +57,10 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
     if (el) { el.value = name; el.focus(); }
   };
 
-  // Hydrate from DB on mount
+  // Hydrate from DB on mount and when refreshKey changes (e.g. after AI adds entries)
   useEffect(() => {
     Promise.all([syncTransactionsFromDB(), syncDebtsFromDB()]).then(() => refresh());
-  }, []);
+  }, [refreshKey]);
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
