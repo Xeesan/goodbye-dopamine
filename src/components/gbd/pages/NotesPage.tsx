@@ -47,7 +47,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
       Storage.updateNote(editingId, { title, content, category: cat });
     } else {
       Storage.addNote({ title, content, category: cat });
-      Storage.addXP(10);
+      addXP(10);
     }
     setShowModal(false);
     setEditingId(null);

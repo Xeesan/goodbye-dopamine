@@ -46,6 +46,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const audioNodesRef = useRef<any[]>([]);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const sessions = Storage.getFocusSessions();
   const totalMin = sessions.reduce((sum: number, s: any) => sum + (s.duration || 0), 0);

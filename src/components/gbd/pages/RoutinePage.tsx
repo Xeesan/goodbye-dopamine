@@ -52,7 +52,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         Storage.addPeriod(day, { subject: item.subject || 'Unknown', startTime: item.startTime || '09:00', endTime: item.endTime || '10:00', room: item.room || '' });
       }
     });
-    Storage.addXP(items.length * 5);
+    addXP(items.length * 5);
     navigateTo('routine');
   };
 

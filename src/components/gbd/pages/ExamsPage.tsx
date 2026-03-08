@@ -89,7 +89,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         type: examTab,
       });
     });
-    Storage.addXP(items.length * 15);
+    addXP(items.length * 15);
     navigateTo('exams');
   };
 

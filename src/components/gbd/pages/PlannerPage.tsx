@@ -34,7 +34,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
 
   const moveTask = (id: string, status: string) => {
     Storage.updateTask(id, { status });
-    if (status === 'done') Storage.addXP(20);
+    if (status === 'done') addXP(20);
     navigateTo('planner');
   };
 

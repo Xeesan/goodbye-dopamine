@@ -66,7 +66,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const initialAmount = parseFloat((document.getElementById('goal-initial') as HTMLInputElement)?.value) || 0;
     const targetDate = (document.getElementById('goal-date') as HTMLInputElement)?.value;
     Storage.addSavingsGoal({ title, targetAmount, initialAmount, targetDate });
-    Storage.addXP(10);
+    addXP(10);
     navigateTo('money');
   };
 

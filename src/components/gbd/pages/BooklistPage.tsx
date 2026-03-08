@@ -118,7 +118,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     const updates: any = { status };
     if (status === 'finished' && book?.pages) updates.currentPage = book.pages;
     Storage.updateBook(id, updates);
-    if (status === 'finished') Storage.addXP(25);
+    if (status === 'finished') addXP(25);
     refresh();
   };
 

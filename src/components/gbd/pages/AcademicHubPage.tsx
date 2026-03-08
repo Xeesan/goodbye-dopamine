@@ -85,7 +85,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     }
     const gpa = GRADE_MAP[grade] ?? 0;
     Storage.addCourse(semId, { name, grade, gpa, credits });
-    Storage.addXP(10);
+    addXP(10);
     refresh();
     setShowAddCourse(null);
   };
