@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2 } from 'lucide-react';
 import Tesseract from 'tesseract.js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageOCRImportProps {
   mode: 'routine' | 'exams';
@@ -42,13 +43,19 @@ const STORAGE_KEY = 'gbd_ocr_config';
 const loadConfig = (): { ocrMode: OcrMode; api: ApiConfig } => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Never load apiKey from storage - user must re-enter each session
+      return { ...parsed, api: { ...parsed.api, apiKey: '' } };
+    }
   } catch {}
   return { ocrMode: 'offline', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
 };
 
 const saveConfig = (ocrMode: OcrMode, api: ApiConfig) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ocrMode, api }));
+  // Strip API key before persisting - never store secrets in localStorage
+  const { apiKey, ...safeApi } = api;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ocrMode, api: { ...safeApi, apiKey: '' } }));
 };
 
 const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: ImageOCRImportProps) => {
@@ -112,59 +119,24 @@ Return ONLY a valid JSON array of objects. No markdown, no explanation.
 If you cannot read anything, return an empty array: []`;
   };
 
-  const processOnlineGemini = async (base64: string): Promise<any[]> => {
-    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiConfig.apiKey,
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: getSystemPrompt() + '\n\nExtract all data from this image:' },
-            { inline_data: { mime_type: 'image/jpeg', data: base64 } },
-          ],
-        }],
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API error (${res.status}): ${errText.slice(0, 200)}`);
-    }
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
-  };
-
-  const processOnlineOpenAI = async (base64: string): Promise<any[]> => {
-    const res = await fetch(apiConfig.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiConfig.apiKey}`,
-      },
-      body: JSON.stringify({
+  const processOnlineViaEdge = async (base64: string): Promise<any[]> => {
+    const { data, error } = await supabase.functions.invoke('ocr-extract', {
+      body: {
+        provider: apiConfig.provider,
+        apiKey: apiConfig.apiKey,
         model: apiConfig.model,
-        messages: [
-          { role: 'system', content: getSystemPrompt() },
-          { role: 'user', content: [
-            { type: 'text', text: 'Extract all data from this image:' },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
-          ]},
-        ],
-      }),
+        endpoint: apiConfig.endpoint,
+        base64,
+        systemPrompt: getSystemPrompt(),
+      },
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`OpenAI API error (${res.status}): ${errText.slice(0, 200)}`);
+    if (error) {
+      throw new Error(error.message || 'Edge function error');
     }
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content || '[]';
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+    return data?.items || [];
   };
 
   // -- Helpers --
@@ -310,12 +282,7 @@ If you cannot read anything, return an empty array: []`;
         }
         setLoadingMsg('Sending to AI...');
         const base64 = preview.split(',')[1];
-        let items: any[];
-        if (apiConfig.provider === 'gemini') {
-          items = await processOnlineGemini(base64);
-        } else {
-          items = await processOnlineOpenAI(base64);
-        }
+        const items = await processOnlineViaEdge(base64);
         const arr = Array.isArray(items) ? items : [];
         if (arr.length === 0) {
           setError('No data could be extracted. Try a clearer photo.');
