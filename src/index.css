@@ -885,3 +885,33 @@ body {
     @apply border-border;
   }
 }
+
+/* Silk shimmer animation for toast notifications */
+@keyframes toast-silk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.toast-silk::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.06) 25%,
+    hsl(var(--primary) / 0.12) 50%,
+    hsl(var(--primary) / 0.06) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: toast-silk-shimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.toast-silk > * {
+  position: relative;
+  z-index: 1;
+}
