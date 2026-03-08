@@ -88,12 +88,13 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
       return;
     }
     const pages = parseInt((document.getElementById('book-pages') as HTMLInputElement)?.value) || 0;
+    const currentPage = parseInt((document.getElementById('book-current-page') as HTMLInputElement)?.value) || 0;
     const notes = (document.getElementById('book-notes') as HTMLTextAreaElement)?.value.trim();
 
     if (editingId) {
-      Storage.updateBook(editingId, { title, author, genre: newGenre, pages, rating: newRating, notes, status: newStatus });
+      Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
     } else {
-      Storage.addBook({ title, author, genre: newGenre, pages, rating: newRating, notes, status: newStatus });
+      Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
       Storage.addXP(10);
     }
     setShowModal(false);
@@ -111,8 +112,18 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   };
 
   const moveBook = (id: string, status: string) => {
-    Storage.updateBook(id, { status });
+    const book = books.find((b: any) => b.id === id);
+    const updates: any = { status };
+    if (status === 'finished' && book?.pages) updates.currentPage = book.pages;
+    Storage.updateBook(id, updates);
     if (status === 'finished') Storage.addXP(25);
+    refresh();
+  };
+
+  const updateProgress = (id: string, currentPage: number) => {
+    const book = books.find((b: any) => b.id === id);
+    const maxPage = book?.pages || 9999;
+    Storage.updateBook(id, { currentPage: Math.max(0, Math.min(currentPage, maxPage)) });
     refresh();
   };
 
@@ -230,8 +241,17 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                         color: 'hsl(var(--purple))',
                       }}>{book.genre || 'General'}</span>
                       {book.rating > 0 && <StarRating rating={book.rating} onChange={() => {}} />}
-                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.pages}p</span>}
+                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
                     </div>
+                    {/* Progress bar on card */}
+                    {book.pages > 0 && book.status === 'reading' && (
+                      <div className="mt-2">
+                        <div className="xp-bar !h-1.5">
+                          <div className="xp-bar-fill" style={{ width: `${Math.min(100, Math.round(((book.currentPage || 0) / book.pages) * 100))}%` }} />
+                        </div>
+                        <div className="text-[0.55rem] text-muted-foreground mt-0.5 text-right">{Math.round(((book.currentPage || 0) / book.pages) * 100)}%</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -265,10 +285,43 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                   color: 'hsl(var(--purple))',
                 }}>{selectedBook.genre || 'General'}</span>
                 {selectedBook.pages > 0 && (
-                  <span className="text-xs text-muted-foreground">{selectedBook.pages} pages</span>
+                  <span className="text-xs text-muted-foreground">{selectedBook.currentPage || 0} / {selectedBook.pages} pages</span>
                 )}
                 <span className="text-xs text-muted-foreground">Added {formatDate(selectedBook.addedAt)}</span>
               </div>
+
+              {/* Reading Progress */}
+              {selectedBook.pages > 0 && (
+                <div className="mb-5">
+                  <label className="form-label">READING PROGRESS</label>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex-1">
+                      <div className="xp-bar !h-3">
+                        <div className="xp-bar-fill" style={{ width: `${Math.min(100, Math.round(((selectedBook.currentPage || 0) / selectedBook.pages) * 100))}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-sm font-bold text-primary shrink-0">{Math.round(((selectedBook.currentPage || 0) / selectedBook.pages) * 100)}%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[0.65rem] font-semibold text-muted-foreground shrink-0">PAGE</label>
+                    <input
+                      type="number"
+                      className="input-simple !py-1.5 !px-3 !text-sm w-20"
+                      min={0}
+                      max={selectedBook.pages}
+                      value={selectedBook.currentPage || 0}
+                      onChange={e => updateProgress(selectedBook.id, parseInt(e.target.value) || 0)}
+                    />
+                    <span className="text-xs text-muted-foreground">of {selectedBook.pages}</span>
+                    {selectedBook.currentPage < selectedBook.pages && (
+                      <button className="btn-outline !py-1 !px-2.5 !text-[0.65rem]" onClick={() => updateProgress(selectedBook.id, (selectedBook.currentPage || 0) + 1)}>+1</button>
+                    )}
+                    {selectedBook.pages > 10 && selectedBook.currentPage < selectedBook.pages && (
+                      <button className="btn-outline !py-1 !px-2.5 !text-[0.65rem]" onClick={() => updateProgress(selectedBook.id, Math.min(selectedBook.pages, (selectedBook.currentPage || 0) + 10))}>+10</button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Rating */}
               {selectedBook.rating > 0 && (
@@ -346,9 +399,13 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">PAGES</label>
+                  <label className="form-label">TOTAL PAGES</label>
                   <input type="number" id="book-pages" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.pages || ''} />
                 </div>
+              </div>
+              <div>
+                <label className="form-label">CURRENT PAGE</label>
+                <input type="number" id="book-current-page" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.currentPage || 0} />
               </div>
               <div>
                 <label className="form-label">STATUS</label>
