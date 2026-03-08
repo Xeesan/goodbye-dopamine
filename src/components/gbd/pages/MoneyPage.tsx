@@ -268,11 +268,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
             const now = new Date();
             const start = parseISO(semesterBudget.startDate);
-            const end = parseISO(semesterBudget.endDate);
-            const totalMonths = Math.max(1, Math.ceil(differenceInDays(end, start) / 30));
+            const semMonths = semesterBudget.semesterMonths || 6;
+            const end = addMonths(start, semMonths);
             const remainingDays = Math.max(0, differenceInDays(end, now));
             const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
             const isActive = now >= start && now <= end;
+            const elapsedMonths = Math.max(0, Math.min(semMonths, Math.floor(differenceInDays(now, start) / 30)));
+            const remainingMonths = Math.max(0, semMonths - elapsedMonths);
 
             // Fee tracking
             const installments: Installment[] = semesterBudget.installments || [];
