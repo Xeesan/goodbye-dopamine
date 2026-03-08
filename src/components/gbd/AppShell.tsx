@@ -27,14 +27,19 @@ interface AppShellProps {
 
 const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    // Default open on desktop
+    if (typeof window !== 'undefined') return window.innerWidth >= 1024;
+    return false;
+  });
   const [refreshKey, setRefreshKey] = useState(0);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
-    setSidebarOpen(false);
+    // Close sidebar on mobile only
+    if (window.innerWidth < 1024) setSidebarOpen(false);
     setRefreshKey(k => k + 1);
   }, []);
 
@@ -72,7 +77,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
             onLogout={onLogout}
             isOpen={sidebarOpen}
           />
-          <main className="flex-1 flex flex-col overflow-hidden">
+          <main className="flex-1 flex flex-col overflow-hidden min-w-0">
             <TopHeader
               onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
               onNavigate={navigateTo}
@@ -81,8 +86,10 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               theme={theme}
               onToggleTheme={toggleTheme}
             />
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6" key={refreshKey}>
-              {renderPage()}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8" key={refreshKey}>
+              <div className="max-w-[1200px] mx-auto w-full">
+                {renderPage()}
+              </div>
             </div>
           </main>
         </div>
