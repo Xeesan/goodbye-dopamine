@@ -105,8 +105,30 @@ export function getHealthReminders(): HealthReminder[] {
   });
 }
 
-export function saveHealthReminders(reminders: HealthReminder[]) {
+export async function saveHealthReminders(reminders: HealthReminder[]) {
   Storage.set(STORAGE_KEY, reminders);
+
+  // Sync to DB for background push notifications
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    for (const r of reminders) {
+      const { error } = await supabase
+        .from('health_reminder_settings')
+        .upsert({
+          user_id: user.id,
+          reminder_id: r.id,
+          enabled: r.enabled,
+          interval_minutes: r.intervalMinutes,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,reminder_id' });
+
+      if (error) console.error('Failed to sync reminder setting:', error);
+    }
+  } catch (e) {
+    console.error('Failed to sync health reminders to DB:', e);
+  }
 }
 
 async function showNotification(reminder: HealthReminder) {
