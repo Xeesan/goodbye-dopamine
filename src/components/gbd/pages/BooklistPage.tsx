@@ -42,6 +42,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   const [newGenre, setNewGenre] = useState('Fiction');
   const [newStatus, setNewStatus] = useState('reading');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const refresh = () => setBooks(Storage.getBooks());
 
