@@ -152,7 +152,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       </div>
 
       <div className="glass-card mb-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <div><label className="form-label">SUBJECT</label><input type="text" id="exam-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
           <div><label className="form-label">DATE</label><input type="date" id="exam-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
           <div><label className="form-label">TIME</label><input type="time" id="exam-time" className="input-simple" defaultValue="09:00" /></div>
