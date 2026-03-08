@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, X, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
 import { useI18n } from '@/hooks/useI18n';
