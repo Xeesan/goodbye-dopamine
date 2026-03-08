@@ -356,7 +356,7 @@ export async function clearRoutineInDB() {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_routine').delete().eq('user_id', userId);
+    await supabase.from('user_routine').update({ deleted_at: new Date().toISOString() }).eq('user_id', userId).is('deleted_at', null);
   } catch (e) {
     console.error('Clear routine DB error:', e);
   }
