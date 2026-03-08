@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2 } from 'lucide-re
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
+import { useI18n } from '@/hooks/useI18n';
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;
