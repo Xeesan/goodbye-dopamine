@@ -532,9 +532,10 @@ export async function syncDebtsFromDB(): Promise<any[]> {
 
     // Push local-only
     for (const d of localOnly) {
+      const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
       const { data: dd } = await supabase.from('user_debts').insert({
         user_id: userId,
-        debt_type: d.debtType || 'lend',
+        debt_type: debtTypeValue,
         person: d.person,
         amount: d.amount,
         description: d.description || '',
