@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
-import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen } from 'lucide-react';
+import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface AcademicHubPageProps {
