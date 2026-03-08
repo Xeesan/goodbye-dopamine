@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
@@ -26,7 +26,16 @@ const ALL_TILES = [
 
 const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
+  const [quoteKey, setQuoteKey] = useState(0);
+  const [spinning, setSpinning] = useState(false);
   const { xp } = useGamification();
+
+  const refreshQuote = useCallback(() => {
+    setSpinning(true);
+    setQuoteKey(k => k + 1);
+    setQuote(getRandomQuote());
+    setTimeout(() => setSpinning(false), 500);
+  }, []);
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const sessions = Storage.getFocusSessions();
@@ -92,12 +101,12 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <div className="relative z-10">
             <div className="flex items-center gap-2 text-primary text-[0.7rem] font-bold tracking-widest uppercase mb-2">
               <span className="text-lg">❝</span> DAILY INSPIRATION
-              <button className="ml-2 p-1 hover:bg-muted rounded" onClick={() => setQuote(getRandomQuote())}>
-                <RefreshCw className="w-3.5 h-3.5" />
+              <button className="ml-2 p-1 hover:bg-muted rounded transition-transform" onClick={refreshQuote}>
+                <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${spinning ? 'animate-spin' : ''}`} />
               </button>
             </div>
-            <div className="text-lg font-semibold leading-relaxed text-foreground">"{quote.text}"</div>
-            <div className="text-muted-foreground text-sm mt-2">— {quote.author}</div>
+            <div key={quoteKey} className="text-lg font-semibold leading-relaxed text-foreground animate-fade-in">"{quote.text}"</div>
+            <div key={`a-${quoteKey}`} className="text-muted-foreground text-sm mt-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>— {quote.author}</div>
           </div>
           <div className="absolute right-6 top-3 text-5xl opacity-10 text-primary z-10">❞</div>
         </div>
