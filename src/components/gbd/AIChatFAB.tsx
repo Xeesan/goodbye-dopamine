@@ -205,12 +205,12 @@ function executeToolCall(toolCall: ToolCall): string {
         }
         const recent = txns.slice(-10).reverse();
         const summary = recent.map((t: any) =>
-          `• ${t.type === 'income' ? '💚' : '🔴'} **${t.description}** — ${t.type === 'income' ? '+' : '-'}${t.amount}`
+          `- ${t.type === 'income' ? '💚' : '🔴'} **${t.description}** → ${t.type === 'income' ? '+' : '-'}${t.amount}`
         ).join('\n');
         if (txns.length === 0) return '💰 No transactions yet! Your wallet is a mystery to me 👀';
         const totalIncome = txns.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
         const totalExpense = txns.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + Number(t.amount), 0);
-        return `💰 **${txns.length} transaction${txns.length > 1 ? 's' : ''}** total (Income: **+${totalIncome}**, Expenses: **-${totalExpense}**, Net: **${totalIncome - totalExpense}**):\n${summary}`;
+        return `💰 **${txns.length} transaction${txns.length > 1 ? 's' : ''}**\n\n> Income: **+${totalIncome}** · Expenses: **-${totalExpense}** · Net: **${totalIncome - totalExpense}**\n\n${summary}`;
       }
 
       if (section === 'notes' || section === 'all') {
@@ -221,10 +221,10 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = notes.slice(0, 10).map((n: any) =>
-          `• **${n.title}**${n.content ? ` — ${n.content.slice(0, 50)}${n.content.length > 50 ? '...' : ''}` : ''}`
+          `- **${n.title}**${n.content ? ` — _${n.content.slice(0, 40)}${n.content.length > 40 ? '…' : ''}_` : ''}`
         ).join('\n');
         if (notes.length === 0) return '📝 No notes found! Your brain is either empty or you haven\'t written things down yet 😄';
-        return `📝 You\'ve got **${notes.length} note${notes.length > 1 ? 's' : ''}**:\n${summary}`;
+        return `📝 **${notes.length} note${notes.length > 1 ? 's' : ''}:**\n\n${summary}`;
       }
 
       if (section === 'debts' || section === 'all') {
