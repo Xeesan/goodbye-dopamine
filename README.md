@@ -9,10 +9,20 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Supabase-Backend-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/PWA-Installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Vite-Build-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+</p>
+
+<p align="center">
   <a href="https://goodbye-dopamine.lovable.app">Live App</a> · 
   <a href="#features">Features</a> · 
   <a href="#tech-stack">Tech Stack</a> · 
-  <a href="#getting-started">Getting Started</a>
+  <a href="#getting-started">Getting Started</a> · 
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
