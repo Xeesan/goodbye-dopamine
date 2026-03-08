@@ -502,28 +502,32 @@ export async function syncDebtsFromDB(): Promise<any[]> {
 
     if (remoteDebts.length === 0 && localDebts.length > 0) {
       for (const d of localDebts) {
-        await supabase.from('user_debts').insert({
+        const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
+        const { data: dd } = await supabase.from('user_debts').insert({
           user_id: userId,
-          debt_type: d.debtType || 'lend',
+          debt_type: debtTypeValue,
           person: d.person,
           amount: d.amount,
           description: d.description || '',
           date: d.date || '',
           settled: d.settled || false,
           settled_date: d.settledDate || null,
-        });
+        }).select('id').single();
+        if (dd?.id) d.id = dd.id;
       }
+      Storage.setDebts(localDebts);
       return localDebts;
     }
 
-    // LWW merge
+    // When remote data exists, it is the source of truth.
+    // Only merge local items that have DB UUIDs (no underscore in id).
+    // Discard local-only items (with '_' ids) — they are stale cache duplicates.
     const localWithDbIds = localDebts.filter(d => !String(d.id).includes('_'));
-    const localOnly = localDebts.filter(d => String(d.id).includes('_'));
-    const remoteMap = new Map(remoteDebts.map(d => [String(d.id), d]));
 
     const { merged, toUpload } = lwwMerge(localWithDbIds, remoteDebts, (d) => d.updatedAt || d.date || '1970-01-01');
 
     // Always trust remote for immutable fields (debtType, person, amount)
+    const remoteMap = new Map(remoteDebts.map(d => [String(d.id), d]));
     for (const m of merged) {
       const remote = remoteMap.get(String(m.id));
       if (remote) {
@@ -533,7 +537,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       }
     }
 
-    // Push newer local debts to DB
+    // Push newer local settled-status to DB (only mutable fields)
     for (const d of toUpload) {
       await supabase.from('user_debts').update({
         settled: d.settled,
@@ -541,23 +545,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       }).eq('id', d.id).eq('user_id', userId);
     }
 
-    // Push local-only
-    for (const d of localOnly) {
-      const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
-      const { data: dd } = await supabase.from('user_debts').insert({
-        user_id: userId,
-        debt_type: debtTypeValue,
-        person: d.person,
-        amount: d.amount,
-        description: d.description || '',
-        date: d.date || '',
-        settled: d.settled || false,
-        settled_date: d.settledDate || null,
-      }).select('id').single();
-      if (dd?.id) d.id = dd.id;
-    }
-
-    const finalDebts = [...merged, ...localOnly];
+    const finalDebts = merged;
     Storage.setDebts(finalDebts);
     return finalDebts;
   } catch (e) {
