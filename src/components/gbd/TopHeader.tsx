@@ -11,15 +11,15 @@ const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
   const [showNotif, setShowNotif] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-6 h-[60px] min-h-[60px] relative" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+    <header className="grid grid-cols-3 items-center px-6 h-[60px] min-h-[60px] relative" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
       <button className="hamburger-btn" onClick={onToggleSidebar}>
         <Menu className="w-5 h-5" />
       </button>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Calendar className="w-4 h-4" />
         <span>{formatDateShort(new Date())}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
           <Bell className="w-5 h-5" />
         </button>
