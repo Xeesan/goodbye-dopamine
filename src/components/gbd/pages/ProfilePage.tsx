@@ -9,7 +9,7 @@ interface ProfilePageProps {
   refreshKey: number;
 }
 
-const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
+const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   const settings = Storage.getSettings();
   const { showDialog } = useDialog();
 
