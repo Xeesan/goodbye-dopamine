@@ -59,6 +59,7 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
     if (!user) return;
     await supabase.from('notifications').delete().eq('user_id', user.id);
     setNotifications([]);
+    window.dispatchEvent(new Event('notifications-updated'));
     toast({ title: t('notifications.clear_all') });
   };
 
