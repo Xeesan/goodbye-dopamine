@@ -53,6 +53,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
     addXP(5);
+    // Clear form fields
+    (document.getElementById('debt-person') as HTMLInputElement).value = '';
+    (document.getElementById('debt-amount') as HTMLInputElement).value = '';
+    (document.getElementById('debt-description') as HTMLInputElement).value = '';
+    (document.getElementById('debt-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+    // Force re-render without navigating away
+    setDebtType(prev => prev);
     navigateTo('money');
   };
 
