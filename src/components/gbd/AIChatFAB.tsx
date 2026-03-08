@@ -33,14 +33,14 @@ function buildContext() {
     }
     return {
       taskCount: tasks.length,
-      tasks: tasks.map((t: any) => ({ title: t.title, date: t.date, priority: t.priority, status: t.status })),
+      tasks: tasks.map((t: any) => ({ id: t.id, title: t.title, date: t.date, priority: t.priority, status: t.status })),
       examCount: exams.length,
-      exams: exams.map((e: any) => ({ subject: e.subject, date: e.date, time: e.time })),
+      exams: exams.map((e: any) => ({ id: e.id, subject: e.subject, date: e.date, time: e.time })),
       routineSummary,
       transactionCount: transactions.length,
-      recentTransactions: transactions.map((t: any) => ({ description: t.description, amount: t.amount, type: t.type })),
+      recentTransactions: transactions.map((t: any) => ({ id: t.id, description: t.description, amount: t.amount, type: t.type })),
       noteCount: notes.length,
-      notes: notes.map((n: any) => ({ title: n.title, preview: n.content?.slice(0, 50) })),
+      notes: notes.map((n: any) => ({ id: n.id, title: n.title, preview: n.content?.slice(0, 50) })),
     };
   } catch {
     return {};
