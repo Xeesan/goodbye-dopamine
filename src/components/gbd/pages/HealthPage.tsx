@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
