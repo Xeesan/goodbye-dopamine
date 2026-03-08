@@ -476,6 +476,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       .from('user_debts')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: true });
 
     if (error) {
