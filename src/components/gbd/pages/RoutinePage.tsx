@@ -32,7 +32,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     const endTime = (document.getElementById('period-end') as HTMLInputElement)?.value;
     const room = (document.getElementById('period-room') as HTMLInputElement)?.value.trim();
     Storage.addPeriod(selectedDay, { subject, startTime, endTime, room });
-    Storage.addXP(5);
+    addXP(5);
     setShowModal(false);
     navigateTo('routine');
   };
