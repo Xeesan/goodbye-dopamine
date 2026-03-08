@@ -23,6 +23,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   const saveFavorites = (contacts: string[]) => {
