@@ -231,7 +231,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
               <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Customize Quick Tiles</h3>
               <p className="text-sm text-muted-foreground mb-4">Toggle which tiles appear on your dashboard</p>
 
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-2 px-2">
                 {tileDialog.tiles.map(tile => {
                   const Icon = tile.icon;
                   const isOn = tileEnabled.includes(tile.id);
