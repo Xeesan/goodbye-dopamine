@@ -15,6 +15,44 @@ interface ProfilePageProps {
   refreshKey: number;
 }
 
+const AiKeyInput = () => {
+  const [key, setKey] = useState(() => localStorage.getItem('gbd_gemini_api_key') || '');
+  const [show, setShow] = useState(false);
+  const save = () => {
+    const trimmed = key.trim();
+    if (trimmed) {
+      localStorage.setItem('gbd_gemini_api_key', trimmed);
+    } else {
+      localStorage.removeItem('gbd_gemini_api_key');
+    }
+    toast({ title: trimmed ? 'API key saved' : 'API key removed', description: trimmed ? 'Your Gemini key will be used for AI requests.' : 'Default AI will be used.' });
+  };
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-medium text-muted-foreground">Google Gemini API Key</label>
+      <div className="flex gap-2">
+        <div className="flex-1 relative">
+          <input
+            type={show ? 'text' : 'password'}
+            value={key}
+            onChange={e => setKey(e.target.value)}
+            placeholder="AIzaSy..."
+            className="w-full text-sm rounded-[var(--radius-sm)] px-3 py-2.5 pr-9 outline-none transition-colors"
+            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+          />
+          <button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+        <button onClick={save} className="btn-green px-4 text-sm">Save</button>
+      </div>
+      <p className="text-[0.65rem] text-muted-foreground">
+        Get a free key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="underline text-primary">Google AI Studio</a>
+      </p>
+    </div>
+  );
+};
+
 const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   const { showDialog } = useDialog();
   const { t } = useI18n();

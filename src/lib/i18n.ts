@@ -435,6 +435,8 @@ const translations = {
   'focus.most_urgent': { en: 'MOST URGENT', bn: 'সবচেয়ে জরুরি' },
   'focus.skip': { en: 'Skip', bn: 'স্কিপ' },
   'ai.placeholder': { en: 'Type a command...', bn: 'একটি কমান্ড লিখুন...' },
+  'profile.ai_settings': { en: 'AI Assistant Settings', bn: 'AI অ্যাসিস্ট্যান্ট সেটিংস' },
+  'profile.ai_settings_desc': { en: 'Use your own Gemini API key for free AI usage, or leave empty to use the default.', bn: 'ফ্রি AI ব্যবহারের জন্য আপনার নিজের Gemini API কী দিন, অথবা ডিফল্ট ব্যবহারের জন্য খালি রাখুন।' },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

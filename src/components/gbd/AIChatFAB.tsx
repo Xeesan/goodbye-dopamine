@@ -186,6 +186,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
     setLoading(true);
 
     try {
+      const customKey = localStorage.getItem('gbd_gemini_api_key') || '';
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
@@ -195,6 +196,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
         body: JSON.stringify({
           messages: allMessages.map(m => ({ role: m.role, content: m.content })),
           context: buildContext(),
+          ...(customKey ? { geminiApiKey: customKey } : {}),
         }),
       });
 

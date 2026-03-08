@@ -111,14 +111,24 @@ serve(async (req) => {
       systemContent += `\n\nUser's current data summary:\n${JSON.stringify(context).slice(0, 2000)}`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const apiUrl = useCustomGemini
+      ? `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (useCustomGemini) {
+      headers["Authorization"] = `Bearer ${geminiApiKey}`;
+    } else {
+      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+    }
+
+    const model = useCustomGemini ? "gemini-2.5-flash" : "google/gemini-3-flash-preview";
+
+    const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model,
         messages: [
           { role: "system", content: systemContent },
           ...trimmedMessages,
