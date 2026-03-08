@@ -197,11 +197,13 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
                       <div className="space-y-2 mb-3">
                         <div className="hidden sm:grid grid-cols-[1fr_80px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE</span><span>GRADE</span><span>CREDITS</span><span></span></div>
                         {s.courses.map((c: any) => (
-                          <div key={c.id} className="grid grid-cols-[1fr_80px_80px_40px] gap-2 items-center p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
+                          <div key={c.id} className="flex items-center justify-between gap-2 p-2 rounded-lg sm:grid sm:grid-cols-[1fr_80px_80px_40px]" style={{ background: 'hsl(var(--bg-input))' }}>
                             <span className="text-sm font-medium text-foreground truncate">{c.name}</span>
-                            <span className="text-sm font-semibold text-primary">{c.grade}</span>
-                            <span className="text-sm text-muted-foreground">{c.credits} cr</span>
-                            <button className="icon-btn !w-6 !h-6 !text-destructive" onClick={() => deleteCourse(s.id, c.id)}><Trash2 className="w-3 h-3" /></button>
+                            <div className="flex items-center gap-2 sm:contents shrink-0">
+                              <span className="text-sm font-semibold text-primary">{c.grade}</span>
+                              <span className="text-sm text-muted-foreground">{c.credits} cr</span>
+                              <button className="icon-btn !w-6 !h-6 !text-destructive" onClick={() => deleteCourse(s.id, c.id)}><Trash2 className="w-3 h-3" /></button>
+                            </div>
                           </div>
                         ))}
                       </div>
