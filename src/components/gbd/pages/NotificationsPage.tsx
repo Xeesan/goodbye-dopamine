@@ -44,6 +44,7 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
     if (!user) return;
     await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    window.dispatchEvent(new Event('notifications-updated'));
     toast({ title: t('notifications.mark_all_read') });
   };
 
