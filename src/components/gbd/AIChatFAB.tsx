@@ -56,7 +56,8 @@ function executeToolCall(toolCall: ToolCall): string {
           priority: args.priority || 'medium',
           status: 'todo',
         });
-        return `✅ Task "${args.title}" added${args.date ? ` for ${args.date}` : ''}.`;
+        const hype = ['Locked in! 🔥', 'On it, boss! 💪', 'Added, let\'s get it! ⚡', 'Done! You\'re being productive fr 🫡'][Math.floor(Math.random() * 4)];
+        return `${hype} Task **"${args.title}"** added${args.date ? ` for ${args.date}` : ''}. Now go crush it!`;
       }
 
       if (section === 'exam') {
@@ -70,7 +71,8 @@ function executeToolCall(toolCall: ToolCall): string {
           type: args.examType || 'exams',
           grade: '',
         });
-        return `✅ Exam "${args.subject}" added for ${args.date || 'today'}.`;
+        const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
+        return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
 
       if (section === 'routine') {
