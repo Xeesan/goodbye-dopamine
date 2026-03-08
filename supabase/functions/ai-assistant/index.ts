@@ -7,9 +7,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Rate limit: 60 requests per 60 seconds per user
-const RATE_LIMIT_MAX = 60;
-const RATE_LIMIT_WINDOW = 60;
+const MAX_BODY_BYTES = 50_000; // ~50KB max payload
+const MAX_MSG_LENGTH = 5000;
+const MAX_MESSAGES = 20;
+const PROVIDER_TIMEOUT_MS = 30_000;
 
 const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student productivity buddy inside the "Good Bye Dopamine" app.
 
@@ -127,24 +128,39 @@ const TOOLS = [
   },
 ];
 
+/** Safe JSON error response */
+function errorResponse(message: string, status: number, extra?: Record<string, string>) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json", ...extra },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only allow POST
+  if (req.method !== "POST") {
+    return errorResponse("Method not allowed", 405);
+  }
+
   try {
+    // ── Payload size guard ──
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > MAX_BODY_BYTES) {
+      return errorResponse("Request too large", 413);
+    }
+
     // ── Auth check ──
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errorResponse("Unauthorized", 401);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
@@ -154,59 +170,69 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errorResponse("Unauthorized", 401);
     }
 
-    // ── Parse and validate request ──
-    const { messages, context, geminiApiKey } = await req.json();
+    // ── Parse body with size limit ──
+    const rawBody = await req.text();
+    if (rawBody.length > MAX_BODY_BYTES) {
+      return errorResponse("Request too large", 413);
+    }
 
-    const useCustomGemini = !!geminiApiKey;
+    let body: any;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return errorResponse("Invalid JSON", 400);
+    }
+
+    const { messages, context, geminiApiKey } = body;
+    const useCustomGemini = typeof geminiApiKey === "string" && geminiApiKey.length > 0;
 
     if (!useCustomGemini && !LOVABLE_API_KEY && !OPENROUTER_API_KEY) {
-      throw new Error("No AI API key configured");
+      return errorResponse("AI service not configured. Please try again later.", 503);
     }
 
+    // ── Validate messages ──
     if (!Array.isArray(messages) || messages.length === 0) {
-      return new Response(JSON.stringify({ error: "Messages array is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errorResponse("Messages array is required", 400);
     }
 
     for (const msg of messages) {
-      if (typeof msg.content === 'string' && msg.content.length > 5000) {
-        return new Response(JSON.stringify({ error: "Message too long (max 5000 chars)" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (!msg || typeof msg.role !== "string" || typeof msg.content !== "string") {
+        return errorResponse("Invalid message format", 400);
+      }
+      if (!["user", "assistant", "system"].includes(msg.role)) {
+        return errorResponse("Invalid message role", 400);
+      }
+      if (msg.content.length > MAX_MSG_LENGTH) {
+        return errorResponse(`Message too long (max ${MAX_MSG_LENGTH} chars)`, 400);
       }
     }
 
-    const trimmedMessages = messages.slice(-20);
+    const trimmedMessages = messages.slice(-MAX_MESSAGES);
 
+    // ── Build system prompt ──
     let systemContent = SYSTEM_PROMPT;
-    if (context) {
+    if (context && typeof context === "object") {
       systemContent += `\n\nUser's current data summary:\n${JSON.stringify(context).slice(0, 2000)}`;
     }
 
-    const requestBody = JSON.stringify({
-      model: "placeholder",
+    const basePayload = {
       messages: [
         { role: "system", content: systemContent },
-        ...trimmedMessages,
+        ...trimmedMessages.map((m: any) => ({ role: m.role, content: m.content })),
       ],
       tools: TOOLS,
       stream: true,
-    });
+    };
 
-    // Helper to make an AI call with a specific provider
-    async function callProvider(provider: "custom" | "lovable" | "openrouter") {
+    // ── Provider call helper with timeout ──
+    async function callProvider(provider: "custom" | "lovable" | "openrouter"): Promise<Response> {
       let apiUrl: string;
       let authToken: string;
       let model: string;
+      const extraHeaders: Record<string, string> = {};
 
       if (provider === "custom") {
         apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -220,70 +246,94 @@ serve(async (req) => {
         apiUrl = "https://openrouter.ai/api/v1/chat/completions";
         authToken = OPENROUTER_API_KEY!;
         model = "google/gemini-2.5-flash";
+        extraHeaders["HTTP-Referer"] = "https://goodbye-dopamine.lovable.app";
+        extraHeaders["X-Title"] = "GoodBye Dopamine";
       }
 
-      const body = JSON.parse(requestBody);
-      body.model = model;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
 
-      return await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`,
-          ...(provider === "openrouter" ? { "HTTP-Referer": "https://goodbye-dopamine.lovable.app" } : {}),
-        },
-        body: JSON.stringify(body),
-      });
+      try {
+        return await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+            ...extraHeaders,
+          },
+          body: JSON.stringify({ ...basePayload, model }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
-    // ── Try providers with fallback ──
+    // ── Try providers with fallback chain ──
     let response: Response;
+    let usedProvider: string;
 
     if (useCustomGemini) {
+      usedProvider = "custom";
       response = await callProvider("custom");
     } else if (LOVABLE_API_KEY) {
-      response = await callProvider("lovable");
-      // Fallback to OpenRouter on rate limit
-      if (response.status === 429 && OPENROUTER_API_KEY) {
-        console.log("Lovable AI rate limited, falling back to OpenRouter");
+      usedProvider = "lovable";
+      try {
+        response = await callProvider("lovable");
+      } catch (e) {
+        // Network/timeout error on primary — try fallback
+        console.error("Lovable AI call failed:", e);
+        if (OPENROUTER_API_KEY) {
+          usedProvider = "openrouter";
+          response = await callProvider("openrouter");
+        } else {
+          return errorResponse("AI service temporarily unavailable. Please try again.", 503);
+        }
+      }
+      // Fallback on rate limit OR server errors
+      if ((response!.status === 429 || response!.status >= 500) && OPENROUTER_API_KEY) {
+        console.log(`Lovable AI returned ${response!.status}, falling back to OpenRouter`);
+        usedProvider = "openrouter";
         response = await callProvider("openrouter");
       }
     } else if (OPENROUTER_API_KEY) {
+      usedProvider = "openrouter";
       response = await callProvider("openrouter");
     } else {
-      throw new Error("No AI API key configured");
+      return errorResponse("AI service not configured", 503);
     }
 
-    if (!response.ok) {
-      const status = response.status;
+    // ── Handle upstream errors ──
+    if (!response!.ok) {
+      const status = response!.status;
+      // Consume body to avoid leaking connections
+      const responseBody = await response!.text().catch(() => "");
+      console.error(`AI provider (${usedProvider}) error: ${status}`, responseBody.slice(0, 500));
+
       if (status === 429) {
-        return new Response(JSON.stringify({ error: "All AI providers are rate limited. Please wait a moment and try again." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "10" },
-        });
+        return errorResponse("All AI providers are busy right now. Please wait a moment and try again.", 429, { "Retry-After": "15" });
       }
       if (status === 402) {
-        return new Response(JSON.stringify({ error: "AI usage limit reached. Please add credits to continue." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return errorResponse("AI usage limit reached. Please try again later.", 402);
       }
-      const t = await response.text();
-      console.error("AI error:", status, t);
-      return new Response(JSON.stringify({ error: "AI service unavailable" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (status === 401 || status === 403) {
+        return errorResponse("AI authentication error. Please check your configuration.", 500);
+      }
+      return errorResponse("AI service temporarily unavailable. Please try again.", 503);
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    // ── Stream response back to client ──
+    return new Response(response!.body, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
   } catch (e) {
     console.error("ai-assistant error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // Never leak internal error details to client
+    return errorResponse("Something went wrong. Please try again.", 500);
   }
 });
