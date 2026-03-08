@@ -205,7 +205,8 @@ const Storage = {
   },
   settleDebt(id: string) {
     if (!id) return;
-    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: new Date().toISOString() } : d);
+    const now = new Date().toISOString();
+    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: now, updatedAt: now } : d);
     this.setDebts(debts);
   },
 
