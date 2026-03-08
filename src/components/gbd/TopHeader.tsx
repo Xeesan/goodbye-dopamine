@@ -22,6 +22,11 @@ const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
         <span>{formatDateShort(new Date())}</span>
       </div>
       <div className="flex items-center justify-end gap-2">
+        {!isOnline && (
+          <span className="flex items-center gap-1 text-[0.65rem] font-semibold tracking-wider px-2 py-1 rounded-full text-warning" style={{ background: 'hsl(var(--warning) / 0.15)' }}>
+            <WifiOff className="w-3.5 h-3.5" /> OFFLINE
+          </span>
+        )}
         <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
           <Bell className="w-5 h-5" />
         </button>
