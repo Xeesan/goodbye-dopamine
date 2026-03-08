@@ -38,6 +38,12 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
 
+  // Run silent auto-backup on mount (once per 24h)
+  useEffect(() => {
+    const timer = setTimeout(() => { runAutoBackup().catch(() => {}); }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Sync sidebar state on resize (close on mobile, open on desktop)
   useEffect(() => {
     const handleResize = () => {
