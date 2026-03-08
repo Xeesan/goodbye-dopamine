@@ -314,6 +314,12 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
         </div>
 
         <div className="glass-card-accent">
+          <h3 className="font-semibold text-foreground mb-5 flex items-center gap-2"><Bot className="w-4 h-4" /> {t('profile.ai_settings' as any) || 'AI Assistant Settings'}</h3>
+          <p className="text-xs text-muted-foreground mb-3">{t('profile.ai_settings_desc' as any) || 'Use your own Gemini API key for free AI usage, or leave empty to use the default.'}</p>
+          <AiKeyInput />
+        </div>
+
+        <div className="glass-card-accent">
           <h3 className="font-semibold text-foreground mb-5">{t('profile.notifications')}</h3>
           <NotificationToggle />
         </div>
