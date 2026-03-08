@@ -133,6 +133,17 @@ Every productive action earns XP:
 
 ---
 
+## 🔒 Security
+
+- **Row-Level Security (RLS)** on all database tables — users can only access their own data
+- **Server-side XP increments** via `SECURITY DEFINER` Postgres function — no client-side score manipulation
+- **JWT verification** on edge functions using `getUser()` for cryptographic token validation
+- **Avatar upload allowlist** — only `jpeg`, `png`, `gif`, `webp` accepted; SVG/scripts blocked
+- **Private storage buckets** with short-lived signed URLs for file access
+- **Email OTP verification** required on signup — no anonymous accounts
+
+---
+
 ## 🛠 Tech Stack
 
 | Layer | Technology |
