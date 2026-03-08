@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import appIcon from '@/assets/icon.svg';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
-  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'verify'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -12,6 +12,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
+  const [otp, setOtp] = useState('');
 
   const showToast = (msg: string, type: 'error' | 'success' = 'error') => {
     setToast({ msg, type });
@@ -30,7 +31,12 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
     });
     setLoading(false);
     if (error) {
-      showToast(error.message);
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        showToast('Please verify your email first. Check your inbox for the OTP code.');
+        setMode('verify');
+      } else {
+        showToast(error.message);
+      }
     } else {
       onAuthSuccess();
     }
@@ -45,7 +51,6 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
 
     setLoading(true);
 
-    // Check if username is taken using secure function
     const { data: isAvailable, error: checkError } = await supabase
       .rpc('check_username_available', { desired_username: username.trim().toLowerCase() });
 
@@ -68,15 +73,49 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
     });
     setLoading(false);
     if (error) {
-      // Handle unique constraint violation on username
       if (error.message.toLowerCase().includes('unique') || error.message.toLowerCase().includes('duplicate') || error.message.toLowerCase().includes('username')) {
         showToast('Username is already taken');
       } else {
         showToast(error.message);
       }
     } else {
-      showToast('Account created! Welcome aboard 🎉', 'success');
+      showToast('Verification code sent to your email! 📬', 'success');
+      setMode('verify');
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const code = otp.trim();
+    if (code.length !== 6 || !/^\d+$/.test(code)) {
+      showToast('Please enter the 6-digit code from your email');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code,
+      type: 'signup',
+    });
+    setLoading(false);
+    if (error) {
+      showToast(error.message);
+    } else {
+      showToast('Email verified! Welcome aboard 🎉', 'success');
       onAuthSuccess();
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+    });
+    setLoading(false);
+    if (error) {
+      showToast(error.message);
+    } else {
+      showToast('New code sent! Check your inbox 📬', 'success');
     }
   };
 
@@ -99,6 +138,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
     if (e.key === 'Enter') {
       if (mode === 'login') handleLogin();
       else if (mode === 'signup') handleSignup();
+      else if (mode === 'verify') handleVerifyOtp();
       else handleForgotPassword();
     }
   };
@@ -208,6 +248,47 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
                 Already have an account?{' '}
                 <button className="text-primary font-semibold hover:underline" onClick={() => setMode('login')}>Sign in</button>
               </p>
+            </>
+          )}
+
+          {mode === 'verify' && (
+            <>
+              <div className="text-center mb-2">
+                <ShieldCheck className="w-10 h-10 text-primary mx-auto mb-2" />
+                <h2 className="text-xl font-bold text-foreground mb-1">Verify your email</h2>
+                <p className="text-muted-foreground text-sm">Enter the 6-digit code sent to <span className="text-foreground font-medium">{email}</span></p>
+              </div>
+
+              <div className="mt-6">
+                <label className="form-label">VERIFICATION CODE</label>
+                <div className="search-input-wrap">
+                  <ShieldCheck className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    autoComplete="one-time-code"
+                    className="text-center tracking-[0.5em] text-lg font-bold"
+                  />
+                </div>
+              </div>
+
+              <button className="btn-primary-auth mt-6" onClick={handleVerifyOtp} disabled={loading}>
+                {loading ? <span className="animate-pulse">Verifying...</span> : <>Verify & Continue <ArrowRight className="w-4 h-4" /></>}
+              </button>
+
+              <div className="text-center mt-4 space-y-2">
+                <button className="text-xs text-primary hover:underline font-medium" onClick={handleResendOtp} disabled={loading}>
+                  Resend code
+                </button>
+                <p className="text-muted-foreground text-xs">
+                  Wrong email?{' '}
+                  <button className="text-primary font-semibold hover:underline" onClick={() => { setMode('signup'); setOtp(''); }}>Go back</button>
+                </p>
+              </div>
             </>
           )}
 
