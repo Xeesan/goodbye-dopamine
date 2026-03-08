@@ -19,7 +19,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
         <Calendar className="w-4 h-4" />
         <span>{formatDateShort(new Date())}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
           <Bell className="w-5 h-5" />
         </button>
