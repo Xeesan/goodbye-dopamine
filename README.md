@@ -73,7 +73,7 @@ Every productive action earns XP:
 | Add a course | +10 |
 | Focus session | +duration (min 5) |
 
-**Level up every 100 XP.** XP is synced to the cloud via server-side atomic increments — tamper-proof and persistent across devices.
+**Level up every 100 XP.** XP is synced to the cloud via server-side atomic increments — tamper-proof and persistent across devices. A celebratory toast with your new rank title appears on every level-up.
 
 ---
 
