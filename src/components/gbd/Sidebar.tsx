@@ -78,7 +78,16 @@ const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarPro
       {/* Footer */}
       <div className="px-3 pb-4 mt-auto">
         <button onClick={() => onNavigate('profile')} className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-medium text-muted-foreground hover:text-foreground w-full transition-all duration-200">
-          <Settings className="w-5 h-5" />
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+          ) : (
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-extrabold" style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
+              color: 'hsl(var(--primary-foreground))',
+            }}>
+              {(user?.username || 'U')[0].toUpperCase()}
+            </div>
+          )}
           <div className="flex flex-col">
             <span className="text-sm font-medium text-foreground">{user?.name || user?.username || 'User'}</span>
             <span className="text-[0.65rem] text-muted-foreground">@{user?.username || '---'}</span>
