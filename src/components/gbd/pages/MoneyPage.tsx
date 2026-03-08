@@ -421,7 +421,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             </div>
             <div className="flex gap-3 justify-end mt-5">
               <button className={`${debtType === 'lend' ? 'btn-green' : 'btn-danger'} !min-w-[120px]`} onClick={addDebt}>
-                {debtType === 'lend' ? '↑ Save Lend' : '↓ Save Borrow'}
+                {debtType === 'lend' ? t('money.save_lend') : t('money.save_borrow')}
               </button>
             </div>
           </div>
