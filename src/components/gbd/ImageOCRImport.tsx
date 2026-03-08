@@ -283,6 +283,12 @@ If you cannot read anything, return an empty array: []`;
     setError(null);
 
     try {
+      if ((ocrMode === 'lovable' || ocrMode === 'online') && !navigator.onLine) {
+        setError('You are offline. Please switch to Offline mode or connect to the internet.');
+        setLoading(false);
+        return;
+      }
+
       if (ocrMode === 'lovable') {
         setLoadingMsg('Analyzing with AI...');
         const base64 = preview.split(',')[1];
