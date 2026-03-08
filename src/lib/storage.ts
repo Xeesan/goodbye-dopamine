@@ -86,7 +86,8 @@ const Storage = {
   addExam(exam: any) {
     if (!exam) return;
     const exams = this.getExams();
-    exams.push({ ...exam, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
+    const now = new Date().toISOString();
+    exams.push({ ...exam, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
     this.setExams(exams);
   },
   deleteExam(id: string) {
