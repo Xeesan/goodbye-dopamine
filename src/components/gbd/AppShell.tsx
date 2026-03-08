@@ -60,7 +60,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'reports': return <ReportsPage {...props} />;
       case 'notifications': return <NotificationsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
-      default: return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
+      default: return <DashboardPage {...props} user={user} />;
     }
   };
 
