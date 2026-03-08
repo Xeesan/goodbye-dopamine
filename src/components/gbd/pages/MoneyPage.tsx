@@ -123,8 +123,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addGoal = async () => {
     const title = (document.getElementById('goal-title') as HTMLInputElement)?.value.trim();
     const targetAmount = parseFloat((document.getElementById('goal-target') as HTMLInputElement)?.value);
-    if (!title || !targetAmount) {
-      await showDialog({ title: 'Missing Info', message: 'Please enter a goal title and target amount.', type: 'alert' });
+    if (!title || !targetAmount || isNaN(targetAmount) || targetAmount <= 0 || targetAmount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid goal title and target amount.', type: 'alert' });
       return;
     }
     const initialAmount = parseFloat((document.getElementById('goal-initial') as HTMLInputElement)?.value) || 0;
