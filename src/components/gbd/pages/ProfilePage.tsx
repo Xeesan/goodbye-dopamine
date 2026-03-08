@@ -331,6 +331,12 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
           </button>
         </div>
 
+        {/* Notifications */}
+        <div className="glass-card-accent">
+          <h3 className="font-semibold text-foreground mb-5">Notifications</h3>
+          <NotificationToggle />
+        </div>
+
         {/* Account */}
         <div className="glass-card-accent">
           <h3 className="font-semibold text-foreground mb-5">Account</h3>
