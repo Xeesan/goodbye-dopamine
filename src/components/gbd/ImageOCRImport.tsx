@@ -407,13 +407,15 @@ If you cannot read anything, return an empty array: []`;
                 Import {mode === 'routine' ? 'Routine' : 'Exams'} from Image
               </h2>
               <div className="flex items-center gap-1">
-                <button
-                  className="icon-btn !w-8 !h-8"
-                  onClick={() => setShowSettings(!showSettings)}
-                  title="OCR Settings"
-                >
-                  <Settings2 className="w-4 h-4" />
-                </button>
+                {ocrMode !== 'lovable' && (
+                  <button
+                    className="icon-btn !w-8 !h-8"
+                    onClick={() => setShowSettings(!showSettings)}
+                    title="OCR Settings"
+                  >
+                    <Settings2 className="w-4 h-4" />
+                  </button>
+                )}
                 <button className="icon-btn !w-8 !h-8" onClick={close}>
                   <X className="w-4 h-4" />
                 </button>
