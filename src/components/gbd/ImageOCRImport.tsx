@@ -350,9 +350,36 @@ If you cannot read anything, return an empty array: []`;
     }
   };
 
+  const validateRoutineItem = (item: any) => ({
+    day: String(item.day ?? '').toLowerCase().slice(0, 20),
+    subject: String(item.subject ?? 'Unknown').slice(0, 100),
+    startTime: String(item.startTime ?? '09:00').slice(0, 5),
+    endTime: String(item.endTime ?? '10:00').slice(0, 5),
+    room: String(item.room ?? '').slice(0, 50),
+  });
+
+  const validateExamItem = (item: any) => ({
+    subject: String(item.subject ?? 'Unknown Subject').slice(0, 100),
+    date: String(item.date ?? new Date().toISOString().split('T')[0]).slice(0, 10),
+    time: String(item.time ?? '09:00').slice(0, 5),
+    room: String(item.room ?? '').slice(0, 50),
+    teacher: String(item.teacher ?? '').slice(0, 100),
+    credits: Math.min(Math.max(parseInt(item.credits) || 3, 0), 20),
+    grade: String(item.grade ?? '').slice(0, 5),
+  });
+
   const confirmImport = () => {
     if (results && results.length > 0) {
-      onImport(results);
+      const validated = results.map(item =>
+        mode === 'routine' ? validateRoutineItem(item) : validateExamItem(item)
+      ).filter(item =>
+        mode === 'routine'
+          ? item.day && item.subject && item.subject !== 'Unknown'
+          : item.subject && item.subject !== 'Unknown Subject'
+      );
+      if (validated.length > 0) {
+        onImport(validated);
+      }
       close();
     }
   };
