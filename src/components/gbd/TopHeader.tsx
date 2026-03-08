@@ -58,6 +58,12 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
         </button>
         <button className="icon-btn relative" onClick={() => onNavigate('notifications')} aria-label="Notifications">
           <Bell className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[0.6rem] font-bold leading-none px-1"
+              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </button>
         <button className="icon-btn" onClick={() => onNavigate('profile')} aria-label="Profile">
           <User className="w-5 h-5" />
