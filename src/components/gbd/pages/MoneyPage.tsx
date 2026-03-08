@@ -516,9 +516,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             <div className="glass-card min-h-[100px]" style={{ opacity: 0.75 }}>
               <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ Settled History</h2>
               {historyDebts.slice().reverse().map((d: any) => (
-                <div key={d.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                <div key={d.id} className="flex items-center justify-between py-3.5 px-1" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                   <div className="flex items-center gap-3">
-                    <span className="text-base">☑️</span>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'hsl(var(--muted) / 0.5)' }}>
+                      ☑️
+                    </div>
                     <div>
                       <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">Settled</span></div>
                       <div className="text-[0.65rem] text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
@@ -526,7 +528,12 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-muted-foreground line-through text-sm">৳{d.amount.toLocaleString()}</span>
-                    <button className="text-destructive text-xs opacity-60 hover:opacity-100 transition-opacity" onClick={() => deleteDebt(d.id)}>✕</button>
+                    <button
+                      onClick={() => deleteDebt(d.id)}
+                      className="flex items-center gap-1 px-2 py-1.5 rounded-full text-[0.65rem] font-semibold transition-all hover:scale-105 active:scale-95"
+                      style={{ background: 'hsl(var(--destructive) / 0.12)', color: 'hsl(var(--destructive))' }}>
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
               ))}
