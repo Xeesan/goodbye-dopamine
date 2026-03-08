@@ -492,7 +492,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           {d.debtType === 'lend' ? '🔼' : '🔽'}
                         </div>
                         <div>
-                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? 'Lent' : 'Borrowed')}</div>
+                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? t('money.lent_label') : t('money.borrowed_label'))}</div>
                           <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
                         </div>
                       </div>
