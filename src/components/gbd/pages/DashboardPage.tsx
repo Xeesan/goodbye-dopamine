@@ -166,7 +166,7 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
             <Settings className="w-3 h-3" /> {t('common.customize')}
           </button>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
           {enabledTiles.map(tile => {
             const Icon = tile.icon;
             return (
@@ -223,7 +223,7 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mt-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mt-5">
         {[
           { label: t('dash.tasks'), value: completedTasks, icon: CheckSquare, color: 'hsl(var(--info))' },
           { label: t('dash.focus_time'), value: `${(totalFocusMin / 60).toFixed(1)}h`, icon: Clock, color: 'hsl(var(--primary))' },
