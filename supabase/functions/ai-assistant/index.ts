@@ -96,6 +96,29 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "delete_entry",
+      description: "Delete a specific task, exam, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
+      parameters: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: ["task", "exam", "transaction", "note", "debt"],
+            description: "Which section to delete from.",
+          },
+          identifier: {
+            type: "string",
+            description: "The name/title/subject/person to match against for deletion. Use the exact or partial name from user context.",
+          },
+        },
+        required: ["section", "identifier"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 serve(async (req) => {
