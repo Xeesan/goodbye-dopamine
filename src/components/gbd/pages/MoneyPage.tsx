@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search, Star, X } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
