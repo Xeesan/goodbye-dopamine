@@ -69,7 +69,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       }
 
       if (section === 'exam') {
-        Storage.addExam({
+        const examData = {
           subject: args.subject || 'Untitled',
           date: args.date || new Date().toISOString().split('T')[0],
           time: args.time || '09:00',
@@ -78,7 +78,9 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           credits: args.credits || 3,
           type: args.examType || 'exams',
           grade: '',
-        });
+        };
+        Storage.addExam(examData);
+        addExamToDB(examData).catch(() => {});
         const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
         return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
