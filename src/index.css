@@ -698,7 +698,7 @@ body {
   border: 1px solid hsl(var(--border-accent));
   border-radius: 12px;
   color: hsl(var(--primary));
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
