@@ -294,9 +294,24 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     const hasLocal = Object.values(localRoutine).some(arr => arr.length > 0);
 
     if (!hasRemote && hasLocal) {
+      // Check if all local items have DB IDs (no underscore) — means they were deleted remotely
+      const hasLocalOnlyItems = Object.values(localRoutine).some(arr =>
+        (arr as any[]).some(p => String(p.id).includes('_'))
+      );
+      if (!hasLocalOnlyItems) {
+        const emptyRoutine: Record<string, any[]> = {
+          monday: [], tuesday: [], wednesday: [], thursday: [],
+          friday: [], saturday: [], sunday: [],
+        };
+        Storage.setRoutine(emptyRoutine);
+        return emptyRoutine;
+      }
       await pushRoutineToDB(localRoutine, userId);
       return localRoutine;
     }
+
+    // Build remote ID set for reconciliation
+    const remoteIdSet = new Set((data || []).map(r => String(r.id)));
 
     // Merge per-day using LWW
     const mergedRoutine: Record<string, any[]> = {
@@ -305,7 +320,12 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     };
 
     for (const day of Object.keys(mergedRoutine)) {
-      const localPeriods = (localRoutine[day] || []).filter((p: any) => !String(p.id).includes('_'));
+      // Only keep local DB-id items that still exist in remote
+      const localPeriods = (localRoutine[day] || []).filter((p: any) => {
+        const id = String(p.id);
+        if (!id.includes('_')) return remoteIdSet.has(id);
+        return false;
+      });
       const remotePeriods = remoteRoutine[day] || [];
       const localOnly = (localRoutine[day] || []).filter((p: any) => String(p.id).includes('_'));
 
@@ -417,9 +437,18 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
 
     const localTxns = Storage.getTransactions();
 
-    if (remoteTxns.length === 0 && localTxns.length === 0) return [];
+    if (remoteTxns.length === 0 && localTxns.length === 0) {
+      Storage.setTransactions([]);
+      return [];
+    }
 
     if (remoteTxns.length === 0 && localTxns.length > 0) {
+      const hasLocalOnly = localTxns.some(t => String(t.id).includes('_'));
+      if (!hasLocalOnly) {
+        // All local txns have DB IDs but DB is empty → deleted remotely
+        Storage.setTransactions([]);
+        return [];
+      }
       for (const t of localTxns) {
         await supabase.from('user_transactions').insert({
           user_id: userId,
@@ -432,8 +461,14 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
       return localTxns;
     }
 
-    // LWW merge
-    const localWithDbIds = localTxns.filter(t => !String(t.id).includes('_'));
+    const remoteIdSet = new Set(remoteTxns.map(t => String(t.id)));
+
+    // LWW merge — only keep local DB-id items that still exist in remote
+    const localWithDbIds = localTxns.filter(t => {
+      const id = String(t.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
     const localOnly = localTxns.filter(t => String(t.id).includes('_'));
 
     const { merged } = lwwMerge(localWithDbIds, remoteTxns, (t) => t.updatedAt || t.date || '1970-01-01');
@@ -523,9 +558,17 @@ export async function syncDebtsFromDB(): Promise<any[]> {
 
     const localDebts = Storage.getDebts();
 
-    if (remoteDebts.length === 0 && localDebts.length === 0) return [];
+    if (remoteDebts.length === 0 && localDebts.length === 0) {
+      Storage.setDebts([]);
+      return [];
+    }
 
     if (remoteDebts.length === 0 && localDebts.length > 0) {
+      const hasLocalOnly = localDebts.some(d => String(d.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setDebts([]);
+        return [];
+      }
       for (const d of localDebts) {
         const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
         const { data: dd } = await supabase.from('user_debts').insert({

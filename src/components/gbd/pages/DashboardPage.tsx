@@ -51,18 +51,23 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
     syncExamsFromDB().then(() => setRealtimeTick(t => t + 1)).catch(() => {});
   }, [refreshKey]);
 
-  // Subscribe to realtime changes on user_exams
+  // Subscribe to realtime changes on user_exams (filtered by user)
   useEffect(() => {
+    if (!user?.id) return;
     const channel = supabase
       .channel('focus-exams-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_exams' }, (payload) => {
-        // Re-sync from DB when any exam changes
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_exams',
+        filter: `user_id=eq.${user.id}`,
+      }, () => {
         syncExamsFromDB().then(() => setRealtimeTick(t => t + 1)).catch(() => {});
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [user?.id]);
 
   // Compute ranked tasks for Focus Now (reactive to refreshKey + realtime)
   const rankedTasks = useMemo(() => getRankedTasks(), [refreshKey, realtimeTick]);

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
+  refreshKey?: number;
 }
 
 interface DayEvent {
@@ -17,7 +18,7 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAY_NAMES_MAP: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
 
-const UnifiedCalendarWidget = ({ navigateTo }: UnifiedCalendarWidgetProps) => {
+const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidgetProps) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -80,7 +81,7 @@ const UnifiedCalendarWidget = ({ navigateTo }: UnifiedCalendarWidgetProps) => {
     }
 
     return map;
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, refreshKey]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);
