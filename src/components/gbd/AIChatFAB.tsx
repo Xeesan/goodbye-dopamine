@@ -147,10 +147,10 @@ function executeToolCall(toolCall: ToolCall): string {
       return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, or **routine**!';
     }
 
-    return '❌ Unknown tool.';
+    return '🤔 Hmm, that one went over my head. Try again?';
   } catch (e) {
     console.error('Tool execution error:', e);
-    return '❌ Failed to process command.';
+    return '😅 Something went wrong on my end. Mind trying that again?';
   }
 }
 
