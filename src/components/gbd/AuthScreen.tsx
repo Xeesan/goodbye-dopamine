@@ -299,8 +299,13 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
               </button>
 
               <div className="text-center mt-4 space-y-2">
-                <button className="text-xs text-primary hover:underline font-medium" onClick={handleResendOtp} disabled={loading}>
-                  Resend code
+                <button
+                  className="text-xs font-medium transition-colors"
+                  onClick={handleResendOtp}
+                  disabled={loading || resendCooldown > 0}
+                  style={{ color: resendCooldown > 0 ? 'hsl(var(--muted-foreground))' : undefined }}
+                >
+                  {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
                 </button>
                 <p className="text-muted-foreground text-xs">
                   Wrong email?{' '}
