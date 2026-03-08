@@ -86,6 +86,19 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     }
   };
 
+  const clearAllExams = async () => {
+    const label = examTab === 'exams' ? 'exams' : 'assignments';
+    const confirmed = await showDialog({ title: `Clear All ${label}`, message: `Are you sure you want to delete ALL ${filtered.length} ${label}? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
+    if (confirmed) {
+      // Remove only items matching current tab type
+      const remaining = exams.filter(e => (e.type || 'exams') !== examTab);
+      Storage.setExams(remaining);
+      setEditingId(null);
+      refresh();
+      toast({ title: `All ${label} cleared`, description: `${filtered.length} item(s) removed` });
+    }
+  };
+
   const handleOCRImport = (items: any[]) => {
     items.forEach((item: any) => {
       Storage.addExam({
@@ -190,6 +203,13 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           );
         })}
       </div>
+      {filtered.length > 0 && (
+        <div className="mt-4 flex justify-center">
+          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllExams}>
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All {examTab === 'exams' ? 'Exams' : 'Assignments'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

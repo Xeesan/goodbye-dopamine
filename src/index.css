@@ -492,7 +492,7 @@ body {
   overflow-x: hidden;
   border-right: 1px solid hsl(var(--border));
   transition: transform 0.3s ease;
-  z-index: 100;
+  z-index: 1050;
 }
 
 .sidebar-overlay {
@@ -500,7 +500,7 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 99;
+  z-index: 1040;
 }
 
 .sidebar-overlay.active {
@@ -513,10 +513,14 @@ body {
   }
   .sidebar-container {
     position: fixed;
+    top: 0;
+    left: 0;
     transform: translateX(-100%);
+    box-shadow: none;
   }
   .sidebar-container.sidebar-open {
     transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
   }
   .glass-card {
     padding: 16px;
