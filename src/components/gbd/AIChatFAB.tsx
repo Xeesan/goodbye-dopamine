@@ -428,6 +428,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       
       // Add timeout to prevent infinite loading
       const controller = new AbortController();
+      abortRef.current = controller;
       const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
       
       const resp = await fetch(CHAT_URL, {
