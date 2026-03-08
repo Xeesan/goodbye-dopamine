@@ -30,6 +30,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   const [quote, setQuote] = useState(getDailyQuote());
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
+  const [showXpBadge, setShowXpBadge] = useState(false);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
