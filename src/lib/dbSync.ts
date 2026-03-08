@@ -1,6 +1,7 @@
 /**
- * Database sync for exams, routine, transactions, and debts data.
- * Reads/writes to Supabase with localStorage as a fast cache.
+ * Database sync with LWW (Last-Write-Wins) conflict resolution.
+ * Each record carries an `updated_at` / `updatedAt` timestamp.
+ * On sync, per-record comparison keeps the newer version.
  */
 import { supabase } from '@/integrations/supabase/client';
 import Storage from './storage';
@@ -14,10 +15,55 @@ async function getUserId(): Promise<string | null> {
   return currentUserId;
 }
 
-// Listen for auth changes to reset cached user id
 supabase.auth.onAuthStateChange((_event, session) => {
   currentUserId = session?.user?.id ?? null;
 });
+
+// ── LWW Helper ──
+
+/**
+ * Merge two arrays by id using Last-Write-Wins.
+ * Returns { merged, toUpload (local items newer than remote), toDownload (remote items newer than local) }
+ */
+function lwwMerge<T extends { id: string; updatedAt?: string; updated_at?: string }>(
+  localItems: T[],
+  remoteItems: T[],
+  getTimestamp: (item: T) => string
+): { merged: T[]; toUpload: T[]; toDownload: T[] } {
+  const localMap = new Map(localItems.map(i => [String(i.id), i]));
+  const remoteMap = new Map(remoteItems.map(i => [String(i.id), i]));
+  const merged: T[] = [];
+  const toUpload: T[] = [];
+  const toDownload: T[] = [];
+
+  // Process all known IDs
+  const allIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+  for (const id of allIds) {
+    const local = localMap.get(id);
+    const remote = remoteMap.get(id);
+
+    if (local && remote) {
+      const localTs = new Date(getTimestamp(local)).getTime() || 0;
+      const remoteTs = new Date(getTimestamp(remote)).getTime() || 0;
+      if (localTs > remoteTs) {
+        merged.push(local);
+        toUpload.push(local);
+      } else {
+        merged.push(remote);
+        if (remoteTs > localTs) toDownload.push(remote);
+        else merged[merged.length - 1] = remote; // equal → prefer remote (server authority)
+      }
+    } else if (local) {
+      merged.push(local);
+      toUpload.push(local);
+    } else if (remote) {
+      merged.push(remote);
+      toDownload.push(remote);
+    }
+  }
+
+  return { merged, toUpload, toDownload };
+}
 
 // ── Exams Sync ──
 
@@ -37,29 +83,50 @@ export async function syncExamsFromDB(): Promise<any[]> {
       return Storage.getExams();
     }
 
-    if (data && data.length > 0) {
-      // Map DB format to app format
-      const exams = data.map(e => ({
-        id: e.id,
-        subject: e.subject,
-        date: e.date,
-        time: e.time,
-        grade: e.grade,
-        credits: e.credits,
-        teacher: e.teacher,
-        room: e.room,
-        type: e.type,
-      }));
-      Storage.setExams(exams);
-      return exams;
+    const remoteExams = (data || []).map(e => ({
+      id: e.id,
+      subject: e.subject,
+      date: e.date,
+      time: e.time,
+      grade: e.grade,
+      credits: e.credits,
+      teacher: e.teacher,
+      room: e.room,
+      type: e.type,
+      updatedAt: e.updated_at,
+    }));
+
+    const localExams = Storage.getExams();
+
+    if (remoteExams.length === 0 && localExams.length === 0) return [];
+
+    // First-time migration: local only → push all
+    if (remoteExams.length === 0 && localExams.length > 0) {
+      await pushExamsToDB(localExams, userId);
+      return localExams;
     }
 
-    // If DB is empty but local has data, push local to DB (first-time migration)
-    const localExams = Storage.getExams();
-    if (localExams.length > 0) {
-      await pushExamsToDB(localExams, userId);
+    // LWW merge
+    const { merged, toUpload } = lwwMerge(
+      localExams.filter(e => !String(e.id).includes('_')), // only DB-assigned IDs
+      remoteExams,
+      (e) => e.updatedAt || e.updated_at || '1970-01-01'
+    );
+
+    // Also include local-only items (never pushed)
+    const localOnly = localExams.filter(e => String(e.id).includes('_'));
+    for (const item of localOnly) {
+      await pushSingleExamToDB(item, userId);
     }
-    return localExams;
+
+    // Push newer local items to DB
+    for (const item of toUpload) {
+      await updateExamInDB(item);
+    }
+
+    const finalExams = [...merged, ...localOnly];
+    Storage.setExams(finalExams);
+    return finalExams;
   } catch (e) {
     console.error('Exam sync error:', e);
     return Storage.getExams();
@@ -68,19 +135,24 @@ export async function syncExamsFromDB(): Promise<any[]> {
 
 async function pushExamsToDB(exams: any[], userId: string) {
   for (const exam of exams) {
-    await supabase.from('user_exams').upsert({
-      id: exam.id?.includes('_') ? undefined : exam.id, // skip local IDs
-      user_id: userId,
-      subject: exam.subject,
-      date: exam.date,
-      time: exam.time || '09:00',
-      grade: exam.grade || '',
-      credits: exam.credits || 3,
-      teacher: exam.teacher || '',
-      room: exam.room || '',
-      type: exam.type || 'exams',
-    });
+    await pushSingleExamToDB(exam, userId);
   }
+}
+
+async function pushSingleExamToDB(exam: any, userId: string) {
+  const { data } = await supabase.from('user_exams').insert({
+    user_id: userId,
+    subject: exam.subject,
+    date: exam.date,
+    time: exam.time || '09:00',
+    grade: exam.grade || '',
+    credits: exam.credits || 3,
+    teacher: exam.teacher || '',
+    room: exam.room || '',
+    type: exam.type || 'exams',
+    updated_at: exam.updatedAt || new Date().toISOString(),
+  }).select('id').single();
+  return data?.id ?? null;
 }
 
 export async function addExamToDB(exam: any): Promise<string | null> {
@@ -88,6 +160,7 @@ export async function addExamToDB(exam: any): Promise<string | null> {
   if (!userId) return null;
 
   try {
+    const now = new Date().toISOString();
     const { data, error } = await supabase.from('user_exams').insert({
       user_id: userId,
       subject: exam.subject,
@@ -98,6 +171,7 @@ export async function addExamToDB(exam: any): Promise<string | null> {
       teacher: exam.teacher || '',
       room: exam.room || '',
       type: exam.type || 'exams',
+      updated_at: now,
     }).select('id').single();
 
     if (error) console.error('Failed to add exam to DB:', error);
@@ -122,7 +196,7 @@ export async function updateExamInDB(exam: any) {
       teacher: exam.teacher,
       room: exam.room,
       type: exam.type,
-      updated_at: new Date().toISOString(),
+      updated_at: exam.updatedAt || new Date().toISOString(),
     }).eq('id', exam.id).eq('user_id', userId);
   } catch (e) {
     console.error('Update exam DB error:', e);
@@ -132,7 +206,6 @@ export async function updateExamInDB(exam: any) {
 export async function deleteExamFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_exams').delete().eq('id', id).eq('user_id', userId);
   } catch (e) {
@@ -143,7 +216,6 @@ export async function deleteExamFromDB(id: string) {
 export async function clearExamsInDB(type?: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     let query = supabase.from('user_exams').delete().eq('user_id', userId);
     if (type) query = query.eq('type', type);
@@ -170,37 +242,58 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
       return Storage.getRoutine();
     }
 
-    if (data && data.length > 0) {
-      const routine: Record<string, any[]> = {
-        monday: [], tuesday: [], wednesday: [], thursday: [],
-        friday: [], saturday: [], sunday: [],
-      };
-      for (const r of data) {
-        if (routine[r.day]) {
-          routine[r.day].push({
-            id: r.id,
-            subject: r.subject,
-            startTime: r.start_time,
-            endTime: r.end_time,
-            room: r.room,
-          });
-        }
+    const remoteRoutine: Record<string, any[]> = {
+      monday: [], tuesday: [], wednesday: [], thursday: [],
+      friday: [], saturday: [], sunday: [],
+    };
+    for (const r of (data || [])) {
+      if (remoteRoutine[r.day]) {
+        remoteRoutine[r.day].push({
+          id: r.id,
+          subject: r.subject,
+          startTime: r.start_time,
+          endTime: r.end_time,
+          room: r.room,
+          updatedAt: r.created_at, // routine has no updated_at, use created_at
+        });
       }
-      // Sort each day by start time
-      for (const day of Object.keys(routine)) {
-        routine[day].sort((a: any, b: any) => (a.startTime || '').localeCompare(b.startTime || ''));
-      }
-      Storage.setRoutine(routine);
-      return routine;
     }
 
-    // If DB empty but local has data, push to DB
     const localRoutine = Storage.getRoutine();
-    const hasPeriods = Object.values(localRoutine).some(arr => arr.length > 0);
-    if (hasPeriods) {
+    const hasRemote = (data || []).length > 0;
+    const hasLocal = Object.values(localRoutine).some(arr => arr.length > 0);
+
+    if (!hasRemote && hasLocal) {
       await pushRoutineToDB(localRoutine, userId);
+      return localRoutine;
     }
-    return localRoutine;
+
+    // Merge per-day using LWW
+    const mergedRoutine: Record<string, any[]> = {
+      monday: [], tuesday: [], wednesday: [], thursday: [],
+      friday: [], saturday: [], sunday: [],
+    };
+
+    for (const day of Object.keys(mergedRoutine)) {
+      const localPeriods = (localRoutine[day] || []).filter((p: any) => !String(p.id).includes('_'));
+      const remotePeriods = remoteRoutine[day] || [];
+      const localOnly = (localRoutine[day] || []).filter((p: any) => String(p.id).includes('_'));
+
+      const { merged } = lwwMerge(localPeriods, remotePeriods, (p) => p.updatedAt || '1970-01-01');
+
+      // Push local-only items
+      for (const p of localOnly) {
+        const dbId = await addPeriodToDB(day, p);
+        if (dbId) p.id = dbId;
+      }
+
+      mergedRoutine[day] = [...merged, ...localOnly].sort(
+        (a: any, b: any) => (a.startTime || '').localeCompare(b.startTime || '')
+      );
+    }
+
+    Storage.setRoutine(mergedRoutine);
+    return mergedRoutine;
   } catch (e) {
     console.error('Routine sync error:', e);
     return Storage.getRoutine();
@@ -247,7 +340,6 @@ export async function addPeriodToDB(day: string, period: any): Promise<string | 
 export async function deletePeriodFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_routine').delete().eq('id', id).eq('user_id', userId);
   } catch (e) {
@@ -258,7 +350,6 @@ export async function deletePeriodFromDB(id: string) {
 export async function clearRoutineInDB() {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_routine').delete().eq('user_id', userId);
   } catch (e) {
@@ -284,20 +375,20 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
       return Storage.getTransactions();
     }
 
-    if (data && data.length > 0) {
-      const txns = data.map(t => ({
-        id: t.id,
-        type: t.type,
-        description: t.description,
-        amount: Number(t.amount),
-        date: t.date,
-      }));
-      Storage.setTransactions(txns);
-      return txns;
-    }
+    const remoteTxns = (data || []).map(t => ({
+      id: t.id,
+      type: t.type,
+      description: t.description,
+      amount: Number(t.amount),
+      date: t.date,
+      updatedAt: t.created_at, // transactions use created_at as timestamp
+    }));
 
     const localTxns = Storage.getTransactions();
-    if (localTxns.length > 0) {
+
+    if (remoteTxns.length === 0 && localTxns.length === 0) return [];
+
+    if (remoteTxns.length === 0 && localTxns.length > 0) {
       for (const t of localTxns) {
         await supabase.from('user_transactions').insert({
           user_id: userId,
@@ -307,8 +398,30 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
           date: t.date || new Date().toISOString(),
         });
       }
+      return localTxns;
     }
-    return localTxns;
+
+    // LWW merge
+    const localWithDbIds = localTxns.filter(t => !String(t.id).includes('_'));
+    const localOnly = localTxns.filter(t => String(t.id).includes('_'));
+
+    const { merged } = lwwMerge(localWithDbIds, remoteTxns, (t) => t.updatedAt || t.date || '1970-01-01');
+
+    // Push local-only
+    for (const t of localOnly) {
+      const { data: d } = await supabase.from('user_transactions').insert({
+        user_id: userId,
+        type: t.type,
+        description: t.description,
+        amount: t.amount,
+        date: t.date || new Date().toISOString(),
+      }).select('id').single();
+      if (d?.id) t.id = d.id;
+    }
+
+    const finalTxns = [...merged, ...localOnly];
+    Storage.setTransactions(finalTxns);
+    return finalTxns;
   } catch (e) {
     console.error('Transaction sync error:', e);
     return Storage.getTransactions();
@@ -339,7 +452,6 @@ export async function addTransactionToDB(txn: any): Promise<string | null> {
 export async function deleteTransactionFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_transactions').delete().eq('id', id).eq('user_id', userId);
   } catch (e) {
@@ -365,23 +477,23 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       return Storage.getDebts();
     }
 
-    if (data && data.length > 0) {
-      const debts = data.map(d => ({
-        id: d.id,
-        debtType: d.debt_type,
-        person: d.person,
-        amount: Number(d.amount),
-        description: d.description,
-        date: d.date,
-        settled: d.settled,
-        settledDate: d.settled_date,
-      }));
-      Storage.setDebts(debts);
-      return debts;
-    }
+    const remoteDebts = (data || []).map(d => ({
+      id: d.id,
+      debtType: d.debt_type,
+      person: d.person,
+      amount: Number(d.amount),
+      description: d.description,
+      date: d.date,
+      settled: d.settled,
+      settledDate: d.settled_date,
+      updatedAt: d.created_at,
+    }));
 
     const localDebts = Storage.getDebts();
-    if (localDebts.length > 0) {
+
+    if (remoteDebts.length === 0 && localDebts.length === 0) return [];
+
+    if (remoteDebts.length === 0 && localDebts.length > 0) {
       for (const d of localDebts) {
         await supabase.from('user_debts').insert({
           user_id: userId,
@@ -394,8 +506,41 @@ export async function syncDebtsFromDB(): Promise<any[]> {
           settled_date: d.settledDate || null,
         });
       }
+      return localDebts;
     }
-    return localDebts;
+
+    // LWW merge
+    const localWithDbIds = localDebts.filter(d => !String(d.id).includes('_'));
+    const localOnly = localDebts.filter(d => String(d.id).includes('_'));
+
+    const { merged, toUpload } = lwwMerge(localWithDbIds, remoteDebts, (d) => d.updatedAt || d.date || '1970-01-01');
+
+    // Push newer local debts to DB
+    for (const d of toUpload) {
+      await supabase.from('user_debts').update({
+        settled: d.settled,
+        settled_date: d.settledDate || null,
+      }).eq('id', d.id).eq('user_id', userId);
+    }
+
+    // Push local-only
+    for (const d of localOnly) {
+      const { data: dd } = await supabase.from('user_debts').insert({
+        user_id: userId,
+        debt_type: d.debtType || 'lend',
+        person: d.person,
+        amount: d.amount,
+        description: d.description || '',
+        date: d.date || '',
+        settled: d.settled || false,
+        settled_date: d.settledDate || null,
+      }).select('id').single();
+      if (dd?.id) d.id = dd.id;
+    }
+
+    const finalDebts = [...merged, ...localOnly];
+    Storage.setDebts(finalDebts);
+    return finalDebts;
   } catch (e) {
     console.error('Debts sync error:', e);
     return Storage.getDebts();
@@ -428,7 +573,6 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
 export async function settleDebtInDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_debts').update({
       settled: true,
@@ -442,7 +586,6 @@ export async function settleDebtInDB(id: string) {
 export async function deleteDebtFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
-
   try {
     await supabase.from('user_debts').delete().eq('id', id).eq('user_id', userId);
   } catch (e) {

@@ -62,7 +62,8 @@ const Storage = {
     if (!day || !period) return;
     const routine = this.getRoutine();
     if (!Array.isArray(routine[day])) routine[day] = [];
-    routine[day].push({ ...period, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
+    const now = new Date().toISOString();
+    routine[day].push({ ...period, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
     this.setRoutine(routine);
   },
   deletePeriod(day: string, id: string) {
@@ -85,7 +86,8 @@ const Storage = {
   addExam(exam: any) {
     if (!exam) return;
     const exams = this.getExams();
-    exams.push({ ...exam, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
+    const now = new Date().toISOString();
+    exams.push({ ...exam, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
     this.setExams(exams);
   },
   deleteExam(id: string) {
@@ -96,7 +98,7 @@ const Storage = {
     if (!exam || !exam.id) return;
     const exams = this.getExams();
     const idx = exams.findIndex(e => String(e.id) === String(exam.id));
-    if (idx !== -1) { exams[idx] = exam; this.setExams(exams); }
+    if (idx !== -1) { exams[idx] = { ...exam, updatedAt: new Date().toISOString() }; this.setExams(exams); }
   },
   clearExams() { this.setExams([]); },
 
@@ -153,7 +155,8 @@ const Storage = {
   addTransaction(txn: any) {
     if (!txn) return;
     const txns = this.getTransactions();
-    txns.push({ ...txn, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: new Date().toISOString() });
+    const now = new Date().toISOString();
+    txns.push({ ...txn, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: new Date().toISOString(), updatedAt: now });
     this.setTransactions(txns);
   },
   deleteTransaction(id: string) {
@@ -192,7 +195,8 @@ const Storage = {
   addDebt(debt: any) {
     if (!debt) return;
     const debts = this.getDebts();
-    debts.push({ ...debt, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: debt.date || new Date().toISOString(), settled: false });
+    const now = new Date().toISOString();
+    debts.push({ ...debt, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: debt.date || new Date().toISOString(), settled: false, updatedAt: now });
     this.setDebts(debts);
   },
   deleteDebt(id: string) {
@@ -201,7 +205,8 @@ const Storage = {
   },
   settleDebt(id: string) {
     if (!id) return;
-    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: new Date().toISOString() } : d);
+    const now = new Date().toISOString();
+    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: now, updatedAt: now } : d);
     this.setDebts(debts);
   },
 
