@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useRef, useEffect } from 'react';
 import { AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 
-type DialogType = 'confirm' | 'alert' | 'success' | 'info';
+type DialogType = 'confirm' | 'alert' | 'success' | 'info' | 'prompt';
 
 interface DialogOptions {
   title: string;
@@ -9,10 +9,13 @@ interface DialogOptions {
   type?: DialogType;
   confirmText?: string;
   cancelText?: string;
+  placeholder?: string;
+  defaultValue?: string;
 }
 
 interface DialogContextType {
   showDialog: (options: DialogOptions) => Promise<boolean>;
+  showPrompt: (options: DialogOptions) => Promise<string | null>;
 }
 
 const DialogContext = createContext<DialogContextType | null>(null);
@@ -23,8 +26,14 @@ export const useDialog = () => {
   return ctx;
 };
 
+interface InternalDialog extends DialogOptions {
+  resolve: (v: any) => void;
+}
+
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
-  const [dialog, setDialog] = useState<(DialogOptions & { resolve: (v: boolean) => void }) | null>(null);
+  const [dialog, setDialog] = useState<InternalDialog | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const showDialog = useCallback((options: DialogOptions): Promise<boolean> => {
     return new Promise(resolve => {
@@ -32,9 +41,23 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  const handleClose = (result: boolean) => {
+  const showPrompt = useCallback((options: DialogOptions): Promise<string | null> => {
+    return new Promise(resolve => {
+      setInputValue(options.defaultValue || '');
+      setDialog({ ...options, type: 'prompt', resolve });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (dialog?.type === 'prompt' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [dialog]);
+
+  const handleClose = (result: any) => {
     dialog?.resolve(result);
     setDialog(null);
+    setInputValue('');
   };
 
   const iconMap = {
@@ -42,15 +65,16 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     alert: <Info className="w-6 h-6 text-destructive" />,
     success: <CheckCircle className="w-6 h-6 text-primary" />,
     info: <Info className="w-6 h-6 text-primary" />,
+    prompt: <Info className="w-6 h-6 text-primary" />,
   };
 
   const type = dialog?.type || 'confirm';
 
   return (
-    <DialogContext.Provider value={{ showDialog }}>
+    <DialogContext.Provider value={{ showDialog, showPrompt }}>
       {children}
       {dialog && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => handleClose(false)}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => handleClose(type === 'prompt' ? null : false)}>
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
 
@@ -88,7 +112,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
                 <button
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                   style={{ background: 'hsl(var(--bg-input))' }}
-                  onClick={() => handleClose(false)}
+                  onClick={() => handleClose(type === 'prompt' ? null : false)}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -96,11 +120,28 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
 
               {/* Content */}
               <h3 className="text-lg font-bold text-foreground mb-2">{dialog.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground mb-6">{dialog.message}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground mb-4">{dialog.message}</p>
+
+              {/* Prompt Input */}
+              {type === 'prompt' && (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleClose(inputValue); }}
+                  placeholder={dialog.placeholder || ''}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground mb-4 outline-none transition-colors"
+                  style={{
+                    background: 'hsl(var(--bg-input))',
+                    border: '1px solid hsl(var(--border))',
+                  }}
+                />
+              )}
 
               {/* Actions */}
               <div className="flex gap-3">
-                {type === 'confirm' ? (
+                {(type === 'confirm' || type === 'prompt') ? (
                   <>
                     <button
                       className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all"
@@ -109,19 +150,19 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
                         color: 'hsl(var(--text-secondary))',
                         border: '1px solid hsl(var(--border))',
                       }}
-                      onClick={() => handleClose(false)}
+                      onClick={() => handleClose(type === 'prompt' ? null : false)}
                     >
                       {dialog.cancelText || 'Cancel'}
                     </button>
                     <button
                       className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
                       style={{
-                        background: 'hsl(var(--destructive))',
+                        background: type === 'prompt' ? 'hsl(var(--primary))' : 'hsl(var(--destructive))',
                         color: '#fff',
                       }}
-                      onClick={() => handleClose(true)}
+                      onClick={() => handleClose(type === 'prompt' ? inputValue : true)}
                     >
-                      {dialog.confirmText || 'Confirm'}
+                      {dialog.confirmText || 'OK'}
                     </button>
                   </>
                 ) : (
