@@ -171,7 +171,10 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div><h1 className="text-2xl font-bold text-foreground">Detox</h1><p className="text-muted-foreground text-sm">Lock in. Eliminate distractions. Grow your focus tree.</p></div>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div><h1 className="text-2xl font-bold text-foreground">Detox</h1><p className="text-muted-foreground text-sm">Lock in. Eliminate distractions. Grow your focus tree.</p></div>
+        </div>
         <button className="btn-green flex items-center gap-2" onClick={() => setShowSetup(true)}><Play className="w-4 h-4 fill-current" /> START FOCUS</button>
       </div>
       {showSetup && (
