@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
+import { supabase } from '@/integrations/supabase/client';
 import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
