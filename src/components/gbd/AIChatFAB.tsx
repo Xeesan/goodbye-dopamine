@@ -559,6 +559,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       toast({ title: 'Connection Error', description: 'Could not reach AI assistant.', variant: 'destructive' });
     }
 
+    abortRef.current = null;
     setLoading(false);
   }, [input, messages, loading, onDataChanged]);
 
