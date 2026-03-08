@@ -28,7 +28,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
     const time = (document.getElementById('task-time') as HTMLInputElement)?.value;
     const reminder = (document.getElementById('task-reminder') as HTMLSelectElement)?.value;
     Storage.addTask({ title, date, time, priority, reminder });
-    Storage.addXP(10);
+    addXP(10);
     navigateTo('planner');
   };
 
