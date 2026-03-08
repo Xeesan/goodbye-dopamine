@@ -99,7 +99,7 @@ const Storage = {
   // Semesters
   getSemesters(): any[] {
     const sems = this.get('semesters', []);
-    return Array.isArray(sems) ? sems : [];
+    return Array.isArray(sems) ? sems.map(s => ({ ...s, courses: Array.isArray(s.courses) ? s.courses : [] })) : [];
   },
   setSemesters(semesters: any[]) { this.set('semesters', Array.isArray(semesters) ? semesters : []); },
   addSemester(sem: any) {
@@ -107,6 +107,37 @@ const Storage = {
     const sems = this.getSemesters();
     sems.push({ ...sem, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), courses: [] });
     this.setSemesters(sems);
+  },
+  deleteSemester(id: string) {
+    if (!id) return;
+    this.setSemesters(this.getSemesters().filter(s => String(s.id) !== String(id)));
+  },
+  addCourse(semId: string, course: any) {
+    if (!semId || !course) return;
+    const sems = this.getSemesters();
+    const sem = sems.find(s => String(s.id) === String(semId));
+    if (sem) {
+      sem.courses.push({ ...course, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
+      this.setSemesters(sems);
+    }
+  },
+  deleteCourse(semId: string, courseId: string) {
+    if (!semId || !courseId) return;
+    const sems = this.getSemesters();
+    const sem = sems.find(s => String(s.id) === String(semId));
+    if (sem) {
+      sem.courses = sem.courses.filter((c: any) => String(c.id) !== String(courseId));
+      this.setSemesters(sems);
+    }
+  },
+  updateCourse(semId: string, courseId: string, updates: any) {
+    if (!semId || !courseId) return;
+    const sems = this.getSemesters();
+    const sem = sems.find(s => String(s.id) === String(semId));
+    if (sem) {
+      sem.courses = sem.courses.map((c: any) => String(c.id) === String(courseId) ? { ...c, ...updates } : c);
+      this.setSemesters(sems);
+    }
   },
 
   // Transactions

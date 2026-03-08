@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
-import { FileText } from 'lucide-react';
+import { FileText, Trash2, Edit, Search, X } from 'lucide-react';
 
 interface NotesPageProps {
   navigateTo: (page: string) => void;
@@ -10,14 +10,28 @@ interface NotesPageProps {
 
 const CATEGORIES = ['all', 'General', 'Study', 'Personal', 'Ideas'];
 
-const NotesPage = ({ navigateTo }: NotesPageProps) => {
+const NotesPage = ({}: NotesPageProps) => {
   const [category, setCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [notes, setNotes] = useState(Storage.getNotes());
 
-  const notes = Storage.getNotes();
-  const filtered = category === 'all' ? notes : notes.filter(n => n.category === category);
+  const refresh = () => setNotes(Storage.getNotes());
+
+  const filtered = useMemo(() => {
+    let result = category === 'all' ? notes : notes.filter(n => n.category === category);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(n =>
+        (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)
+      );
+    }
+    return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [notes, category, searchQuery]);
+
+  const selectedNote = notes.find(n => n.id === selectedNoteId) || null;
 
   const saveNote = () => {
     const title = (document.getElementById('note-title-input') as HTMLInputElement)?.value.trim();
@@ -26,20 +40,25 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
     if (!title) { alert('Please enter a title'); return; }
     if (editingId) {
       Storage.updateNote(editingId, { title, content, category: cat });
-      setEditingId(null);
     } else {
       Storage.addNote({ title, content, category: cat });
       Storage.addXP(10);
     }
     setShowModal(false);
-    navigateTo('notes');
+    setEditingId(null);
+    refresh();
+    // Select the newly created/edited note
+    const updated = Storage.getNotes();
+    if (!editingId && updated.length > 0) {
+      setSelectedNoteId(updated[updated.length - 1].id);
+    }
   };
 
   const deleteNote = (id: string) => {
     if (confirm('Delete this note?')) {
       Storage.deleteNote(id);
-      setSelectedNote(null);
-      navigateTo('notes');
+      if (selectedNoteId === id) setSelectedNoteId(null);
+      refresh();
     }
   };
 
@@ -48,64 +67,105 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
     setShowModal(true);
   };
 
+  const editingNote = editingId ? notes.find(n => n.id === editingId) : null;
+
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
         {/* Sidebar */}
         <div>
           <button className="btn-green w-full mb-4" onClick={() => { setEditingId(null); setShowModal(true); }}>+ New Note</button>
-          
+
           <div className="search-input-wrap mb-4">
-            <FileText className="w-4 h-4 text-muted-foreground" />
-            <input type="text" placeholder="Search notes..." />
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search notes..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="text-muted-foreground hover:text-foreground">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {CATEGORIES.map(c => (
-              <button key={c} className={`category-pill ${category === c.toLowerCase() || (c === 'all' && category === 'all') ? 'active' : ''}`}
-                onClick={() => setCategory(c.toLowerCase() === 'all' ? 'all' : c)}>{c}</button>
-            ))}
+            {CATEGORIES.map(c => {
+              const isActive = c === 'all' ? category === 'all' : category === c;
+              return (
+                <button key={c} className={`category-pill ${isActive ? 'active' : ''}`}
+                  onClick={() => setCategory(c === 'all' ? 'all' : c)}>{c}</button>
+              );
+            })}
           </div>
 
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-3">RECENT NOTES</div>
-          <div className="space-y-2">
-            {filtered.map(n => (
-              <button key={n.id} onClick={() => setSelectedNote(n)}
-                className={`glass-card !p-3 w-full text-left cursor-pointer transition-all ${selectedNote?.id === n.id ? '!border-primary' : ''}`}>
-                <div className="font-medium text-foreground text-sm truncate">{n.title}</div>
-                <div className="text-xs text-muted-foreground truncate mt-1">{(n.content || '').substring(0, 60)}</div>
+          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-3">
+            {filtered.length} NOTE{filtered.length !== 1 ? 'S' : ''}
+          </div>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {filtered.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                {searchQuery ? 'No notes match your search' : 'No notes yet'}
+              </div>
+            ) : filtered.map(n => (
+              <div key={n.id}
+                onClick={() => setSelectedNoteId(n.id)}
+                className={`glass-card !p-3 cursor-pointer transition-all hover:opacity-90 ${selectedNoteId === n.id ? '!border-primary' : ''}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-foreground text-sm truncate">{n.title}</div>
+                    <div className="text-xs text-muted-foreground truncate mt-1">{(n.content || '').substring(0, 80) || 'No content'}</div>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button className="icon-btn !w-6 !h-6 !text-primary" onClick={(e) => { e.stopPropagation(); editNote(n); }}>
+                      <Edit className="w-3 h-3" />
+                    </button>
+                    <button className="icon-btn !w-6 !h-6 !text-destructive" onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }}>
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="note-category-tag">{n.category || 'General'}</span>
                   <span className="text-[0.6rem] text-muted-foreground">{formatDate(n.updatedAt)}</span>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Content */}
-        <div className="glass-card min-h-[300px]">
+        {/* Content Viewer */}
+        <div className="glass-card min-h-[400px]">
           {selectedNote ? (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-foreground">{selectedNote.title}</h2>
-                <div className="flex gap-2">
-                  <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={() => editNote(selectedNote)}>Edit</button>
-                  <button className="btn-outline !py-1.5 !px-3 !text-xs !text-destructive !border-destructive/30" onClick={() => deleteNote(selectedNote.id)}>Delete</button>
+              <div className="flex justify-between items-start mb-4 gap-3">
+                <h2 className="text-xl font-bold text-foreground break-words">{selectedNote.title}</h2>
+                <div className="flex gap-2 shrink-0">
+                  <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={() => editNote(selectedNote)}>
+                    <Edit className="w-3 h-3 inline-block mr-1" /> Edit
+                  </button>
+                  <button className="btn-outline !py-1.5 !px-3 !text-xs !text-destructive !border-destructive/30" onClick={() => deleteNote(selectedNote.id)}>
+                    <Trash2 className="w-3 h-3 inline-block mr-1" /> Delete
+                  </button>
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="note-category-tag">{selectedNote.category || 'General'}</span>
-                <span className="text-xs text-muted-foreground">{formatDate(selectedNote.updatedAt)}</span>
+                <span className="text-xs text-muted-foreground">Updated {formatDate(selectedNote.updatedAt)}</span>
+                {selectedNote.createdAt !== selectedNote.updatedAt && (
+                  <span className="text-xs text-muted-foreground">• Created {formatDate(selectedNote.createdAt)}</span>
+                )}
               </div>
-              <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'hsl(var(--text-secondary))' }}>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
                 {selectedNote.content || 'No content'}
               </div>
             </div>
           ) : (
-            <div className="empty-state h-full">
+            <div className="empty-state h-full flex flex-col items-center justify-center gap-3 min-h-[350px]">
               <FileText className="w-12 h-12 text-muted-foreground" />
-              <p>No notes yet. Start capturing your thoughts!</p>
+              <p className="text-muted-foreground">{notes.length === 0 ? 'No notes yet. Start capturing your thoughts!' : 'Select a note to view'}</p>
             </div>
           )}
         </div>
@@ -113,24 +173,34 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
 
       {/* Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingId(null); }}>
           <div className="modal-card !max-w-lg" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-foreground mb-4">{editingId ? 'Edit Note' : 'New Note'}</h2>
-            <input type="text" id="note-title-input" className="input-simple mb-3" placeholder="Note title"
-              defaultValue={editingId ? notes.find(n => n.id === editingId)?.title : ''} />
-            <textarea id="note-content-input" className="input-simple mb-3 min-h-[150px] resize-y" placeholder="Write your thoughts..."
-              defaultValue={editingId ? notes.find(n => n.id === editingId)?.content : ''} />
-            <label className="form-label">Category</label>
-            <select id="note-category-input" className="input-simple mb-4"
-              defaultValue={editingId ? notes.find(n => n.id === editingId)?.category : 'General'}>
-              <option value="General">General</option>
-              <option value="Study">Study</option>
-              <option value="Personal">Personal</option>
-              <option value="Ideas">Ideas</option>
-            </select>
-            <div className="flex gap-3">
+            <div className="space-y-3">
+              <div>
+                <label className="form-label">Title</label>
+                <input type="text" id="note-title-input" className="input-simple" placeholder="Note title"
+                  defaultValue={editingNote?.title || ''} />
+              </div>
+              <div>
+                <label className="form-label">Content</label>
+                <textarea id="note-content-input" className="input-simple min-h-[200px] resize-y" placeholder="Write your thoughts..."
+                  defaultValue={editingNote?.content || ''} />
+              </div>
+              <div>
+                <label className="form-label">Category</label>
+                <select id="note-category-input" className="input-simple"
+                  defaultValue={editingNote?.category || 'General'}>
+                  <option value="General">General</option>
+                  <option value="Study">Study</option>
+                  <option value="Personal">Personal</option>
+                  <option value="Ideas">Ideas</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
               <button className="btn-outline flex-1" onClick={() => { setEditingId(null); setShowModal(false); }}>Cancel</button>
-              <button className="btn-green flex-1" onClick={saveNote}>Save Note</button>
+              <button className="btn-green flex-1" onClick={saveNote}>{editingId ? 'Update Note' : 'Save Note'}</button>
             </div>
           </div>
         </div>
