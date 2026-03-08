@@ -181,7 +181,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
             <Star className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold" style={{ color: 'hsl(var(--warning))' }}>{totalPages}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">PAGES READ</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">PAGES READ</div>
         </div>
       </div>
 
