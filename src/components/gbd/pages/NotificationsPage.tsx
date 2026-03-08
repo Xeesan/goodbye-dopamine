@@ -51,6 +51,7 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
   const deleteNotification = async (id: string) => {
     await supabase.from('notifications').delete().eq('id', id);
     setNotifications(prev => prev.filter(n => n.id !== id));
+    window.dispatchEvent(new Event('notifications-updated'));
   };
 
   const clearAll = async () => {
