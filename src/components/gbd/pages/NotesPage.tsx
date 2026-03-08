@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft, Hash, Eye, Pencil } from 'lucide-react';
