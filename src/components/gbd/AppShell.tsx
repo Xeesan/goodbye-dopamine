@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 import { useTheme } from '@/hooks/useTheme';
-import TopHeader from './TopHeader';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
