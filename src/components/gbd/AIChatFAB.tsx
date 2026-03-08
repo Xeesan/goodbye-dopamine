@@ -362,6 +362,9 @@ interface AIChatFABProps {
   onDataChanged?: () => void;
 }
 
+const AI_RATE_LIMIT = 15; // max messages per minute
+const AI_RATE_WINDOW = 60_000; // 1 minute in ms
+
 const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -370,6 +373,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const sendTimestamps = useRef<number[]>([]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -386,6 +390,15 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
   const send = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
+
+    // Client-side rate limiting
+    const now = Date.now();
+    sendTimestamps.current = sendTimestamps.current.filter(ts => now - ts < AI_RATE_WINDOW);
+    if (sendTimestamps.current.length >= AI_RATE_LIMIT) {
+      toast({ title: 'Slow down! ⏳', description: 'Too many messages. Wait a moment before sending again.', variant: 'destructive' });
+      return;
+    }
+    sendTimestamps.current.push(now);
 
     const userMsg: Message = { role: 'user', content: text };
     const allMessages = [...messages, userMsg];
