@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
-import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2, CloudDownload } from 'lucide-react';
+import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2, CloudDownload, Bot, Eye, EyeOff } from 'lucide-react';
 import { restoreFromLatestBackup } from '@/lib/autoBackup';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
@@ -14,6 +14,44 @@ interface ProfilePageProps {
   onLogout: () => void;
   refreshKey: number;
 }
+
+const AiKeyInput = () => {
+  const [key, setKey] = useState(() => localStorage.getItem('gbd_gemini_api_key') || '');
+  const [show, setShow] = useState(false);
+  const save = () => {
+    const trimmed = key.trim();
+    if (trimmed) {
+      localStorage.setItem('gbd_gemini_api_key', trimmed);
+    } else {
+      localStorage.removeItem('gbd_gemini_api_key');
+    }
+    toast({ title: trimmed ? 'API key saved' : 'API key removed', description: trimmed ? 'Your Gemini key will be used for AI requests.' : 'Default AI will be used.' });
+  };
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-medium text-muted-foreground">Google Gemini API Key</label>
+      <div className="flex gap-2">
+        <div className="flex-1 relative">
+          <input
+            type={show ? 'text' : 'password'}
+            value={key}
+            onChange={e => setKey(e.target.value)}
+            placeholder="AIzaSy..."
+            className="w-full text-sm rounded-[var(--radius-sm)] px-3 py-2.5 pr-9 outline-none transition-colors"
+            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+          />
+          <button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+        <button onClick={save} className="btn-green px-4 text-sm">Save</button>
+      </div>
+      <p className="text-[0.65rem] text-muted-foreground">
+        Get a free key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="underline text-primary">Google AI Studio</a>
+      </p>
+    </div>
+  );
+};
 
 const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   const { showDialog } = useDialog();
@@ -311,6 +349,12 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
           }}>
             <Trash2 className="w-4 h-4" /> {t('profile.clear_all')}
           </button>
+        </div>
+
+        <div className="glass-card-accent">
+          <h3 className="font-semibold text-foreground mb-5 flex items-center gap-2"><Bot className="w-4 h-4" /> {t('profile.ai_settings' as any) || 'AI Assistant Settings'}</h3>
+          <p className="text-xs text-muted-foreground mb-3">{t('profile.ai_settings_desc' as any) || 'Use your own Gemini API key for free AI usage, or leave empty to use the default.'}</p>
+          <AiKeyInput />
         </div>
 
         <div className="glass-card-accent">
