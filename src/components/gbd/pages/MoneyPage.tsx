@@ -548,16 +548,16 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {moneyTab === 'savings' && (
         <>
           <div className="glass-card mb-6">
-            <input type="text" id="goal-title" className="input-simple mb-4" placeholder="Goal Title (e.g. New Laptop)" />
+            <input type="text" id="goal-title" className="input-simple mb-4" placeholder={t('money.goal_title')} />
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <input type="number" id="goal-target" className="input-simple" placeholder="Target Amount" min={1} />
-              <input type="number" id="goal-initial" className="input-simple" placeholder="Initial Amount" min={0} defaultValue={0} />
+              <input type="number" id="goal-target" className="input-simple" placeholder={t('money.target_amount')} min={1} />
+              <input type="number" id="goal-initial" className="input-simple" placeholder={t('money.initial_amount')} min={0} defaultValue={0} />
             </div>
             <input type="date" id="goal-date" className="input-simple mb-5 max-w-[50%]" />
-            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addGoal}>Create Goal</button></div>
+            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addGoal}>{t('money.create_goal')}</button></div>
           </div>
           <div className="glass-card min-h-[100px]">
-            {goals.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p className="italic text-muted-foreground">No savings goals yet</p></div> :
+            {goals.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p className="italic text-muted-foreground">{t('money.no_goals')}</p></div> :
             goals.map((g: any) => {
               const progress = g.targetAmount > 0 ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
               return (
