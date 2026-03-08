@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
+import { runAutoBackup } from '@/lib/autoBackup';
 import { useHealthReminders } from '@/hooks/useHealthReminders';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
