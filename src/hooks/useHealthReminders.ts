@@ -110,8 +110,9 @@ export async function saveHealthReminders(reminders: HealthReminder[]) {
 
   // Sync to DB for background push notifications
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const user = session.user;
 
     for (const r of reminders) {
       const { error } = await supabase
