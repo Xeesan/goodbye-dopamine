@@ -21,7 +21,7 @@
     --popover: var(--bg-secondary);
     --popover-foreground: 210 40% 96%;
     
-    --primary: 152 60% 42%;
+    --primary: 16 76% 58%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: var(--bg-secondary);
@@ -30,18 +30,18 @@
     --muted: 232 22% 17%;
     --muted-foreground: 215 20% 55%;
     
-    --accent: 152 60% 42%;
+    --accent: 16 76% 58%;
     --accent-foreground: 0 0% 100%;
-    --accent-dim: 152 60% 42% / 0.1;
-    --accent-glow: 152 60% 42% / 0.2;
+    --accent-dim: 16 76% 58% / 0.1;
+    --accent-glow: 16 76% 58% / 0.2;
     
     --destructive: 350 80% 55%;
     --destructive-foreground: 210 40% 98%;
     
     --border: 215 20% 35% / 0.15;
-    --border-accent: 152 60% 42% / 0.2;
+    --border-accent: 16 76% 58% / 0.2;
     --input: 215 20% 35% / 0.15;
-    --ring: 152 60% 42%;
+    --ring: 16 76% 58%;
     
     --radius: 14px;
     --radius-sm: 10px;
@@ -87,7 +87,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: hsl(var(--bg-primary));
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(152 60% 42% / 0.04), transparent),
+    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(16 76% 58% / 0.04), transparent),
     radial-gradient(ellipse 60% 50% at 90% 10%, hsl(263 70% 76% / 0.03), transparent);
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
