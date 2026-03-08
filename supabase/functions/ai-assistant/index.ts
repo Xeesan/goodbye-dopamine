@@ -160,15 +160,6 @@ serve(async (req) => {
     }
 
     // ── Rate limiting disabled — client-side throttle is sufficient ──
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            "Retry-After": String(RATE_LIMIT_WINDOW),
-          },
-        }
-      );
-    }
 
     // ── Parse and validate request ──
     const { messages, context, geminiApiKey } = await req.json();
