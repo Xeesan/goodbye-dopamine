@@ -519,8 +519,19 @@ export async function syncDebtsFromDB(): Promise<any[]> {
     // LWW merge
     const localWithDbIds = localDebts.filter(d => !String(d.id).includes('_'));
     const localOnly = localDebts.filter(d => String(d.id).includes('_'));
+    const remoteMap = new Map(remoteDebts.map(d => [String(d.id), d]));
 
     const { merged, toUpload } = lwwMerge(localWithDbIds, remoteDebts, (d) => d.updatedAt || d.date || '1970-01-01');
+
+    // Always trust remote for immutable fields (debtType, person, amount)
+    for (const m of merged) {
+      const remote = remoteMap.get(String(m.id));
+      if (remote) {
+        m.debtType = remote.debtType;
+        m.person = remote.person;
+        m.amount = remote.amount;
+      }
+    }
 
     // Push newer local debts to DB
     for (const d of toUpload) {
