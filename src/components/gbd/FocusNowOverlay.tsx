@@ -60,15 +60,12 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
   const markDone = useCallback(() => {
     const elapsed = Math.max(1, Math.round((totalSeconds - secondsLeft) / 60));
     // Save focus session
-    const sessions = Storage.getFocusSessions();
-    sessions.push({
-      id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+    Storage.addFocusSession({
       duration: elapsed,
       taskTitle: task.title,
       taskType: task.type,
       completedAt: new Date().toISOString(),
     });
-    Storage.setFocusSessions(sessions);
 
     // Mark task done if it's a planner task
     if (task.type === 'task') {
