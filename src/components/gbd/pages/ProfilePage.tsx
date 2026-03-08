@@ -282,6 +282,26 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
               <Upload className="w-4 h-4" /> {t('profile.import_data')}
             </button>
           </div>
+          <div className="flex flex-col sm:flex-row gap-3 mt-3">
+            <button className="btn-outline flex-1 flex items-center justify-center gap-2" onClick={async () => {
+              const confirmed = await showDialog({ title: t('profile.restore_cloud' as any) || 'Restore from Cloud', message: 'This will restore your latest automatic cloud backup and overwrite current local data. Continue?', type: 'confirm', confirmText: 'Restore' });
+              if (!confirmed) return;
+              try {
+                const data = await restoreFromLatestBackup();
+                if (!data) {
+                  toast({ title: 'No backup found', description: 'No cloud backup available yet.', variant: 'destructive' });
+                  return;
+                }
+                Storage.importAllData(JSON.stringify(data));
+                toast({ title: 'Restore complete', description: 'Data restored from cloud backup. Refreshing...' });
+                setTimeout(() => window.location.reload(), 1000);
+              } catch {
+                toast({ title: 'Restore failed', description: 'Could not restore from cloud backup.', variant: 'destructive' });
+              }
+            }}>
+              <CloudDownload className="w-4 h-4" /> {t('profile.restore_cloud' as any) || 'Restore from Cloud'}
+            </button>
+          </div>
           <button className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-[var(--radius-sm)] text-destructive font-semibold transition-all hover:bg-destructive/10" style={{ border: '1px solid hsl(var(--destructive) / 0.3)' }} onClick={async () => {
             const confirmed = await showDialog({ title: t('profile.clear_all'), message: 'This will permanently delete all your local data. This cannot be undone. Continue?', type: 'confirm', confirmText: 'Clear Everything' });
             if (!confirmed) return;
