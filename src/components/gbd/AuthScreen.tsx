@@ -3,6 +3,9 @@ import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from '
 import appIcon from '@/assets/icon.svg';
 import { supabase } from '@/integrations/supabase/client';
 
+const LOGIN_RATE_LIMIT = 5; // max attempts
+const LOGIN_RATE_WINDOW = 60_000; // per minute
+
 const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'verify'>('login');
   const [email, setEmail] = useState('');
@@ -15,6 +18,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [otp, setOtp] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval>>();
+  const loginAttempts = useRef<number[]>([]);
 
   const cooldownActive = resendCooldown > 0;
   useEffect(() => {
@@ -41,6 +45,14 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       showToast('Please enter both email and password');
       return;
     }
+    // Rate limit login attempts
+    const now = Date.now();
+    loginAttempts.current = loginAttempts.current.filter(ts => now - ts < LOGIN_RATE_WINDOW);
+    if (loginAttempts.current.length >= LOGIN_RATE_LIMIT) {
+      showToast('Too many login attempts. Please wait a minute.');
+      return;
+    }
+    loginAttempts.current.push(now);
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
