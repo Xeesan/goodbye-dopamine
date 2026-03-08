@@ -85,7 +85,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
             <p className="text-muted-foreground text-sm">Master your schedule, conquer your goals.</p>
           </div>
         </div>
-        <div className="search-input-wrap w-60">
+        <div className="search-input-wrap w-full sm:w-60">
           <Search className="w-4 h-4 text-muted-foreground" />
           <input type="text" placeholder="Search tasks..." />
         </div>

@@ -50,10 +50,10 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       {/* Welcome + XP */}
-      <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
-          <p className="text-muted-foreground text-sm">Here's your productivity overview for this week.</p>
+      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 truncate">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Here's your productivity overview for this week.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="glass-card !p-2 !px-4 flex items-center gap-2 text-xs font-semibold tracking-wider">
@@ -130,7 +130,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
             <Settings className="w-3 h-3" /> CUSTOMIZE
           </button>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
           {enabledTiles.map(tile => {
             const Icon = tile.icon;
             return (
@@ -187,7 +187,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mt-5">
         {[
           { label: 'TASKS', value: completedTasks, icon: CheckSquare, color: 'hsl(var(--info))' },
           { label: 'FOCUS TIME', value: `${(totalFocusMin / 60).toFixed(1)}h`, icon: Clock, color: 'hsl(var(--primary))' },
