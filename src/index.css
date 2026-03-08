@@ -87,8 +87,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: hsl(var(--bg-primary));
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(340 75% 60% / 0.04), transparent),
-    radial-gradient(ellipse 60% 50% at 90% 10%, hsl(280 70% 65% / 0.03), transparent);
+    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(220 80% 58% / 0.04), transparent),
+    radial-gradient(ellipse 60% 50% at 90% 10%, hsl(263 70% 76% / 0.03), transparent);
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
