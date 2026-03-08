@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import Storage from '@/lib/storage';
-import { CheckSquare, Clock, TrendingUp, Flag } from 'lucide-react';
+import { CheckSquare, Clock, TrendingUp, Flag, ArrowLeft } from 'lucide-react';
 
 interface ReportsPageProps {
   navigateTo: (page: string) => void;
   refreshKey: number;
 }
 
-const ReportsPage = ({}: ReportsPageProps) => {
+const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
   const productivityRef = useRef<HTMLCanvasElement>(null);
   const moneyRef = useRef<HTMLCanvasElement>(null);
 
@@ -110,9 +110,12 @@ const ReportsPage = ({}: ReportsPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-          <p className="text-muted-foreground text-sm">Activity Overview</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Reports</h1>
+            <p className="text-muted-foreground text-sm">Activity Overview</p>
+          </div>
         </div>
       </div>
 

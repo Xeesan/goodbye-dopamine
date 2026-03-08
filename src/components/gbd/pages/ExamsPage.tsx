@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 
@@ -94,9 +94,12 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Exam Tracker</h1>
-          <p className="text-muted-foreground text-sm">Stay ahead of your academic schedule.</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Exam Tracker</h1>
+            <p className="text-muted-foreground text-sm">Stay ahead of your academic schedule.</p>
+          </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />

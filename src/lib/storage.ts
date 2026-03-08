@@ -250,6 +250,28 @@ const Storage = {
     return xp;
   },
 
+  // Books
+  getBooks(): any[] {
+    const books = this.get('books', []);
+    return Array.isArray(books) ? books : [];
+  },
+  setBooks(books: any[]) { this.set('books', Array.isArray(books) ? books : []); },
+  addBook(book: any) {
+    if (!book) return;
+    const books = this.getBooks();
+    books.push({ ...book, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), addedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    this.setBooks(books);
+  },
+  updateBook(id: string, updates: any) {
+    if (!id) return;
+    const books = this.getBooks().map(b => b.id === id ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b);
+    this.setBooks(books);
+  },
+  deleteBook(id: string) {
+    if (!id) return;
+    this.setBooks(this.getBooks().filter(b => b.id !== id));
+  },
+
   // Quick links
   getQuickLinks(): any[] {
     const links = this.get('quick_links', []);

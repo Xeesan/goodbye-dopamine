@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { getCurrentDayName } from '@/lib/helpers';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 
@@ -57,9 +57,12 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Class Routine</h1>
-          <p className="text-muted-foreground text-sm">Your weekly academic schedule at a glance.</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Class Routine</h1>
+            <p className="text-muted-foreground text-sm">Your weekly academic schedule at a glance.</p>
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <ImageOCRImport mode="routine" onImport={handleOCRImport} />

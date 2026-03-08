@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
+import { ArrowLeft } from 'lucide-react';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
@@ -121,9 +122,12 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Wellness</h1>
-          <p className="text-muted-foreground text-sm">Holistic health tracking for peak academic performance.</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Wellness</h1>
+            <p className="text-muted-foreground text-sm">Holistic health tracking for peak academic performance.</p>
+          </div>
         </div>
         <div className="health-tabs">
           {['overview', 'physical', 'mental'].map(t => (

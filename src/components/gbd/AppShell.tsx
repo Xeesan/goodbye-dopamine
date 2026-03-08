@@ -9,6 +9,7 @@ import ExamsPage from './pages/ExamsPage';
 import AcademicHubPage from './pages/AcademicHubPage';
 import MoneyPage from './pages/MoneyPage';
 import NotesPage from './pages/NotesPage';
+import BooklistPage from './pages/BooklistPage';
 import DetoxPage from './pages/DetoxPage';
 import HealthPage from './pages/HealthPage';
 import ReportsPage from './pages/ReportsPage';
@@ -40,6 +41,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'academic-hub': return <AcademicHubPage {...props} />;
       case 'money': return <MoneyPage {...props} />;
       case 'notes': return <NotesPage {...props} />;
+      case 'booklist': return <BooklistPage {...props} />;
       case 'detox': return <DetoxPage {...props} />;
       case 'health': return <HealthPage {...props} />;
       case 'reports': return <ReportsPage {...props} />;

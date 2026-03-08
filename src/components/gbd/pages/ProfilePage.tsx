@@ -1,5 +1,5 @@
 import Storage from '@/lib/storage';
-import { Copy, LogOut } from 'lucide-react';
+import { Copy, LogOut, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface ProfilePageProps {
@@ -9,7 +9,7 @@ interface ProfilePageProps {
   refreshKey: number;
 }
 
-const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
+const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   const settings = Storage.getSettings();
   const { showDialog } = useDialog();
 
@@ -40,9 +40,12 @@ const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
 
   return (
     <div className="page-enter max-w-[800px] mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Profile</h1>
-        <p className="text-muted-foreground text-sm">Manage your academic profile and settings</p>
+      <div className="flex items-center gap-3 mb-6">
+        <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Profile</h1>
+          <p className="text-muted-foreground text-sm">Manage your academic profile and settings</p>
+        </div>
       </div>
       <div className="space-y-6">
         <div className="glass-card-accent">

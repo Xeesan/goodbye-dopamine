@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
+import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface MoneyPageProps {
@@ -90,9 +91,12 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Money</h1>
-          <p className="text-muted-foreground text-sm">Manage transactions, debts, and savings</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Money</h1>
+            <p className="text-muted-foreground text-sm">Manage transactions, debts, and savings</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <button className="btn-green" onClick={() => {
