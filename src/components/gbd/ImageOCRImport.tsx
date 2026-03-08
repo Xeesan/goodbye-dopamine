@@ -174,7 +174,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
             </div>
 
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'} and AI will extract the data automatically.
+              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'} and the data will be extracted automatically (offline OCR).
             </p>
 
             {!preview && (
