@@ -477,14 +477,30 @@ If you cannot read anything, return an empty array: []`;
                 {/* Model */}
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Model</label>
-                  <input
-                    type="text"
-                    value={apiConfig.model}
-                    onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
-                    placeholder="Model name"
-                    className="w-full px-3 py-2 rounded-md text-sm"
-                    style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
-                  />
+                  {apiConfig.provider === 'gemini' || apiConfig.provider === 'openai' ? (
+                    <div className="relative">
+                      <select
+                        value={apiConfig.model}
+                        onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-md text-sm appearance-none cursor-pointer"
+                        style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                      >
+                        {(apiConfig.provider === 'gemini' ? GEMINI_MODELS : OPENAI_MODELS).map(m => (
+                          <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={apiConfig.model}
+                      onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
+                      placeholder="Model name"
+                      className="w-full px-3 py-2 rounded-md text-sm"
+                      style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                    />
+                  )}
                 </div>
 
                 {/* Custom Endpoint (only for custom provider) */}
