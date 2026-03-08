@@ -85,9 +85,15 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { messages, context } = await req.json();
+    const { messages, context, geminiApiKey } = await req.json();
+
+    // Determine which API to use
+    const useCustomGemini = !!geminiApiKey;
+    
+    if (!useCustomGemini && !LOVABLE_API_KEY) {
+      throw new Error("No AI API key configured");
+    }
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Messages array is required" }), {
