@@ -166,7 +166,7 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
             <Settings className="w-3 h-3" /> {t('common.customize')}
           </button>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
           {enabledTiles.map(tile => {
             const Icon = tile.icon;
             return (
