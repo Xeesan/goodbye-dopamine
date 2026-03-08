@@ -19,10 +19,9 @@
 
 <p align="center">
   <a href="https://goodbye-dopamine.lovable.app">🚀 Live App</a> · 
+  <a href="https://goodbye-dopamine.lovable.app">📖 Landing Page</a> · 
   <a href="#features">Features</a> · 
-  <a href="#tech-stack">Tech Stack</a> · 
-  <a href="#getting-started">Getting Started</a> · 
-  <a href="#contributing">Contributing</a>
+  <a href="#tech-stack">Tech Stack</a>
 </p>
 
 ---
@@ -44,7 +43,7 @@ Install it as an app on your phone or desktop — it works offline too.
 | **⏰ Routine** | Weekly schedule builder (Mon–Sun) · AI-powered OCR import from timetable photos |
 | **📝 Exams** | Countdown timers, urgency indicators (critical/warning/safe) · AI OCR bulk import |
 | **🎓 Academic Hub** | GPA Tracker (semester + cumulative CGPA) · GPA Calculator · GPA Simulator |
-| **💰 Money Manager** | Income/expense tracker · Debt tracker · Savings goals with progress bars |
+| **💰 Money Manager** | Income/expense tracker · Debt tracker with settle/repay · Savings goals with progress bars |
 | **📓 Notes** | Rich notes with categories · Full-text search · Inline viewer |
 | **📚 Booklist** | Reading library with status tabs · Page tracking, ratings, genres |
 | **🧘 Digital Detox** | Focus timer (5–120 min) · Ambient sounds (Rain, Forest, Lo-Fi…) · Growing tree visualization |
@@ -52,9 +51,23 @@ Install it as an app on your phone or desktop — it works offline too.
 | **📈 Reports** | Productivity analytics and insights |
 | **📅 Global Calendar** | Unified calendar widget accessible from any page — tap events to jump to their section |
 | **🔔 Notifications** | Push notifications for task reminders & health alerts · In-app notification center |
+| **🤖 AI Assistant** | Floating chat powered by Gemini — add tasks, exams, debts, settle debts, get advice, all via natural language |
 | **👤 Profile** | Avatar upload, bio, institution · Account management |
 | **🌗 Theming** | Light & dark mode with smooth transitions, persisted preference |
 | **🌐 i18n** | English & Bengali language support with one-tap toggle |
+
+---
+
+## 🤖 AI Assistant
+
+GBD includes a floating AI chat (powered by Gemini) that can interact with your data directly:
+
+- **Add entries** — "Add a task to finish math homework by Friday"
+- **Settle debts** — "Mark the debt from Rahim as settled"
+- **Query data** — "How many exams do I have this week?"
+- **Get advice** — "Give me study tips for finals"
+
+The assistant has full context of your tasks, exams, routine, debts, notes, and books — and auto-refreshes the UI after every action.
 
 ---
 
@@ -67,8 +80,6 @@ GBD features a triple-mode OCR system for importing class routines and exam sche
 | **AI (Free)** | Uses Lovable AI (Gemini) — no API key needed, best accuracy |
 | **Online AI** | Bring your own Gemini / OpenAI / custom API key for cloud-based extraction |
 | **Offline** | Tesseract.js runs entirely in your browser — works without internet |
-
-The AI modes are specifically tuned for university-style timetables (days × time slots) and exam lists (date, subject, faculty, room).
 
 ---
 
@@ -90,7 +101,7 @@ Every productive action earns XP:
 | Add a course | +10 |
 | Focus session | +duration (min 5) |
 
-**Level up every 100 XP.** XP is synced to the cloud via server-side atomic increments — tamper-proof and persistent across devices. A celebratory toast with your new rank title appears on every level-up.
+**Level up every 100 XP.** XP is synced to the cloud via server-side atomic increments — tamper-proof and persistent across devices.
 
 ---
 
@@ -100,7 +111,6 @@ Every productive action earns XP:
 - **Offline support** — full functionality without internet
 - **Sync queue** — failed writes auto-retry on reconnection
 - **Connection indicator** — visual offline/online badge in header
-- **Responsive** — optimized layouts for mobile and desktop with bottom-sheet dialogs on small screens
 - **Push notifications** — task reminders and health alerts via Web Push API
 
 ---
@@ -113,6 +123,7 @@ Every productive action earns XP:
 - **Avatar allowlist** — only `jpeg`, `png`, `gif`, `webp` accepted
 - **Private storage** with short-lived signed URLs
 - **Email OTP** required on signup — no anonymous accounts
+- **UUID validation** — guards against invalid DB operations from local-only IDs
 
 ---
 
@@ -125,38 +136,13 @@ Every productive action earns XP:
 | **Styling** | Tailwind CSS + shadcn/ui |
 | **Icons** | Lucide React |
 | **Backend** | Supabase (Auth, Database, Storage, Edge Functions) |
-| **OCR** | Tesseract.js (offline) + Gemini / OpenAI (online) + Lovable AI (free) |
+| **AI** | Lovable AI (Gemini) — assistant + OCR |
+| **OCR** | Tesseract.js (offline) + Gemini / OpenAI (online) |
 | **PWA** | vite-plugin-pwa + Workbox |
 | **State** | React Context + localStorage (hybrid) |
 | **Charts** | Recharts |
 | **Markdown** | react-markdown |
 | **i18n** | Custom hook with EN/BN support |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm (or bun)
-
-### Installation
-
-```bash
-git clone https://github.com/<your-username>/goodbye-dopamine.git
-cd goodbye-dopamine
-npm install
-npm run dev
-```
-
-The app will be available at `http://localhost:5173`.
-
-### Environment Variables
-
-```
-VITE_SUPABASE_URL=<your-supabase-url>
-VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-key>
-```
 
 ---
 
@@ -171,6 +157,7 @@ src/
 │   │   ├── AuthScreen.tsx # Login/signup screen
 │   │   ├── Sidebar.tsx    # Navigation sidebar
 │   │   ├── TopHeader.tsx  # Top bar with status
+│   │   ├── AIChatFAB.tsx  # Floating AI assistant
 │   │   ├── ImageOCRImport # Triple-mode OCR component
 │   │   └── DialogProvider # Responsive modal system
 │   └── ui/                # shadcn/ui components
@@ -179,33 +166,18 @@ src/
 ├── integrations/          # Supabase client & types
 └── pages/                 # Route-level pages
 supabase/
-├── functions/             # Edge functions (OCR, push notifications)
+├── functions/             # Edge functions (AI assistant, OCR, push notifications)
 └── config.toml            # Supabase configuration
 docs/
-└── index.html             # Landing page (GitHub Pages)
+└── index.html             # Landing page
 ```
 
 ---
 
-## 🤝 Contributing
-
-1. **Fork** the repository
-2. **Create a branch**: `git checkout -b feat/my-feature`
-3. **Commit**: `git commit -m "feat: add awesome feature"`
-4. **Push**: `git push origin feat/my-feature`
-5. **Open a Pull Request**
-
-### Guidelines
-
-- Follow existing code style (TypeScript, functional components, Tailwind tokens)
-- One feature or fix per PR
-- Test locally before submitting
-- Update README for new features
-
----
 ## Developer
+
 <p align="center">
-Built with ☕ and late nights by **Zia Uddin Zisan**.
+Built with ☕ and late nights by <strong>Zia Uddin Zisan</strong>.
 </p>
 
 ## License
