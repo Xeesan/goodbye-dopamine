@@ -76,6 +76,8 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               onNavigate={navigateTo}
               calendarOpen={calendarOpen}
               onToggleCalendar={() => setCalendarOpen(prev => !prev)}
+              theme={theme}
+              onToggleTheme={toggleTheme}
             />
             <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
               {renderPage()}
