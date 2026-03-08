@@ -584,19 +584,19 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {showTxnModal && (
         <div className="modal-overlay" onClick={() => setShowTxnModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-4">Add Transaction</h2>
-            <label className="form-label">TYPE</label>
+            <h2 className="text-lg font-bold text-foreground mb-4">{t('money.add_transaction')}</h2>
+            <label className="form-label">{t('money.type')}</label>
             <div className="grid grid-cols-2 gap-0 mb-4 rounded-[var(--radius-sm)] overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
-              <button className={txnType === 'income' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('income')}>Income</button>
-              <button className={txnType === 'expense' ? 'btn-danger !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('expense')}>Expense</button>
+              <button className={txnType === 'income' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('income')}>{t('money.income')}</button>
+              <button className={txnType === 'expense' ? 'btn-danger !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('expense')}>{t('money.expense')}</button>
             </div>
-            <label className="form-label">DESCRIPTION</label>
+            <label className="form-label">{t('money.description')}</label>
             <input type="text" id="txn-desc" className="input-simple mb-4" placeholder="e.g. Lunch, Salary" />
-            <label className="form-label">AMOUNT (৳)</label>
+            <label className="form-label">{t('money.amount')} (৳)</label>
             <input type="number" id="txn-amount" className="input-simple mb-5" placeholder="0" min={1} />
             <div className="flex gap-3">
-              <button className="btn-outline flex-1" onClick={() => setShowTxnModal(false)}>Cancel</button>
-              <button className="btn-green flex-1" onClick={addTransaction}>Add</button>
+              <button className="btn-outline flex-1" onClick={() => setShowTxnModal(false)}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={addTransaction}>{t('common.add')}</button>
             </div>
           </div>
         </div>
