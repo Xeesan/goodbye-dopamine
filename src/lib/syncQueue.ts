@@ -25,7 +25,12 @@ function setQueue(queue: QueueItem[]) {
 }
 
 export function enqueue(item: Omit<QueueItem, 'id' | 'timestamp'>) {
-  const queue = getQueue();
+  let queue = getQueue();
+
+  // Drop items older than 7 days to prevent stale data accumulation
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  queue = queue.filter(q => q.timestamp > sevenDaysAgo);
+
   // Cap queue at 500 items to prevent localStorage overflow
   if (queue.length >= 500) {
     console.warn('Sync queue full, dropping oldest item');
