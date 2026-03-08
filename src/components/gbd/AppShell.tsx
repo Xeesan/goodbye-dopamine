@@ -122,7 +122,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               theme={theme}
               onToggleTheme={toggleTheme}
             />
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8" key={refreshKey}>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
               <div className="max-w-[1200px] mx-auto w-full">
                 {calendarOpen && (
                   <div className="mb-5 animate-[slideUp_0.2s_ease]">
