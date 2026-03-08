@@ -150,21 +150,48 @@ If you cannot read anything, return an empty array: []`;
     return JSON.parse(cleaned);
   };
 
-  // -- Offline parsing helpers --
+  // -- Helpers --
+  const normalizeDate = (raw: string): string => {
+    const cleaned = raw.replace(/\s+/g, '').replace(/[,]/g, '');
+    // DD-MM-YYYY
+    let m = cleaned.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    // YYYY-MM-DD
+    m = cleaned.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    // DD-MM-YY
+    m = cleaned.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2})$/);
+    if (m) return `20${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    return raw;
+  };
+
+  const to24h = (t: string): string => {
+    t = t.replace(/\./g, ':').trim();
+    const m = t.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+    if (!m) return t;
+    let h = parseInt(m[1]);
+    const min = m[2];
+    const ampm = (m[3] || '').toLowerCase();
+    if (ampm === 'pm' && h < 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${min}`;
+  };
+
+  // -- Offline parsing --
   const parseRoutineFromText = (text: string): any[] => {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const timeRegex = /(\d{1,2}[:.]\d{2})\s*[-–to]+\s*(\d{1,2}[:.]\d{2})/i;
+    const timeRangeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)\s*[-–to]+\s*(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
     const items: any[] = [];
     let currentDay = '';
     for (const line of lines) {
       const lower = line.toLowerCase();
       const foundDay = days.find(d => lower.includes(d));
       if (foundDay) currentDay = foundDay;
-      const timeMatch = line.match(timeRegex);
+      const timeMatch = line.match(timeRangeRegex);
       if (timeMatch && currentDay) {
-        const startTime = timeMatch[1].replace('.', ':');
-        const endTime = timeMatch[2].replace('.', ':');
+        const startTime = to24h(timeMatch[1]);
+        const endTime = to24h(timeMatch[2]);
         const subject = line.replace(timeMatch[0], '').replace(new RegExp(currentDay, 'i'), '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
         const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
         items.push({ day: currentDay, subject, startTime, endTime, room: roomMatch?.[1] || '' });
@@ -175,22 +202,80 @@ If you cannot read anything, return an empty array: []`;
 
   const parseExamsFromText = (text: string): any[] => {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    const dateRegex = /(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/;
-    const timeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
+    const dateRegex = /(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{4}[-/.]\d{1,2}[-/.]\d{1,2})/;
+    const timeRangeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)\s*[-–to]+\s*(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
+    const singleTimeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm))/i;
+    const courseCodeRegex = /\b([A-Z]{2,5}[-\s]?\d{2,4})\b/;
+    const dayNames = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
     const items: any[] = [];
-    for (const line of lines) {
+
+    // Filter header lines
+    const dataLines = lines.filter(l => {
+      const lower = l.toLowerCase();
+      return !lower.includes('semester') && !lower.includes('course code') &&
+             !lower.includes('course name') && !(lower.startsWith('date') && lower.includes('day'));
+    });
+
+    for (const line of dataLines) {
       const dateMatch = line.match(dateRegex);
-      if (dateMatch) {
-        let date = dateMatch[1].replace(/\//g, '-');
-        const parts = date.split('-');
-        if (parts[0].length <= 2) {
-          date = `20${parts[2].length === 2 ? parts[2] : parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
-        }
-        const timeMatch = line.match(timeRegex);
-        const subject = line.replace(dateMatch[0], '').replace(timeMatch?.[0] || '', '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
-        const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
-        items.push({ subject, date, time: timeMatch?.[1]?.replace('.', ':') || '09:00', room: roomMatch?.[1] || '', teacher: '', credits: 3, grade: '' });
+      if (!dateMatch) continue;
+
+      const date = normalizeDate(dateMatch[1]);
+
+      // Extract time
+      const timeRangeMatch = line.match(timeRangeRegex);
+      let time = '09:00';
+      if (timeRangeMatch) {
+        time = to24h(timeRangeMatch[1]);
+      } else {
+        const st = line.match(singleTimeRegex);
+        if (st) time = to24h(st[1]);
       }
+
+      // Extract course code
+      const codeMatch = line.match(courseCodeRegex);
+      const courseCode = codeMatch?.[1]?.replace(/\s+/g, '-') || '';
+
+      // Remove known parts to get subject + teacher
+      let remainder = line
+        .replace(dateMatch[0], ' ')
+        .replace(timeRangeMatch?.[0] || '', ' ')
+        .replace(dayNames, ' ')
+        .replace(courseCodeRegex, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      const words = remainder.split(/\s+/).filter(Boolean);
+      let subject = courseCode;
+      let teacher = '';
+
+      if (words.length >= 3) {
+        // Teacher is usually the last 2-4 proper-noun words
+        let splitIdx = words.length;
+        for (let i = words.length - 1; i >= Math.max(0, words.length - 4); i--) {
+          if (/^[A-Z][a-z]/.test(words[i]) || /^(Md|Mohd|Dr|Mr|Mrs|Ms|Prof)\.?$/i.test(words[i])) {
+            splitIdx = i;
+          } else {
+            break;
+          }
+        }
+        const subjectPart = words.slice(0, splitIdx).join(' ').trim();
+        const teacherPart = words.slice(splitIdx).join(' ').trim();
+        if (subjectPart) subject = courseCode ? `${courseCode} ${subjectPart}` : subjectPart;
+        if (teacherPart) teacher = teacherPart;
+      } else if (remainder) {
+        subject = courseCode ? `${courseCode} ${remainder}` : remainder;
+      }
+
+      items.push({
+        subject: (subject || 'Unknown Subject').trim(),
+        date,
+        time,
+        room: '',
+        teacher: teacher.trim(),
+        credits: 3,
+        grade: '',
+      });
     }
     return items;
   };
