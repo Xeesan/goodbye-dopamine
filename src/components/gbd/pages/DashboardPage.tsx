@@ -58,7 +58,8 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         </div>
         <div className="flex items-center gap-3">
           <div className="glass-card !p-2 !px-4 flex items-center gap-2 text-xs font-semibold tracking-wider">
-            LEVEL {xp.level}
+            <span className="text-muted-foreground">{levelTitle(xp.level)}</span>
+            LVL {xp.level}
             <span className="text-primary font-bold">{xp.total} XP</span>
           </div>
         </div>
