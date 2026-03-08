@@ -294,9 +294,24 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     const hasLocal = Object.values(localRoutine).some(arr => arr.length > 0);
 
     if (!hasRemote && hasLocal) {
+      // Check if all local items have DB IDs (no underscore) — means they were deleted remotely
+      const hasLocalOnlyItems = Object.values(localRoutine).some(arr =>
+        (arr as any[]).some(p => String(p.id).includes('_'))
+      );
+      if (!hasLocalOnlyItems) {
+        const emptyRoutine: Record<string, any[]> = {
+          monday: [], tuesday: [], wednesday: [], thursday: [],
+          friday: [], saturday: [], sunday: [],
+        };
+        Storage.setRoutine(emptyRoutine);
+        return emptyRoutine;
+      }
       await pushRoutineToDB(localRoutine, userId);
       return localRoutine;
     }
+
+    // Build remote ID set for reconciliation
+    const remoteIdSet = new Set((data || []).map(r => String(r.id)));
 
     // Merge per-day using LWW
     const mergedRoutine: Record<string, any[]> = {
@@ -305,7 +320,12 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     };
 
     for (const day of Object.keys(mergedRoutine)) {
-      const localPeriods = (localRoutine[day] || []).filter((p: any) => !String(p.id).includes('_'));
+      // Only keep local DB-id items that still exist in remote
+      const localPeriods = (localRoutine[day] || []).filter((p: any) => {
+        const id = String(p.id);
+        if (!id.includes('_')) return remoteIdSet.has(id);
+        return false;
+      });
       const remotePeriods = remoteRoutine[day] || [];
       const localOnly = (localRoutine[day] || []).filter((p: any) => String(p.id).includes('_'));
 
