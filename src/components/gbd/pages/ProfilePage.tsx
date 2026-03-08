@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
-import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload } from 'lucide-react';
+import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 
@@ -316,6 +316,15 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
               <Upload className="w-4 h-4" /> Import Data
             </button>
           </div>
+          <button className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-[var(--radius-sm)] text-destructive font-semibold transition-all hover:bg-destructive/10" style={{ border: '1px solid hsl(var(--destructive) / 0.3)' }} onClick={async () => {
+            const confirmed = await showDialog({ title: 'Clear All Data', message: 'This will permanently delete all your local data (tasks, notes, money, books, routine, etc.). This cannot be undone. Continue?', type: 'confirm', confirmText: 'Clear Everything' });
+            if (!confirmed) return;
+            Storage.clearAllData();
+            toast({ title: 'All data cleared', description: 'Refreshing...' });
+            setTimeout(() => window.location.reload(), 1000);
+          }}>
+            <Trash2 className="w-4 h-4" /> Clear All Data
+          </button>
         </div>
 
         {/* Account */}

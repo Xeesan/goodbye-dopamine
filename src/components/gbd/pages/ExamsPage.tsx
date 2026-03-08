@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate, formatTime12h } from '@/lib/helpers';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
@@ -30,8 +31,11 @@ function getExamCountdown(dateStr: string, timeStr?: string) {
 const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const [examTab, setExamTab] = useState('exams');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))
@@ -60,19 +64,25 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     if (editingId) {
       Storage.updateExam({ ...examData, id: editingId });
       setEditingId(null);
+      refresh();
+      toast({ title: 'Exam updated', description: subject });
     } else {
       Storage.addExam(examData);
       addXP(15);
+      (document.getElementById('exam-subject') as HTMLInputElement).value = '';
+      refresh();
+      toast({ title: `${examTab === 'exams' ? 'Exam' : 'Assignment'} added`, description: subject });
     }
-    navigateTo('exams');
   };
 
   const deleteExam = async (id: string) => {
+    const exam = exams.find(e => e.id === id);
     const confirmed = await showDialog({ title: 'Delete Exam', message: 'Are you sure you want to delete this exam?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteExam(id);
       if (editingId === id) setEditingId(null);
-      navigateTo('exams');
+      refresh();
+      toast({ title: 'Exam deleted', description: exam?.subject || '' });
     }
   };
 
@@ -90,7 +100,8 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       });
     });
     addXP(items.length * 15);
-    navigateTo('exams');
+    refresh();
+    toast({ title: 'Exams imported', description: `${items.length} item(s) added` });
   };
 
   return (

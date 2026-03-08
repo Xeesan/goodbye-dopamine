@@ -308,6 +308,16 @@ const Storage = {
     return JSON.stringify(data, null, 2);
   },
 
+  // Clear all gbd_ data from localStorage
+  clearAllData() {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('gbd_')) keysToRemove.push(key);
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  },
+
   // Import data from JSON string, merges/overwrites
   importAllData(jsonString: string) {
     const data = JSON.parse(jsonString);

@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 
 interface AcademicHubPageProps {
   navigateTo: (page: string) => void;
@@ -64,14 +65,17 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     setShowAddSemester(false);
     const updated = Storage.getSemesters();
     setExpandedSem(updated[updated.length - 1]?.id);
+    toast({ title: 'Semester added', description: name });
   };
 
   const deleteSemester = async (id: string) => {
+    const sem = semesters.find((s: any) => s.id === id);
     const confirmed = await showDialog({ title: 'Delete Semester', message: 'Delete this semester and all its courses? This cannot be undone.', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteSemester(id);
       refresh();
       if (expandedSem === id) setExpandedSem(null);
+      toast({ title: 'Semester deleted', description: sem?.name || '' });
     }
   };
 
@@ -88,11 +92,13 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     addXP(10);
     refresh();
     setShowAddCourse(null);
+    toast({ title: 'Course added', description: `${name} — ${grade}` });
   };
 
   const deleteCourse = (semId: string, courseId: string) => {
     Storage.deleteCourse(semId, courseId);
     refresh();
+    toast({ title: 'Course removed' });
   };
 
   const addCalcRow = () => setCalcCourses(prev => [...prev, { name: '', grade: 'A', credits: 3 }]);
@@ -293,7 +299,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
                     <span className="text-sm text-foreground">If you maintain <span className="font-bold text-primary">{gpa.toFixed(2)}</span> GPA for {simCredits} credits</span>
                     <div className="flex items-center gap-3">
                       <span className={`text-sm font-bold ${meetsTarget ? 'text-primary' : 'text-destructive'}`}>{projected.toFixed(2)} CGPA</span>
-                      <span className={`text-xs px-2 py-0.5 rounded font-semibold ${meetsTarget ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{meetsTarget ? '✓ Target Met' : '✗ Below Target'}</span>
+                      <span className="text-xs">{meetsTarget ? '✅' : '❌'}</span>
                     </div>
                   </div>
                 );

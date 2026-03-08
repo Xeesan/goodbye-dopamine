@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft, Hash, Eye, Pencil } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 import MarkdownRenderer from '../MarkdownRenderer';
 
 interface NotesPageProps {
@@ -13,14 +14,12 @@ interface NotesPageProps {
 
 const CATEGORIES = ['all', 'General', 'Study', 'Personal', 'Ideas'];
 
-/** Extract #tags from text content */
 const extractTags = (text: string): string[] => {
   const matches = text.match(/#[a-zA-Z0-9_-]+/g);
   if (!matches) return [];
   return [...new Set(matches.map(t => t.toLowerCase()))];
 };
 
-/** Get all unique tags across all notes */
 const getAllTags = (notes: any[]): string[] => {
   const tagSet = new Set<string>();
   for (const n of notes) {
@@ -42,7 +41,6 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
 
-  // Modal form state
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
   const [formCategory, setFormCategory] = useState('General');
@@ -93,9 +91,11 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
     }
     if (editingId) {
       Storage.updateNote(editingId, { title: formTitle.trim(), content: formContent.trim(), category: formCategory });
+      toast({ title: 'Note updated', description: formTitle.trim() });
     } else {
       Storage.addNote({ title: formTitle.trim(), content: formContent.trim(), category: formCategory });
       addXP(10);
+      toast({ title: 'Note created', description: formTitle.trim() });
     }
     setShowModal(false);
     setEditingId(null);
@@ -105,11 +105,13 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   };
 
   const deleteNote = async (id: string) => {
+    const note = notes.find(n => n.id === id);
     const confirmed = await showDialog({ title: 'Delete Note', message: 'Are you sure you want to delete this note?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteNote(id);
       if (selectedNoteId === id) setSelectedNoteId(null);
       refresh();
+      toast({ title: 'Note deleted', description: note?.title || '' });
     }
   };
 
@@ -124,7 +126,6 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
-        {/* Sidebar */}
         <div>
           <button className="btn-green w-full mb-4" onClick={() => openModal()}>+ New Note</button>
 
@@ -134,7 +135,6 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
             {searchQuery && <button onClick={() => setSearchQuery('')} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button>}
           </div>
 
-          {/* Category pills */}
           <div className="flex flex-wrap gap-2 mb-3">
             {CATEGORIES.map(c => {
               const isActive = c === 'all' ? category === 'all' : category === c;
@@ -142,7 +142,6 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
             })}
           </div>
 
-          {/* Tag pills */}
           {allTags.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center gap-1.5 text-[0.6rem] font-semibold tracking-widest text-muted-foreground uppercase mb-2">
@@ -150,21 +149,10 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {activeTag && (
-                  <button
-                    className="tag-pill active"
-                    onClick={() => setActiveTag(null)}
-                  >
-                    ✕ Clear
-                  </button>
+                  <button className="tag-pill active" onClick={() => setActiveTag(null)}>✕ Clear</button>
                 )}
                 {allTags.map(tag => (
-                  <button
-                    key={tag}
-                    className={`tag-pill ${activeTag === tag ? 'active' : ''}`}
-                    onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                  >
-                    {tag}
-                  </button>
+                  <button key={tag} className={`tag-pill ${activeTag === tag ? 'active' : ''}`} onClick={() => setActiveTag(activeTag === tag ? null : tag)}>{tag}</button>
                 ))}
               </div>
             </div>
@@ -203,23 +191,16 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
           </div>
         </div>
 
-        {/* Note viewer */}
         <div className="glass-card min-h-[400px]">
           {selectedNote ? (
             <div>
               <div className="flex justify-between items-start mb-4 gap-3">
                 <h2 className="text-xl font-bold text-foreground break-words">{selectedNote.title}</h2>
                 <div className="flex gap-2 shrink-0">
-                  <button
-                    className={`btn-outline !py-1.5 !px-3 !text-xs ${previewMode ? '' : '!bg-primary/10 !text-primary !border-primary/30'}`}
-                    onClick={() => setPreviewMode(false)}
-                  >
+                  <button className={`btn-outline !py-1.5 !px-3 !text-xs ${previewMode ? '' : '!bg-primary/10 !text-primary !border-primary/30'}`} onClick={() => setPreviewMode(false)}>
                     <Pencil className="w-3 h-3 inline-block mr-1" /> Raw
                   </button>
-                  <button
-                    className={`btn-outline !py-1.5 !px-3 !text-xs ${previewMode ? '!bg-primary/10 !text-primary !border-primary/30' : ''}`}
-                    onClick={() => setPreviewMode(true)}
-                  >
+                  <button className={`btn-outline !py-1.5 !px-3 !text-xs ${previewMode ? '!bg-primary/10 !text-primary !border-primary/30' : ''}`} onClick={() => setPreviewMode(true)}>
                     <Eye className="w-3 h-3 inline-block mr-1" /> Preview
                   </button>
                   <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={() => openModal(selectedNote)}><Edit className="w-3 h-3 inline-block mr-1" /> Edit</button>
@@ -249,25 +230,16 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
         </div>
       </div>
 
-      {/* Create/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingId(null); }}>
           <div className="modal-card !max-w-lg" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-foreground">{editingId ? 'Edit Note' : 'New Note'}</h2>
               <div className="flex gap-1">
-                <button
-                  className={`icon-btn !w-8 !h-8 ${!modalPreview ? '!text-primary' : ''}`}
-                  onClick={() => setModalPreview(false)}
-                  title="Edit"
-                >
+                <button className={`icon-btn !w-8 !h-8 ${!modalPreview ? '!text-primary' : ''}`} onClick={() => setModalPreview(false)} title="Edit">
                   <Pencil className="w-4 h-4" />
                 </button>
-                <button
-                  className={`icon-btn !w-8 !h-8 ${modalPreview ? '!text-primary' : ''}`}
-                  onClick={() => setModalPreview(true)}
-                  title="Preview"
-                >
+                <button className={`icon-btn !w-8 !h-8 ${modalPreview ? '!text-primary' : ''}`} onClick={() => setModalPreview(true)} title="Preview">
                   <Eye className="w-4 h-4" />
                 </button>
               </div>
@@ -275,13 +247,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
             <div className="space-y-3">
               <div>
                 <label className="form-label">Title</label>
-                <input
-                  type="text"
-                  className="input-simple"
-                  placeholder="Note title"
-                  value={formTitle}
-                  onChange={e => setFormTitle(e.target.value)}
-                />
+                <input type="text" className="input-simple" placeholder="Note title" value={formTitle} onChange={e => setFormTitle(e.target.value)} />
               </div>
               <div>
                 <label className="form-label">Content <span className="text-muted-foreground font-normal text-[0.6rem]">· Markdown supported</span></label>
@@ -290,12 +256,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
                     <MarkdownRenderer content={formContent || '*Start writing...*'} />
                   </div>
                 ) : (
-                  <textarea
-                    className="input-simple min-h-[200px] resize-y font-mono text-sm"
-                    placeholder="Write your thoughts... Use **bold**, *italic*, # headings, - lists, #tags"
-                    value={formContent}
-                    onChange={e => setFormContent(e.target.value)}
-                  />
+                  <textarea className="input-simple min-h-[200px] resize-y font-mono text-sm" placeholder="Write your thoughts... Use **bold**, *italic*, # headings, - lists, #tags" value={formContent} onChange={e => setFormContent(e.target.value)} />
                 )}
               </div>
               <div>
@@ -307,7 +268,6 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
                   <option value="Ideas">Ideas</option>
                 </select>
               </div>
-              {/* Tag hint */}
               {extractTags(formContent).length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[0.6rem] text-muted-foreground">Tags:</span>

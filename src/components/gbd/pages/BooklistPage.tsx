@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/helpers';
 import { Book, BookOpen, Bookmark, CheckCircle, Search, X, Trash2, Edit, Star, Plus, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 
 interface BooklistPageProps {
   navigateTo: (page: string) => void;
@@ -95,9 +96,11 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
 
     if (editingId) {
       Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
+      toast({ title: 'Book updated', description: title });
     } else {
       Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
       addXP(10);
+      toast({ title: 'Book added', description: `${title} by ${author || 'Unknown'}` });
     }
     setShowModal(false);
     setEditingId(null);
@@ -105,11 +108,13 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   };
 
   const deleteBook = async (id: string) => {
+    const book = books.find((b: any) => b.id === id);
     const confirmed = await showDialog({ title: 'Remove Book', message: 'Are you sure you want to remove this book from your list?', type: 'confirm', confirmText: 'Remove' });
     if (confirmed) {
       Storage.deleteBook(id);
       if (selectedBookId === id) setSelectedBookId(null);
       refresh();
+      toast({ title: 'Book removed', description: book?.title || '' });
     }
   };
 
@@ -120,6 +125,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     Storage.updateBook(id, updates);
     if (status === 'finished') addXP(25);
     refresh();
+    toast({ title: status === 'finished' ? 'Book finished! 🎉' : 'Status updated', description: book?.title || '' });
   };
 
   const updateProgress = (id: string, currentPage: number) => {
@@ -133,7 +139,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
 
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
-      {/* Header */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}>
@@ -149,7 +154,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--purple) / 0.12)', color: 'hsl(var(--purple))' }}>
@@ -181,7 +185,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
         </div>
       </div>
 
-      {/* Tab bar */}
       <div className="flex gap-2 mb-6 flex-wrap">
         {STATUS_TABS.map(tab => {
           const Icon = tab.icon;
@@ -206,9 +209,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
         })}
       </div>
 
-      {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-        {/* Book list */}
         <div>
           <div className="search-input-wrap mb-4">
             <Search className="w-4 h-4 text-muted-foreground" />
@@ -229,7 +230,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 className={`glass-card !p-4 cursor-pointer transition-all hover:opacity-90 ${selectedBookId === book.id ? '!border-primary' : ''}`}
               >
                 <div className="flex gap-3">
-                  {/* Book spine color */}
                   <div className="w-1.5 rounded-full shrink-0" style={{
                     background: book.status === 'reading' ? 'hsl(var(--primary))' : book.status === 'finished' ? 'hsl(var(--green))' : 'hsl(var(--warning))',
                     minHeight: '40px',
@@ -245,7 +245,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                       {book.rating > 0 && <StarRating rating={book.rating} onChange={() => {}} />}
                       {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
                     </div>
-                    {/* Progress bar on card */}
                     {book.pages > 0 && book.status === 'reading' && (
                       <div className="mt-2">
                         <div className="xp-bar !h-1.5">
@@ -261,7 +260,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
           </div>
         </div>
 
-        {/* Book detail */}
         <div className="glass-card min-h-[400px]">
           {selectedBook ? (
             <div>
@@ -280,7 +278,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 </div>
               </div>
 
-              {/* Meta */}
               <div className="flex items-center gap-3 mb-5 flex-wrap">
                 <span className="text-[0.65rem] font-semibold px-2.5 py-1 rounded" style={{
                   background: 'hsl(var(--purple) / 0.1)',
@@ -292,7 +289,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 <span className="text-xs text-muted-foreground">Added {formatDate(selectedBook.addedAt)}</span>
               </div>
 
-              {/* Reading Progress */}
               {selectedBook.pages > 0 && (
                 <div className="mb-5">
                   <label className="form-label">READING PROGRESS</label>
@@ -325,7 +321,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 </div>
               )}
 
-              {/* Rating */}
               {selectedBook.rating > 0 && (
                 <div className="mb-5">
                   <label className="form-label">YOUR RATING</label>
@@ -333,7 +328,6 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 </div>
               )}
 
-              {/* Status actions */}
               <div className="mb-5">
                 <label className="form-label">STATUS</label>
                 <div className="flex gap-2 flex-wrap">
@@ -345,10 +339,10 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-sm)] text-xs font-semibold transition-all`}
                         style={{
                           background: isActive ? `${tab.color}15` : 'hsl(var(--bg-input))',
-                          border: `1px solid ${isActive ? `${tab.color}33` : 'hsl(var(--border))'}`,
+                          border: `1px solid ${isActive ? `${tab.color}33` : 'transparent'}`,
                           color: isActive ? tab.color : 'hsl(var(--muted-foreground))',
                         }}
-                        onClick={() => { if (!isActive) moveBook(selectedBook.id, tab.id); }}
+                        onClick={() => !isActive && moveBook(selectedBook.id, tab.id)}
                       >
                         <Icon className="w-3.5 h-3.5" /> {tab.label}
                       </button>
@@ -357,91 +351,71 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                 </div>
               </div>
 
-              {/* Notes */}
               {selectedBook.notes && (
                 <div>
                   <label className="form-label">NOTES</label>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground p-4 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
-                    {selectedBook.notes}
-                  </div>
+                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedBook.notes}</div>
                 </div>
               )}
             </div>
           ) : (
             <div className="empty-state h-full flex flex-col items-center justify-center gap-3 min-h-[350px]">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'hsl(var(--purple) / 0.1)' }}>
-                <Book className="w-8 h-8" style={{ color: 'hsl(var(--purple))' }} />
-              </div>
-              <p className="text-muted-foreground">{books.length === 0 ? 'Your reading list is empty' : 'Select a book to view details'}</p>
-              {books.length === 0 && <button className="btn-green mt-2" onClick={() => openAddModal()}>Add Your First Book</button>}
+              <Book className="w-12 h-12 text-muted-foreground" />
+              <p className="text-muted-foreground">{books.length === 0 ? 'Your bookshelf is empty. Add your first book!' : 'Select a book to view details'}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingId(null); }}>
           <div className="modal-card !max-w-lg" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-5">{editingId ? 'Edit Book' : 'Add New Book'}</h2>
-            <div className="space-y-4">
+            <h2 className="text-lg font-bold text-foreground mb-4">{editingId ? 'Edit Book' : 'Add Book'}</h2>
+            <div className="space-y-3">
               <div>
-                <label className="form-label">BOOK TITLE *</label>
-                <input type="text" id="book-title" className="input-simple" placeholder="e.g. Atomic Habits" defaultValue={editingBook?.title || ''} />
+                <label className="form-label">Title *</label>
+                <input type="text" id="book-title" className="input-simple" placeholder="Book title" defaultValue={editingBook?.title || ''} />
               </div>
               <div>
-                <label className="form-label">AUTHOR</label>
-                <input type="text" id="book-author" className="input-simple" placeholder="e.g. James Clear" defaultValue={editingBook?.author || ''} />
+                <label className="form-label">Author</label>
+                <input type="text" id="book-author" className="input-simple" placeholder="Author name" defaultValue={editingBook?.author || ''} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="form-label">GENRE</label>
+                  <label className="form-label">Genre</label>
                   <select className="input-simple" value={newGenre} onChange={e => setNewGenre(e.target.value)}>
                     {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">TOTAL PAGES</label>
+                  <label className="form-label">Status</label>
+                  <select className="input-simple" value={newStatus} onChange={e => setNewStatus(e.target.value)}>
+                    {STATUS_TABS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="form-label">Total Pages</label>
                   <input type="number" id="book-pages" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.pages || ''} />
                 </div>
-              </div>
-              <div>
-                <label className="form-label">CURRENT PAGE</label>
-                <input type="number" id="book-current-page" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.currentPage || 0} />
-              </div>
-              <div>
-                <label className="form-label">STATUS</label>
-                <div className="flex gap-2">
-                  {STATUS_TABS.map(tab => {
-                    const Icon = tab.icon;
-                    return (
-                      <button key={tab.id} type="button"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-all"
-                        style={{
-                          background: newStatus === tab.id ? `${tab.color}15` : 'hsl(var(--bg-input))',
-                          border: `1px solid ${newStatus === tab.id ? `${tab.color}33` : 'hsl(var(--border))'}`,
-                          color: newStatus === tab.id ? tab.color : 'hsl(var(--muted-foreground))',
-                        }}
-                        onClick={() => setNewStatus(tab.id)}
-                      >
-                        <Icon className="w-3.5 h-3.5" /> {tab.label}
-                      </button>
-                    );
-                  })}
+                <div>
+                  <label className="form-label">Current Page</label>
+                  <input type="number" id="book-current-page" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.currentPage || ''} />
                 </div>
               </div>
               <div>
-                <label className="form-label">RATING</label>
+                <label className="form-label">Rating</label>
                 <StarRating rating={newRating} onChange={setNewRating} />
               </div>
               <div>
-                <label className="form-label">NOTES</label>
-                <textarea id="book-notes" className="input-simple min-h-[100px] resize-y" placeholder="Your thoughts about this book..." defaultValue={editingBook?.notes || ''} />
+                <label className="form-label">Notes</label>
+                <textarea id="book-notes" className="input-simple min-h-[80px] resize-y" placeholder="Your thoughts..." defaultValue={editingBook?.notes || ''} />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-5">
               <button className="btn-outline flex-1" onClick={() => { setShowModal(false); setEditingId(null); }}>Cancel</button>
-              <button className="btn-green flex-1" onClick={saveBook}>{editingId ? 'Update Book' : 'Add Book'}</button>
+              <button className="btn-green flex-1" onClick={saveBook}>{editingId ? 'Update' : 'Add Book'}</button>
             </div>
           </div>
         </div>

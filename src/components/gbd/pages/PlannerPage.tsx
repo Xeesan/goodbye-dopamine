@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { Search, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 
 interface PlannerPageProps {
   navigateTo: (page: string) => void;
@@ -11,8 +12,11 @@ interface PlannerPageProps {
 
 const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const [priority, setPriority] = useState('medium');
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
   const tasks = Storage.getTasks();
   const todoTasks = tasks.filter(t => t.status === 'todo');
   const inProgressTasks = tasks.filter(t => t.status === 'in-progress');
@@ -29,20 +33,26 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
     const reminder = (document.getElementById('task-reminder') as HTMLSelectElement)?.value;
     Storage.addTask({ title, date, time, priority, reminder });
     addXP(10);
-    navigateTo('planner');
+    (document.getElementById('task-title') as HTMLInputElement).value = '';
+    refresh();
+    toast({ title: 'Task created', description: title });
   };
 
   const moveTask = (id: string, status: string) => {
+    const task = tasks.find(t => t.id === id);
     Storage.updateTask(id, { status });
     if (status === 'done') addXP(20);
-    navigateTo('planner');
+    refresh();
+    toast({ title: status === 'done' ? 'Task completed ✓' : 'Task moved', description: task?.title || '' });
   };
 
   const deleteTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
     const confirmed = await showDialog({ title: 'Delete Task', message: 'Are you sure you want to delete this task?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteTask(id);
-      navigateTo('planner');
+      refresh();
+      toast({ title: 'Task deleted', description: task?.title || '' });
     }
   };
 
