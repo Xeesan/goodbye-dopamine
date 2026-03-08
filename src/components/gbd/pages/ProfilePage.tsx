@@ -48,7 +48,16 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       setYear(data.year || '');
       setGender(data.gender || '');
       if (data.avatar_url) {
-        setAvatarUrl(data.avatar_url);
+        // If it's a file path (not a full URL), generate a signed URL
+        const avatarPath = data.avatar_url;
+        if (avatarPath.startsWith('http')) {
+          setAvatarUrl(avatarPath);
+        } else {
+          const { data: signedData } = await supabase.storage
+            .from('avatars')
+            .createSignedUrl(avatarPath, 3600);
+          if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+        }
       }
     }
     setLoading(false);
