@@ -508,7 +508,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
       if (pendingToolCalls.length > 0) {
         const results: string[] = [];
         for (const tc of pendingToolCalls) {
-          const result = executeToolCall(tc);
+          const result = await executeToolCall(tc);
           results.push(result);
         }
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n');
