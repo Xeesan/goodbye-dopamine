@@ -8,6 +8,8 @@ import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
 import { runAutoBackup } from '@/lib/autoBackup';
 import { useHealthReminders } from '@/hooks/useHealthReminders';
+import { toast } from '@/hooks/use-toast';
+import AIChatFAB from './AIChatFAB';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
 import RoutinePage from './pages/RoutinePage';
