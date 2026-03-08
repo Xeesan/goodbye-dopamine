@@ -136,9 +136,9 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           description: args.description || '',
         });
         const quips = debtType === 'lend'
-          ? ['Money out the door! 🚪', 'Generous king/queen! 👑', 'Hope they pay you back fr 🤞'][Math.floor(Math.random() * 3)]
-          : ['IOU noted! 📋', 'Debt recorded, no escaping this one 😤', 'Borrowed and tracked! 🔍'][Math.floor(Math.random() * 3)];
-        return `${quips} **${debtType === 'lend' ? 'Lent' : 'Borrowed'} ${args.amount}** ${debtType === 'lend' ? 'to' : 'from'} **${args.person}**${args.description ? ` — ${args.description}` : ''}`;
+          ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
+          : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
+        return `${quips}\n\n**${debtType === 'lend' ? '💸 Lent' : '🤲 Borrowed'} ৳${args.amount}** ${debtType === 'lend' ? 'to' : 'from'} **${args.person}**${args.description ? ` — _${args.description}_` : ''}`;
       }
 
       return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
