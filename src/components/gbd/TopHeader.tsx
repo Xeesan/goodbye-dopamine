@@ -19,6 +19,7 @@ interface TopHeaderProps {
 const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar, theme, onToggleTheme }: TopHeaderProps) => {
   const isOnline = useOnlineStatus();
   const [unreadCount, setUnreadCount] = useState(0);
+  const { t } = useI18n();
 
   useEffect(() => {
     let cancelled = false;
