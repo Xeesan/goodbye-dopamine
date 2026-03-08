@@ -45,8 +45,10 @@ export function enqueue(item: Omit<QueueItem, 'id' | 'timestamp'>) {
 }
 
 export async function flushQueue(): Promise<number> {
-  const queue = getQueue();
-  if (queue.length === 0) return 0;
+  // Drop stale items before processing
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const queue = getQueue().filter(q => q.timestamp > sevenDaysAgo);
+  if (queue.length === 0) { setQueue([]); return 0; }
 
   let processed = 0;
   const remaining: QueueItem[] = [];
