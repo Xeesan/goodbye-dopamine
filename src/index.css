@@ -599,6 +599,8 @@ body {
   gap: 4px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .day-tab {
