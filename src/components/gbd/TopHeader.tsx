@@ -13,7 +13,6 @@ interface TopHeaderProps {
 }
 
 const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar, theme, onToggleTheme }: TopHeaderProps) => {
-  const [showNotif, setShowNotif] = useState(false);
   const isOnline = useOnlineStatus();
 
   return (
