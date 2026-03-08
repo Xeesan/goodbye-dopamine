@@ -836,12 +836,6 @@ body {
   padding: 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .hamburger-btn {
-    display: flex;
-  }
-}
 
 @layer base {
   * {

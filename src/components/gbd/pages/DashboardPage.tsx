@@ -187,7 +187,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mt-5">
         {[
           { label: 'TASKS', value: completedTasks, icon: CheckSquare, color: 'hsl(var(--info))' },
           { label: 'FOCUS TIME', value: `${(totalFocusMin / 60).toFixed(1)}h`, icon: Clock, color: 'hsl(var(--primary))' },
