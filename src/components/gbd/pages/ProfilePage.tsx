@@ -160,7 +160,7 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
 
   if (loading) {
     return (
-      <div className="page-enter max-w-[800px] mx-auto">
+      <div className="page-enter max-w-[800px]">
         <div className="glass-card text-center !py-16">
           <p className="text-muted-foreground animate-pulse">Loading profile...</p>
         </div>
