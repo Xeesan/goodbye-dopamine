@@ -26,7 +26,16 @@ const ALL_TILES = [
 
 const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
+  const [quoteKey, setQuoteKey] = useState(0);
+  const [spinning, setSpinning] = useState(false);
   const { xp } = useGamification();
+
+  const refreshQuote = useCallback(() => {
+    setSpinning(true);
+    setQuoteKey(k => k + 1);
+    setQuote(getRandomQuote());
+    setTimeout(() => setSpinning(false), 500);
+  }, []);
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const sessions = Storage.getFocusSessions();
