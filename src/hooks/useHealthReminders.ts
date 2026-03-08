@@ -120,8 +120,7 @@ async function showNotification(reminder: HealthReminder) {
           icon: '/icon-512.svg',
           badge: '/icon-512.svg',
           tag: reminder.tag,
-          vibrate: [200, 100, 200],
-        });
+        } as NotificationOptions);
       } else {
         new Notification(reminder.title, {
           body: reminder.body,
