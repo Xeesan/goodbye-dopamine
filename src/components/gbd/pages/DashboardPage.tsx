@@ -38,7 +38,7 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
-  useState(() => { setQuote(getDailyQuote()); });
+  useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
 
 
   const refreshQuote = useCallback(() => {
