@@ -122,6 +122,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   };
 
   const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
     setLoading(true);
     const { error } = await supabase.auth.resend({
       type: 'signup',
@@ -132,6 +133,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       showToast(error.message);
     } else {
       showToast('New code sent! Check your inbox 📬', 'success');
+      setResendCooldown(60);
     }
   };
 
