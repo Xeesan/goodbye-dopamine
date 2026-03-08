@@ -117,7 +117,20 @@ Deno.serve(async (req) => {
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
       .trim();
-    const parsed = JSON.parse(cleaned);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "AI returned invalid JSON. Please try again." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!Array.isArray(parsed)) {
+      parsed = [parsed];
+    }
 
     return new Response(JSON.stringify({ items: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

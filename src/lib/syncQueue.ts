@@ -26,6 +26,11 @@ function setQueue(queue: QueueItem[]) {
 
 export function enqueue(item: Omit<QueueItem, 'id' | 'timestamp'>) {
   const queue = getQueue();
+  // Cap queue at 500 items to prevent localStorage overflow
+  if (queue.length >= 500) {
+    console.warn('Sync queue full, dropping oldest item');
+    queue.shift();
+  }
   queue.push({
     ...item,
     id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),

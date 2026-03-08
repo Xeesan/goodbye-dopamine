@@ -9,9 +9,10 @@ function icsEscape(text: string): string {
 
 function toICSDate(dateStr: string, timeStr?: string): string {
   // dateStr: "2026-03-15", timeStr: "09:00"
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return '';
   const d = dateStr.replace(/-/g, '');
-  const t = (timeStr || '09:00').replace(':', '') + '00';
-  return d + 'T' + t;
+  const time = (timeStr || '09:00').replace(/[^0-9]/g, '').slice(0, 4).padEnd(4, '0') + '00';
+  return d + 'T' + time;
 }
 
 function uid(): string {
@@ -91,7 +92,7 @@ export function exportExamsToICS(exams: any[], label = 'Exams') {
   if (!exams || exams.length === 0) return false;
 
   const events = exams
-    .filter(e => e.date && e.subject)
+    .filter(e => e.date && e.subject && /^\d{4}-\d{2}-\d{2}$/.test(e.date))
     .map(e => {
       const start = toICSDate(e.date, e.time);
       // Default 2hr duration for exams
