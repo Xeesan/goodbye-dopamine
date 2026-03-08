@@ -383,6 +383,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
     }
   }, [messages]);
 
+  // Auto-close chatbox when navigating to a different section
+  useEffect(() => {
+    if (open) setOpen(false);
+  }, [currentPage]);
+
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 200);
