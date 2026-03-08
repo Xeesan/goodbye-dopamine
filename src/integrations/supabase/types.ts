@@ -176,6 +176,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_exams: {
+        Row: {
+          created_at: string
+          credits: number | null
+          date: string
+          grade: string | null
+          id: string
+          room: string | null
+          subject: string
+          teacher: string | null
+          time: string | null
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number | null
+          date: string
+          grade?: string | null
+          id?: string
+          room?: string | null
+          subject: string
+          teacher?: string | null
+          time?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number | null
+          date?: string
+          grade?: string | null
+          id?: string
+          room?: string | null
+          subject?: string
+          teacher?: string | null
+          time?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_gamification: {
         Row: {
           created_at: string
@@ -202,6 +247,39 @@ export type Database = {
           streak?: number
           total_xp?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_routine: {
+        Row: {
+          created_at: string
+          day: string
+          end_time: string
+          id: string
+          room: string | null
+          start_time: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          end_time: string
+          id?: string
+          room?: string | null
+          start_time: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          end_time?: string
+          id?: string
+          room?: string | null
+          start_time?: string
+          subject?: string
           user_id?: string
         }
         Relationships: []
