@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { LogOut, ArrowLeft, Save, User, AtSign } from 'lucide-react';
+import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface ProfilePageProps {
@@ -15,6 +15,9 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -44,8 +47,68 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       setSemester(data.semester || '');
       setYear(data.year || '');
       setGender(data.gender || '');
+      if (data.avatar_url) {
+        setAvatarUrl(data.avatar_url);
+      }
     }
     setLoading(false);
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      await showDialog({ title: 'Invalid File', message: 'Please select an image file (JPG, PNG, etc.)', type: 'alert' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      await showDialog({ title: 'File Too Large', message: 'Image must be under 5MB.', type: 'alert' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      setUploadingAvatar(false);
+      await showDialog({ title: 'Upload Failed', message: uploadError.message, type: 'alert' });
+      return;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    // Add cache-busting param
+    const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
+    // Update profile
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
+
+    setUploadingAvatar(false);
+
+    if (updateError) {
+      await showDialog({ title: 'Error', message: updateError.message, type: 'alert' });
+    } else {
+      setAvatarUrl(urlWithCacheBust);
+      setProfile((prev: any) => ({ ...prev, avatar_url: publicUrl }));
+    }
+
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const saveProfile = async () => {
@@ -93,13 +156,44 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       </div>
 
       <div className="space-y-6">
-        {/* Identity card */}
+        {/* Identity card with avatar */}
         <div className="glass-card-accent flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 text-2xl font-extrabold" style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
-            color: 'hsl(var(--primary-foreground))',
-          }}>
-            {(profile?.username || 'U')[0].toUpperCase()}
+          <div className="relative group shrink-0">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="w-20 h-20 rounded-2xl object-cover"
+                style={{ border: '2px solid hsl(var(--border-accent))' }}
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-extrabold" style={{
+                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
+                color: 'hsl(var(--primary-foreground))',
+              }}>
+                {(profile?.username || 'U')[0].toUpperCase()}
+              </div>
+            )}
+            {/* Camera overlay */}
+            <button
+              className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+            >
+              {uploadingAvatar ? (
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              ) : (
+                <Camera className="w-6 h-6 text-white" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={uploadAvatar}
+            />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -108,6 +202,13 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
             </div>
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
             <p className="text-xs text-muted-foreground mt-1">Joined {new Date(profile?.created_at).toLocaleDateString()}</p>
+            <button
+              className="text-xs text-primary hover:underline mt-1 font-medium"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+            >
+              {uploadingAvatar ? 'Uploading...' : avatarUrl ? 'Change photo' : 'Add profile photo'}
+            </button>
           </div>
         </div>
 
