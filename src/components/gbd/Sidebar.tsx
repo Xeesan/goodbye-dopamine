@@ -18,6 +18,7 @@ const navItems = [
   { id: '_personal', label: 'PERSONAL', icon: null, category: 'header' },
   { id: 'money', label: 'Money', icon: Wallet, category: 'personal' },
   { id: 'notes', label: 'Notes', icon: StickyNote, category: 'personal' },
+  { id: 'booklist', label: 'Booklist', icon: BookOpen, category: 'personal' },
   { id: '_wellness', label: 'WELLNESS', icon: null, category: 'header' },
   { id: 'detox', label: 'Detox', icon: Timer, category: 'wellness' },
   { id: 'health', label: 'Health', icon: Heart, category: 'wellness' },
