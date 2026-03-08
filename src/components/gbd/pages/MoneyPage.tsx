@@ -294,7 +294,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* People Summary */}
           {allPeople.length > 0 && (
             <div className="glass-card mb-6">
-              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 People Summary</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 {t('money.people_summary')}</h2>
               <div className="space-y-2">
                 {allPeople.sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).map(p => (
                   <div key={p.name} className="flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
