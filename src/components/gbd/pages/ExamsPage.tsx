@@ -62,7 +62,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       setEditingId(null);
     } else {
       Storage.addExam(examData);
-      Storage.addXP(15);
+      addXP(15);
     }
     navigateTo('exams');
   };
