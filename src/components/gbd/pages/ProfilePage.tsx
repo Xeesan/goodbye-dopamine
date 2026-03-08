@@ -66,6 +66,32 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
     setLoading(false);
   };
 
+  const compressImage = (file: File, maxSize: number = 256): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; } }
+        else { if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; } }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas not supported')); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error('Compression failed')),
+          'image/jpeg',
+          0.75
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+      img.src = url;
+    });
+  };
+
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -79,10 +105,10 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       return;
     }
     setUploadingAvatar(true);
-    const extMap: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' };
-    const fileExt = extMap[file.type] || 'jpg';
-    const filePath = `${user.id}/avatar.${fileExt}`;
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+    try {
+      const compressed = await compressImage(file, 256);
+      const filePath = `${user.id}/avatar.jpg`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, compressed, { upsert: true, contentType: 'image/jpeg' });
     if (uploadError) {
       setUploadingAvatar(false);
       await showDialog({ title: 'Upload Failed', message: uploadError.message, type: 'alert' });
