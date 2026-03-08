@@ -45,6 +45,14 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       showToast('Please enter both email and password');
       return;
     }
+    // Rate limit login attempts
+    const now = Date.now();
+    loginAttempts.current = loginAttempts.current.filter(ts => now - ts < LOGIN_RATE_WINDOW);
+    if (loginAttempts.current.length >= LOGIN_RATE_LIMIT) {
+      showToast('Too many login attempts. Please wait a minute.');
+      return;
+    }
+    loginAttempts.current.push(now);
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
