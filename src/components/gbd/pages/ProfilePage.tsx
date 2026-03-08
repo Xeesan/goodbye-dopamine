@@ -72,9 +72,10 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file
-    if (!file.type.startsWith('image/')) {
-      await showDialog({ title: 'Invalid File', message: 'Please select an image file (JPG, PNG, etc.)', type: 'alert' });
+    // Validate file - only allow safe raster formats
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      await showDialog({ title: 'Invalid File', message: 'Please select a JPG, PNG, GIF, or WebP image file.', type: 'alert' });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -84,7 +85,9 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
 
     setUploadingAvatar(true);
 
-    const fileExt = file.name.split('.').pop();
+    // Use fixed safe extension based on MIME type
+    const extMap: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' };
+    const fileExt = extMap[file.type] || 'jpg';
     const filePath = `${user.id}/avatar.${fileExt}`;
 
     // Upload to storage
