@@ -92,8 +92,13 @@ Install it as an app on your phone or desktop — it works offline too.
 - Productivity analytics and insights
 
 ### 👤 Profile
-- User profile with avatar upload, bio, institution, and academic details
+- User profile with avatar upload (safe raster formats only), bio, institution, and academic details
 - Account management and settings
+
+### 🌗 Theming
+- Light and dark mode with smooth transitions
+- Toggle via sun/moon icon in the header
+- Preference persisted across sessions
 
 ---
 
@@ -115,7 +120,7 @@ Every productive action earns XP:
 | Add a course | +10 |
 | Focus session | +duration (min 5) |
 
-**Level up every 100 XP.** XP is synced to the cloud and persists across devices.
+**Level up every 100 XP.** XP is synced to the cloud via server-side atomic increments — tamper-proof and persistent across devices.
 
 ---
 
@@ -125,6 +130,17 @@ Every productive action earns XP:
 - **Offline support**: Full functionality without internet — data syncs when back online
 - **Offline sync queue**: Failed database writes are queued and auto-retried on reconnection
 - **Connection indicator**: Visual offline/online status badge in the header
+
+---
+
+## 🔒 Security
+
+- **Row-Level Security (RLS)** on all database tables — users can only access their own data
+- **Server-side XP increments** via `SECURITY DEFINER` Postgres function — no client-side score manipulation
+- **JWT verification** on edge functions using `getUser()` for cryptographic token validation
+- **Avatar upload allowlist** — only `jpeg`, `png`, `gif`, `webp` accepted; SVG/scripts blocked
+- **Private storage buckets** with short-lived signed URLs for file access
+- **Email OTP verification** required on signup — no anonymous accounts
 
 ---
 
