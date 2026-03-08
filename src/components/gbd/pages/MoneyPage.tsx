@@ -335,7 +335,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
           {/* Add new debt form */}
           <div className="glass-card mb-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📝 New Entry</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📝 {t('money.new_entry')}</h2>
             <div className="grid grid-cols-2 gap-0 mb-5 rounded-xl overflow-hidden" style={{ border: '2px solid hsl(var(--border))' }}>
               <button
                 className={`py-3 text-sm font-semibold transition-all ${debtType === 'lend' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
