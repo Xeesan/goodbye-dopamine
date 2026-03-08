@@ -37,45 +37,61 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   }, []);
 
   const fetchProfile = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    if (data) {
-      setProfile(data);
-      setFullName(data.full_name || '');
-      setBio(data.bio || '');
-      setInstitution(data.institution || '');
-      setSubject(data.subject || '');
-      setSemester(data.semester || '');
-      setYear(data.year || '');
-      setGender(data.gender || '');
-      if (data.avatar_url) {
-        let avatarPath = data.avatar_url;
-        if (avatarPath.startsWith('http')) {
-          const match = avatarPath.match(/\/avatars\/(.+)$/);
-          if (match) avatarPath = match[1];
-        }
-        const { data: signedData } = await supabase.storage
-          .from('avatars')
-          .createSignedUrl(avatarPath, 3600);
-        if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) {
+        console.error('Failed to fetch profile:', error.message);
+        setLoading(false);
+        return;
       }
+      if (data) {
+        setProfile(data);
+        setFullName(data.full_name || '');
+        setBio(data.bio || '');
+        setInstitution(data.institution || '');
+        setSubject(data.subject || '');
+        setSemester(data.semester || '');
+        setYear(data.year || '');
+        setGender(data.gender || '');
+        if (data.avatar_url) {
+          try {
+            let avatarPath = data.avatar_url;
+            if (avatarPath.startsWith('http')) {
+              const match = avatarPath.match(/\/avatars\/(.+)$/);
+              if (match) avatarPath = match[1];
+            }
+            const { data: signedData } = await supabase.storage
+              .from('avatars')
+              .createSignedUrl(avatarPath, 3600);
+            if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+          } catch (e) {
+            console.error('Failed to get avatar URL:', e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Profile fetch error:', e);
     }
     setLoading(false);
   };
 
-  const compressImage = (file: File, maxSize: number = 256): Promise<Blob> => {
+  const compressImage = (file: File, maxSize: number = 200): Promise<Blob> => {
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Image processing timed out')), 15000);
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
+        clearTimeout(timeout);
         URL.revokeObjectURL(url);
         const canvas = document.createElement('canvas');
         let w = img.width, h = img.height;
-        if (w > h) { if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; } }
-        else { if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; } }
+        // Clamp to maxSize preserving aspect ratio
+        if (w > h) { if (w > maxSize) { h = Math.max(1, Math.round(h * maxSize / w)); w = maxSize; } }
+        else { if (h > maxSize) { w = Math.max(1, Math.round(w * maxSize / h)); h = maxSize; } }
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
@@ -84,10 +100,10 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
         canvas.toBlob(
           blob => blob ? resolve(blob) : reject(new Error('Compression failed')),
           'image/jpeg',
-          0.75
+          0.65
         );
       };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+      img.onerror = () => { clearTimeout(timeout); URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
       img.src = url;
     });
   };
