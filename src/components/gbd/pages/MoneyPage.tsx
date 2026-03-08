@@ -503,7 +503,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
                           style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
                           <Check className="w-3.5 h-3.5" />
-                          Settle
+                          {t('money.settle')}
                         </button>
                       </div>
                     </div>
