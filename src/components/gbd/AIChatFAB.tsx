@@ -141,8 +141,8 @@ function executeToolCall(toolCall: ToolCall): string {
             summary += `**${day}**: ${periods.map((p: any) => `${p.subject} (${p.startTime}-${p.endTime})`).join(', ')}\n`;
           }
         }
-        return `🗓️ **Routine**:\n${summary || 'No routine set.'}`;
-      }
+        if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
+        return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
 
       return '❌ Unknown section to query.';
     }
