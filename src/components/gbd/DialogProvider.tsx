@@ -44,6 +44,10 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Tile customizer state
+  const [tileDialog, setTileDialog] = useState<{ tiles: TileOption[]; enabled: string[]; resolve: (v: string[] | null) => void } | null>(null);
+  const [tileEnabled, setTileEnabled] = useState<string[]>([]);
+
   const showDialog = useCallback((options: DialogOptions): Promise<boolean> => {
     return new Promise(resolve => {
       setDialog({ ...options, resolve });
@@ -57,6 +61,13 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const showTileCustomizer = useCallback((tiles: TileOption[], enabledIds: string[]): Promise<string[] | null> => {
+    return new Promise(resolve => {
+      setTileEnabled([...enabledIds]);
+      setTileDialog({ tiles, enabled: enabledIds, resolve });
+    });
+  }, []);
+
   useEffect(() => {
     if (dialog?.type === 'prompt' && inputRef.current) {
       inputRef.current.focus();
@@ -67,6 +78,16 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     dialog?.resolve(result);
     setDialog(null);
     setInputValue('');
+  };
+
+  const handleTileClose = (save: boolean) => {
+    tileDialog?.resolve(save ? tileEnabled : null);
+    setTileDialog(null);
+    setTileEnabled([]);
+  };
+
+  const toggleTile = (id: string) => {
+    setTileEnabled(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]);
   };
 
   const iconMap = {
