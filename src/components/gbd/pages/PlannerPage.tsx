@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
@@ -57,20 +57,56 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   };
 
   const renderTaskCard = (task: any) => (
-    <div key={task.id} className="glass-card !p-4 mb-3">
+    <div key={task.id} className="glass-card !p-4 mb-3 group hover:!border-primary/20">
       <div className="font-medium text-foreground text-sm mb-2">{task.title}</div>
-      <div className="flex items-center gap-2 text-xs mb-2">
+      <div className="flex items-center gap-2 text-xs mb-3">
         <span className={`task-priority ${task.priority}`}>{task.priority}</span>
         <span className="text-muted-foreground">{task.date || ''}</span>
       </div>
-      <div className="flex gap-1.5">
-        {task.status !== 'in-progress' && (
-          <button className="btn-outline !py-1 !px-2.5 !text-[0.65rem]" onClick={() => moveTask(task.id, 'in-progress')}>→ Progress</button>
+      <div className="flex flex-wrap gap-2">
+        {task.status === 'todo' && (
+          <button
+            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-[0.7rem] font-semibold tracking-wide transition-all duration-200 border-none cursor-pointer"
+            style={{ background: 'hsl(var(--info) / 0.15)', color: 'hsl(var(--info))' }}
+            onClick={() => moveTask(task.id, 'in-progress')}
+          >
+            <ArrowRight className="w-3 h-3" /> Progress
+          </button>
+        )}
+        {task.status === 'in-progress' && (
+          <button
+            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-[0.7rem] font-semibold tracking-wide transition-all duration-200 border-none cursor-pointer"
+            style={{ background: 'hsl(var(--warning) / 0.15)', color: 'hsl(var(--warning))' }}
+            onClick={() => moveTask(task.id, 'todo')}
+          >
+            <Undo2 className="w-3 h-3" /> To Do
+          </button>
         )}
         {task.status !== 'done' && (
-          <button className="btn-outline !py-1 !px-2.5 !text-[0.65rem]" onClick={() => moveTask(task.id, 'done')}>✓ Done</button>
+          <button
+            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-[0.7rem] font-semibold tracking-wide transition-all duration-200 border-none cursor-pointer"
+            style={{ background: 'hsl(var(--green) / 0.15)', color: 'hsl(var(--green))' }}
+            onClick={() => moveTask(task.id, 'done')}
+          >
+            <CheckCircle2 className="w-3 h-3" /> Done
+          </button>
         )}
-        <button className="btn-outline !py-1 !px-2.5 !text-[0.65rem] !text-destructive !border-destructive/30" onClick={() => deleteTask(task.id)}>✕</button>
+        {task.status === 'done' && (
+          <button
+            className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-[0.7rem] font-semibold tracking-wide transition-all duration-200 border-none cursor-pointer"
+            style={{ background: 'hsl(var(--info) / 0.15)', color: 'hsl(var(--info))' }}
+            onClick={() => moveTask(task.id, 'todo')}
+          >
+            <Undo2 className="w-3 h-3" /> Reopen
+          </button>
+        )}
+        <button
+          className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-[0.7rem] font-semibold tracking-wide transition-all duration-200 border-none cursor-pointer"
+          style={{ background: 'hsl(var(--destructive) / 0.12)', color: 'hsl(var(--destructive))' }}
+          onClick={() => deleteTask(task.id)}
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
       </div>
     </div>
   );
