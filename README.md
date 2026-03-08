@@ -92,8 +92,13 @@ Install it as an app on your phone or desktop — it works offline too.
 - Productivity analytics and insights
 
 ### 👤 Profile
-- User profile with avatar upload, bio, institution, and academic details
+- User profile with avatar upload (safe raster formats only), bio, institution, and academic details
 - Account management and settings
+
+### 🌗 Theming
+- Light and dark mode with smooth transitions
+- Toggle via sun/moon icon in the header
+- Preference persisted across sessions
 
 ---
 
