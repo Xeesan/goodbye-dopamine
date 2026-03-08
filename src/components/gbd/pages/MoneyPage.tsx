@@ -273,15 +273,15 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↑ LENT</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↑ {t('money.lent')}</div>
               <div className="text-lg font-bold text-primary">৳{totalLent.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↓ BORROWED</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↓ {t('money.borrowed')}</div>
               <div className="text-lg font-bold text-destructive">৳{totalBorrowed.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">⊘ NET</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">⊘ {t('money.net')}</div>
               <div className={`text-lg font-bold ${netTotal > 0 ? 'text-primary' : netTotal < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {netTotal > 0 ? '+' : netTotal < 0 ? '-' : ''}৳{Math.abs(netTotal).toLocaleString()}
               </div>
