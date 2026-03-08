@@ -129,6 +129,10 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       setAvatarUrl(avatarDisplayUrl);
       setProfile((prev: any) => ({ ...prev, avatar_url: filePath }));
     }
+    } catch (err: any) {
+      setUploadingAvatar(false);
+      await showDialog({ title: 'Error', message: err?.message || 'Failed to process image.', type: 'alert' });
+    }
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

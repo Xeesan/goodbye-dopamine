@@ -44,6 +44,33 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
     };
   }, []);
 
+  // Play alert sound + vibrate when timer completes
+  const alertOnComplete = useCallback(() => {
+    // Vibration API (mobile)
+    try {
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 300]);
+    } catch { /* not supported */ }
+    // Audio beep using Web Audio API (no file needed)
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playBeep = (freq: number, delay: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.4);
+      };
+      playBeep(880, 0);
+      playBeep(880, 0.5);
+      playBeep(1100, 1.0);
+    } catch { /* audio not supported */ }
+  }, []);
+
   useEffect(() => {
     if (running && secondsLeft > 0) {
       intervalRef.current = setInterval(() => {
@@ -52,6 +79,7 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
             if (intervalRef.current) clearInterval(intervalRef.current);
             setRunning(false);
             setCompleted(true);
+            alertOnComplete();
             return 0;
           }
           return s - 1;
@@ -63,7 +91,7 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running]); // only depend on running, not secondsLeft
+  }, [running, alertOnComplete]); // only depend on running
 
   // Prevent body scroll while overlay is open
   useEffect(() => {
