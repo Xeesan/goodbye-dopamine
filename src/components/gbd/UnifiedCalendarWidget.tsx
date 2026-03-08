@@ -81,7 +81,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
     }
 
     return map;
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, refreshKey]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);
