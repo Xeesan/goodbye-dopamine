@@ -1,5 +1,5 @@
 /**
- * Database sync for exams and routine data.
+ * Database sync for exams, routine, transactions, and debts data.
  * Reads/writes to Supabase with localStorage as a fast cache.
  */
 import { supabase } from '@/integrations/supabase/client';
