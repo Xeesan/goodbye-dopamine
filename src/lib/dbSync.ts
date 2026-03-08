@@ -589,7 +589,7 @@ export async function settleDebtInDB(id: string) {
 
 export async function deleteDebtFromDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_debts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
