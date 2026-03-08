@@ -70,7 +70,12 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
     });
     setLoading(false);
     if (error) {
-      showToast(error.message);
+      // Handle unique constraint violation on username
+      if (error.message.toLowerCase().includes('unique') || error.message.toLowerCase().includes('duplicate') || error.message.toLowerCase().includes('username')) {
+        showToast('Username is already taken');
+      } else {
+        showToast(error.message);
+      }
     } else {
       showToast('Account created! Welcome aboard 🎉', 'success');
       onAuthSuccess();
