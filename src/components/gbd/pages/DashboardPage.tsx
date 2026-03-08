@@ -6,8 +6,8 @@ import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
-import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw } from 'lucide-react';
-
+import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target } from 'lucide-react';
+import FocusNowOverlay, { pickMostUrgentTask } from '../FocusNowOverlay';
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
