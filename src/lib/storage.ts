@@ -301,7 +301,7 @@ const Storage = {
   getSemesterBudget() {
     return this.get('semester_budget', null);
   },
-  setSemesterBudget(budget: { totalAmount: number; startDate: string; endDate: string } | null) {
+  setSemesterBudget(budget: any | null) {
     this.set('semester_budget', budget);
   },
 
