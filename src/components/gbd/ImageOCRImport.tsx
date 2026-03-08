@@ -370,13 +370,9 @@ If you cannot read anything, return an empty array: []`;
 
   const confirmImport = () => {
     if (results && results.length > 0) {
-      const validated = results.map(item =>
-        mode === 'routine' ? validateRoutineItem(item) : validateExamItem(item)
-      ).filter(item =>
-        mode === 'routine'
-          ? item.day && item.subject && item.subject !== 'Unknown'
-          : item.subject && item.subject !== 'Unknown Subject'
-      );
+      const validated = mode === 'routine'
+        ? results.map(validateRoutineItem).filter(item => item.day && item.subject !== 'Unknown')
+        : results.map(validateExamItem).filter(item => item.subject !== 'Unknown Subject');
       if (validated.length > 0) {
         onImport(validated);
       }
