@@ -30,7 +30,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const { xp } = useGamification();
-  const { showPrompt } = useDialog();
+  const { showPrompt, showTileCustomizer } = useDialog();
 
   const refreshQuote = useCallback(() => {
     setSpinning(true);
@@ -121,14 +121,9 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
             <BarChart3 className="w-4 h-4" /> QUICK TILES
           </div>
           <button className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1" onClick={async () => {
-            const newTiles = await showPrompt({
-              title: 'Customize Tiles',
-              message: 'Enter tile IDs (comma-separated).\nAvailable: planner, routine, exams, academic-hub, money, notes, detox, reports',
-              placeholder: 'planner, routine, exams, money, notes',
-              defaultValue: Storage.getDashboardTiles().join(', '),
-            });
-            if (newTiles) {
-              Storage.setDashboardTiles(newTiles.split(',').map(s => s.trim()));
+            const result = await showTileCustomizer(ALL_TILES, Storage.getDashboardTiles());
+            if (result) {
+              Storage.setDashboardTiles(result);
               navigateTo('dashboard');
             }
           }}>
