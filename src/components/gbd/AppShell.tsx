@@ -26,6 +26,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
@@ -36,7 +37,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const renderPage = () => {
     const props = { navigateTo, refreshKey };
     switch (currentPage) {
-      case 'dashboard': return <DashboardPage {...props} user={user} />;
+      case 'dashboard': return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
       case 'planner': return <PlannerPage {...props} />;
       case 'routine': return <RoutinePage {...props} />;
       case 'exams': return <ExamsPage {...props} />;
@@ -48,7 +49,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'health': return <HealthPage {...props} />;
       case 'reports': return <ReportsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
-      default: return <DashboardPage {...props} user={user} />;
+      default: return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
     }
   };
 
@@ -67,7 +68,12 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
             isOpen={sidebarOpen}
           />
           <main className="flex-1 flex flex-col overflow-hidden">
-            <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} onNavigate={navigateTo} />
+            <TopHeader
+              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+              onNavigate={navigateTo}
+              calendarOpen={calendarOpen}
+              onToggleCalendar={() => setCalendarOpen(prev => !prev)}
+            />
             <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
               {renderPage()}
             </div>

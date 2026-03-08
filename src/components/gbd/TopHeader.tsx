@@ -1,4 +1,4 @@
-import { Menu, Bell, User, Calendar, Wifi, WifiOff } from 'lucide-react';
+import { Menu, Bell, User, Calendar, WifiOff } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 import { useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -6,9 +6,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 interface TopHeaderProps {
   onToggleSidebar: () => void;
   onNavigate: (page: string) => void;
+  calendarOpen?: boolean;
+  onToggleCalendar?: () => void;
 }
 
-const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
+const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar }: TopHeaderProps) => {
   const [showNotif, setShowNotif] = useState(false);
   const isOnline = useOnlineStatus();
 
@@ -17,10 +19,14 @@ const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
       <button className="hamburger-btn" onClick={onToggleSidebar}>
         <Menu className="w-5 h-5" />
       </button>
-      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+      <button
+        className={`flex items-center justify-center gap-2 text-sm transition-colors ${calendarOpen ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+        onClick={onToggleCalendar}
+        title="Toggle calendar"
+      >
         <Calendar className="w-4 h-4" />
         <span>{formatDateShort(new Date())}</span>
-      </div>
+      </button>
       <div className="flex items-center justify-end gap-2">
         {!isOnline && (
           <span className="flex items-center gap-1 text-[0.65rem] font-semibold tracking-wider px-2 py-1 rounded-full text-warning" style={{ background: 'hsl(var(--warning) / 0.15)' }}>
