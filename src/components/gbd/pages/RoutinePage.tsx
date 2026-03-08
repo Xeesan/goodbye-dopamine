@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { getCurrentDayName } from '@/lib/helpers';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 
