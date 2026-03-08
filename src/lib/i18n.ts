@@ -216,7 +216,7 @@ export function t(key: TranslationKey): string {
   return entry[currentLang] || entry.en;
 }
 
-export function subscribe(fn: () => void) {
+export function subscribe(fn: () => void): () => void {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => { listeners.delete(fn); };
 }
