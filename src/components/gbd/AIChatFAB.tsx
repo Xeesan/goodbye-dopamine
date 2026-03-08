@@ -415,8 +415,11 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
             {messages.length === 0 && (
               <div className="text-center py-8">
                 <Bot className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground font-medium">Hi! I'm your GBD Assistant 👋</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Try: "Add exam Physics on March 20"</p>
+                <p className="text-sm text-muted-foreground font-medium">Hey there! I'm your GBD Assistant 👋</p>
+                <p className="text-xs text-muted-foreground/70 mt-1 italic">Crafted with care by Zisan to keep you on track</p>
+                <p className="text-xs text-muted-foreground/60 mt-3">Try something like:</p>
+                <p className="text-xs text-muted-foreground/70">"Spent 200 on coffee ☕"</p>
+                <p className="text-xs text-muted-foreground/70">"Add exam Physics on March 20"</p>
                 <p className="text-xs text-muted-foreground/70">"What tasks do I have today?"</p>
               </div>
             )}
