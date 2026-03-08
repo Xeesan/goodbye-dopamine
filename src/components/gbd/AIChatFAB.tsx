@@ -142,10 +142,11 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           person: args.person,
           amount: Math.abs(args.amount),
           debtType: debtType,
+          debt_type: debtType,
           description: args.description || '',
         };
-        Storage.addDebt({ ...debtData, debt_type: debtType });
-        addDebtToDB(debtData).catch(() => {});
+        Storage.addDebt(debtData);
+        addDebtToDB({ ...debtData, debtType }).catch(() => {});
         const quips = debtType === 'lend'
           ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
           : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
