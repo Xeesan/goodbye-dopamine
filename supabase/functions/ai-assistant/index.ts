@@ -7,8 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Rate limit: 30 requests per 60 seconds per user
-const RATE_LIMIT_MAX = 30;
+// Rate limit: 60 requests per 60 seconds per user
+const RATE_LIMIT_MAX = 60;
 const RATE_LIMIT_WINDOW = 60;
 
 const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student productivity buddy inside the "Good Bye Dopamine" app.
