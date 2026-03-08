@@ -565,9 +565,9 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
         updateAssistant(toolResultText);
 
-        // Notify parent that data changed
+        // Notify parent that data changed (delay to allow DB writes to complete)
         if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in'))) {
-          onDataChanged();
+          setTimeout(() => onDataChanged(), 800);
         }
       } else if (!assistantContent) {
         updateAssistant("I couldn't process that. Try something like: *Add a task to study Math tomorrow*");
