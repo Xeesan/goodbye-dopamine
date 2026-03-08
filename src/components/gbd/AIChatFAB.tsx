@@ -189,11 +189,11 @@ function executeToolCall(toolCall: ToolCall): string {
         for (const day of days) {
           const periods = routine[day] || [];
           if (periods.length > 0) {
-            summary += `**${day}**: ${periods.map((p: any) => `${p.subject} (${p.startTime}-${p.endTime})`).join(', ')}\n`;
+            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${p.startTime}–${p.endTime}`).join('\n')}\n\n`;
           }
         }
         if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
-        return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
+        return `🗓️ **Your routine:**\n\n${summary}Stay consistent! 💯`;
       }
 
       if (section === 'transactions' || section === 'all') {
