@@ -34,7 +34,23 @@ const Index = () => {
       .select('*')
       .eq('id', userId)
       .single();
-    if (data) setProfile(data);
+    if (data) {
+      // Resolve avatar to signed URL for private bucket
+      if (data.avatar_url) {
+        let avatarPath = data.avatar_url;
+        if (avatarPath.startsWith('http')) {
+          const match = avatarPath.match(/\/avatars\/(.+)$/);
+          if (match) avatarPath = match[1];
+        }
+        const { data: signedData } = await supabase.storage
+          .from('avatars')
+          .createSignedUrl(avatarPath, 3600);
+        if (signedData?.signedUrl) {
+          data.avatar_url = signedData.signedUrl;
+        }
+      }
+      setProfile(data);
+    }
   };
 
   const handleLogout = async () => {
