@@ -77,35 +77,35 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
       {/* Level Progress (togglable) + Daily Inspiration side by side */}
       <div className={`grid grid-cols-1 ${showXpBadge ? 'lg:grid-cols-2' : ''} gap-4 mb-5`}>
         {showXpBadge && (
-        {/* Level Progress */}
-        <div className="glass-card-accent flex items-center gap-6">
-          {(() => {
-            const prog = levelProgress(xp.total);
-            const title = levelTitle(xp.level);
-            return (
-              <>
-                <div className="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0" style={{ background: 'hsl(var(--accent-dim))', border: '2px solid hsl(var(--primary))' }}>
-                  <span className="text-xl font-bold text-primary">{xp.level}</span>
-                  <span className="text-[0.5rem] font-semibold text-muted-foreground tracking-widest">LEVEL</span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground">Progress to Level {xp.level + 1}</h3>
-                    <span className="text-[0.6rem] font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">{title}</span>
+          <div className="glass-card-accent flex items-center gap-6 animate-fade-in">
+            {(() => {
+              const prog = levelProgress(xp.total);
+              const title = levelTitle(xp.level);
+              return (
+                <>
+                  <div className="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0" style={{ background: 'hsl(var(--accent-dim))', border: '2px solid hsl(var(--primary))' }}>
+                    <span className="text-xl font-bold text-primary">{xp.level}</span>
+                    <span className="text-[0.5rem] font-semibold text-muted-foreground tracking-widest">LEVEL</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">{prog.current} / {prog.required} XP earned</p>
-                  <div className="xp-bar">
-                    <div className="xp-bar-fill" style={{ width: `${prog.percent}%` }} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-foreground">Progress to Level {xp.level + 1}</h3>
+                      <span className="text-[0.6rem] font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">{title}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">{prog.current} / {prog.required} XP earned</p>
+                    <div className="xp-bar">
+                      <div className="xp-bar-fill" style={{ width: `${prog.percent}%` }} />
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-[0.7rem] text-muted-foreground">
+                      <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {xp.total} TOTAL XP</span>
+                      <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Next: {prog.required - prog.current} XP to go</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 mt-2 text-[0.7rem] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {xp.total} TOTAL XP</span>
-                    <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Next: {prog.required - prog.current} XP to go</span>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Daily Inspiration */}
         <div className="glass-card-accent relative overflow-hidden !p-6">
