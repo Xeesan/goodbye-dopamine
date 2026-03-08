@@ -565,7 +565,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <div className="flex justify-between items-center mb-2">
                     <div>
                       <div className="font-semibold text-foreground">{g.title}</div>
-                      {g.targetDate && <div className="text-xs text-muted-foreground">Target: {formatDate(g.targetDate)}</div>}
+                      {g.targetDate && <div className="text-xs text-muted-foreground">{t('money.target')}: {formatDate(g.targetDate)}</div>}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold text-primary">৳{g.currentAmount} / ৳{g.targetAmount}</span>
