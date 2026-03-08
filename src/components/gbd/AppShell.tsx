@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
+import { GamificationProvider } from '@/hooks/useGamification';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
 import RoutinePage from './pages/RoutinePage';
