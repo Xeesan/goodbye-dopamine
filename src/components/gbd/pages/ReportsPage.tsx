@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Storage from '@/lib/storage';
 import { CheckSquare, Clock, TrendingUp, Flag, ArrowLeft } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ReportsPageProps {
   navigateTo: (page: string) => void;
@@ -10,6 +11,7 @@ interface ReportsPageProps {
 const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
   const productivityRef = useRef<HTMLCanvasElement>(null);
   const moneyRef = useRef<HTMLCanvasElement>(null);
+  const { t } = useI18n();
 
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
@@ -113,8 +115,8 @@ const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-            <p className="text-muted-foreground text-sm">Activity Overview</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('reports.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('reports.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -122,10 +124,10 @@ const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'TASKS COMPLETED', value: completedTasks, icon: CheckSquare, color: 'hsl(var(--primary))' },
-          { label: 'FOCUS TIME', value: `${totalFocusMin} min`, icon: Clock, color: 'hsl(var(--info))' },
-          { label: 'TOTAL INCOME', value: `৳${income}`, icon: TrendingUp, color: 'hsl(var(--primary))' },
-          { label: 'TOTAL EXPENSE', value: `৳${expense}`, icon: Flag, color: 'hsl(var(--destructive))' },
+          { label: t('reports.tasks_completed'), value: completedTasks, icon: CheckSquare, color: 'hsl(var(--primary))' },
+          { label: t('reports.focus_time'), value: `${totalFocusMin} ${t('reports.min')}`, icon: Clock, color: 'hsl(var(--info))' },
+          { label: t('reports.total_income'), value: `৳${income}`, icon: TrendingUp, color: 'hsl(var(--primary))' },
+          { label: t('reports.total_expense'), value: `৳${expense}`, icon: Flag, color: 'hsl(var(--destructive))' },
         ].map(stat => {
           const Icon = stat.icon;
           return (
@@ -145,27 +147,27 @@ const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card-accent">
-          <h3 className="font-semibold text-foreground mb-3">Productivity Score</h3>
+          <h3 className="font-semibold text-foreground mb-3">{t('reports.productivity')}</h3>
           <div className="h-[250px]">
             <canvas ref={productivityRef} />
           </div>
         </div>
         <div className="glass-card-accent">
-          <h3 className="font-semibold text-foreground mb-3">Money</h3>
+          <h3 className="font-semibold text-foreground mb-3">{t('reports.money_chart')}</h3>
           <div className="flex flex-col items-center">
             <div className="relative h-[200px]">
               <canvas ref={moneyRef} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[0.6rem] text-muted-foreground tracking-widest">BALANCE</span>
+                <span className="text-[0.6rem] text-muted-foreground tracking-widest">{t('reports.balance')}</span>
                 <span className="text-lg font-bold text-foreground">৳{balance}</span>
               </div>
             </div>
             <div className="flex gap-6 mt-4 text-sm">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-primary" /> Income <span className="text-muted-foreground">৳{income}</span>
+                <span className="w-3 h-3 rounded-full bg-primary" /> {t('money.income')} <span className="text-muted-foreground">৳{income}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-destructive" /> Expense <span className="text-muted-foreground">৳{expense}</span>
+                <span className="w-3 h-3 rounded-full bg-destructive" /> {t('money.expense')} <span className="text-muted-foreground">৳{expense}</span>
               </div>
             </div>
           </div>

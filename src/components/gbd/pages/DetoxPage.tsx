@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/helpers';
 import { Play, Square, Shield, Volume2, VolumeX, ArrowLeft, Youtube, FileText, ImageIcon, X, Maximize2, Minimize2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DetoxPageProps {
   navigateTo: (page: string) => void;
@@ -47,6 +48,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   const audioNodesRef = useRef<any[]>([]);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
 
   const sessions = Storage.getFocusSessions();
   const totalMin = sessions.reduce((sum: number, s: any) => sum + (s.duration || 0), 0);
@@ -147,7 +149,6 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); stopSound(); };
   }, [stopSound]);
 
-  // Study media state
   const [mediaTab, setMediaTab] = useState<'none' | 'youtube' | 'pdf' | 'image'>('none');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
@@ -159,32 +160,19 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   const getYoutubeEmbedUrl = (url: string) => {
     try {
       let videoId = '';
-      if (url.includes('youtu.be/')) {
-        videoId = url.split('youtu.be/')[1]?.split(/[?&#]/)[0] || '';
-      } else if (url.includes('youtube.com')) {
-        const params = new URL(url).searchParams;
-        videoId = params.get('v') || '';
-      }
+      if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1]?.split(/[?&#]/)[0] || '';
+      else if (url.includes('youtube.com')) videoId = new URL(url).searchParams.get('v') || '';
       return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : '';
     } catch { return ''; }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImageUrl(url);
-      setMediaTab('image');
-    }
+    if (file) { setImageUrl(URL.createObjectURL(file)); setMediaTab('image'); }
   };
-
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      setMediaTab('pdf');
-    }
+    if (file) { setPdfUrl(URL.createObjectURL(file)); setMediaTab('pdf'); }
   };
 
   if (focusActive) {
@@ -214,7 +202,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
                   <iframe src={embedUrl} className="absolute inset-0 w-full h-full rounded-lg" allow="autoplay; encrypted-media" allowFullScreen />
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => { setYoutubeUrl(''); }}>Change video</button>
+                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setYoutubeUrl('')}>Change video</button>
                   {!mediaExpanded && <button className="icon-btn !w-7 !h-7" onClick={() => setMediaExpanded(true)}><Maximize2 className="w-3.5 h-3.5" /></button>}
                 </div>
               </div>
@@ -285,19 +273,16 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
 
     return (
       <div className="page-enter max-w-[800px] mx-auto">
-        {/* Timer header */}
         <div className="flex items-center justify-between mb-6">
-          <div><h2 className="text-xl font-bold text-primary">🛡️ Detox</h2><p className="text-xs text-muted-foreground">DISTRACTIONS BLOCKED</p></div>
+          <div><h2 className="text-xl font-bold text-primary">🛡️ {t('detox.title')}</h2><p className="text-xs text-muted-foreground">{t('detox.distractions_blocked')}</p></div>
           <div className="flex items-center gap-1 text-4xl font-mono font-bold text-foreground"><span>{m}</span><span className="text-muted-foreground">:</span><span>{s}</span></div>
-          <button className="btn-danger" onClick={stopFocus}>EXIT</button>
+          <button className="btn-danger" onClick={stopFocus}>{t('detox.exit')}</button>
         </div>
 
-        {/* Progress bar */}
         <div className="xp-bar !h-3 mb-6"><div className="xp-bar-fill" style={{ width: `${Math.min(100, parseFloat(progress))}%` }} /></div>
 
-        {/* Study Media Tabs */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mr-1">STUDY MEDIA</span>
+          <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mr-1">{t('detox.study_media')}</span>
           {[
             { id: 'youtube' as const, label: 'YouTube', icon: Youtube, color: '#FF0000' },
             { id: 'pdf' as const, label: 'PDF', icon: FileText, color: 'hsl(var(--primary))' },
@@ -315,20 +300,18 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
           })}
         </div>
 
-        {/* Media content */}
         {mediaTab !== 'none' && <div className="mb-6">{mediaContent()}</div>}
 
-        {/* Focus info (collapsed when media is open) */}
         {mediaTab === 'none' && (
           <>
             <div className="mb-6 text-center"><TreeSVG stage={stage} /><div className="mt-3"><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>STAGE {stage}/5</span></div></div>
-            <div className="glass-card !p-6 mb-6 text-center"><Shield className="w-16 h-16 text-primary mx-auto mb-4" /><h2 className="text-lg font-bold text-foreground mb-2">Deep Focus Active</h2><p className="text-sm text-muted-foreground">Stay focused. All distractions are blocked.</p></div>
+            <div className="glass-card !p-6 mb-6 text-center"><Shield className="w-16 h-16 text-primary mx-auto mb-4" /><h2 className="text-lg font-bold text-foreground mb-2">{t('detox.deep_focus')}</h2><p className="text-sm text-muted-foreground">{t('detox.stay_focused')}</p></div>
           </>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-primary">{Math.min(100, parseFloat(progress))}%</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">FOCUS LEVEL</div></div>
-          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-foreground">5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">SITES BLOCKED</div></div>
+          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-primary">{Math.min(100, parseFloat(progress))}%</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('detox.focus_level')}</div></div>
+          <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-foreground">5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('detox.sites_blocked')}</div></div>
         </div>
       </div>
     );
@@ -339,22 +322,22 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
-          <div><h1 className="text-2xl font-bold text-foreground">Detox</h1><p className="text-muted-foreground text-sm">Lock in. Eliminate distractions. Grow your focus tree.</p></div>
+          <div><h1 className="text-2xl font-bold text-foreground">{t('detox.title')}</h1><p className="text-muted-foreground text-sm">{t('detox.subtitle')}</p></div>
         </div>
-        <button className="btn-green flex items-center gap-2" onClick={() => setShowSetup(true)}><Play className="w-4 h-4 fill-current" /> START FOCUS</button>
+        <button className="btn-green flex items-center gap-2" onClick={() => setShowSetup(true)}><Play className="w-4 h-4 fill-current" /> {t('detox.start_focus')}</button>
       </div>
       {showSetup && (
         <div className="glass-card mb-6">
-          <h3 className="text-primary font-semibold mb-4">⚡ Configure Focus Session</h3>
+          <h3 className="text-primary font-semibold mb-4">⚡ {t('detox.configure')}</h3>
           <div className="mb-4">
-            <label className="form-label">FOCUS DURATION</label>
+            <label className="form-label">{t('detox.focus_duration')}</label>
             <div className="flex gap-2 flex-wrap">
               {[25, 50, 90].map(d => (<button key={d} className={`dur-btn ${duration === d ? 'active' : ''}`} onClick={() => setDuration(d)}>{d}m</button>))}
               <input type="number" className="input-simple w-24" placeholder="Custom" min={1} max={240} onChange={e => { const v = parseInt(e.target.value); if (v > 0) setDuration(v); }} />
             </div>
           </div>
           <div className="mb-4">
-            <label className="form-label">🎵 FOCUS SOUNDS</label>
+            <label className="form-label">🎵 {t('detox.focus_sounds')}</label>
             <div className="flex gap-2 flex-wrap">
               {[{ id: 'none', label: 'NONE', icon: VolumeX }, { id: 'rain', label: 'RAIN', icon: Volume2 }, { id: 'white', label: 'WHITE', icon: Volume2 }, { id: 'lofi', label: 'LOFI', icon: Volume2 }].map(s => {
                 const Icon = s.icon;
@@ -363,20 +346,20 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
             </div>
           </div>
           <div className="flex gap-3 mt-5">
-            <button className="btn-green flex-1 flex items-center justify-center gap-2" onClick={startFocus}><Play className="w-4 h-4 fill-current" /> BEGIN SESSION</button>
-            <button className="btn-outline" onClick={() => setShowSetup(false)}>CANCEL</button>
+            <button className="btn-green flex-1 flex items-center justify-center gap-2" onClick={startFocus}><Play className="w-4 h-4 fill-current" /> {t('detox.begin_session')}</button>
+            <button className="btn-outline" onClick={() => setShowSetup(false)}>{t('common.cancel')}</button>
           </div>
         </div>
       )}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-primary">{sessions.length}</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">TOTAL SESSIONS</div></div>
-        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{(totalMin / 60).toFixed(1)}h</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">FOCUS TIME</div></div>
-        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold" style={{ color: 'hsl(var(--warning))' }}>{stage}/5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">TREE STAGE</div></div>
+        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold text-primary">{sessions.length}</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('detox.total_sessions')}</div></div>
+        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{(totalMin / 60).toFixed(1)}h</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('detox.focus_time')}</div></div>
+        <div className="glass-card !p-4 text-center"><div className="text-2xl font-bold" style={{ color: 'hsl(var(--warning))' }}>{stage}/5</div><div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('detox.tree_stage')}</div></div>
       </div>
-      <div className="glass-card text-center !p-8 mb-6"><TreeSVG stage={stage} /><div className="mt-3"><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>STAGE {stage}/5</span></div><p className="text-sm text-muted-foreground mt-2">Keep focusing to grow your tree 🌳</p></div>
+      <div className="glass-card text-center !p-8 mb-6"><TreeSVG stage={stage} /><div className="mt-3"><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>STAGE {stage}/5</span></div><p className="text-sm text-muted-foreground mt-2">{t('detox.keep_focusing')}</p></div>
       <div className="glass-card">
-        <h3 className="font-semibold text-foreground mb-4">📊 Recent Sessions</h3>
-        {sessions.length === 0 ? (<p className="text-sm text-muted-foreground">No focus sessions yet. Start your first one!</p>) : sessions.slice().reverse().slice(0, 10).map((s: any) => (
+        <h3 className="font-semibold text-foreground mb-4">📊 {t('detox.recent_sessions')}</h3>
+        {sessions.length === 0 ? (<p className="text-sm text-muted-foreground">{t('detox.no_sessions')}</p>) : sessions.slice().reverse().slice(0, 10).map((s: any) => (
           <div key={s.id} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
             <span className="text-sm" style={{ color: 'hsl(var(--text-secondary))' }}>{formatDate(s.date)}</span>
             <span className="text-xs font-semibold px-2 py-1 rounded" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>{s.duration} min</span>

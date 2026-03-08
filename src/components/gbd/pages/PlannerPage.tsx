@@ -5,6 +5,7 @@ import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'luci
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
+import { useI18n } from '@/hooks/useI18n';
 
 interface PlannerPageProps {
   navigateTo: (page: string) => void;
@@ -16,6 +17,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   const tasks = Storage.getTasks();
@@ -38,7 +40,6 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
     refresh();
     toast({ title: 'Task created', description: title });
 
-    // Save reminder to database if set
     if (reminder && date && time) {
       try {
         const taskDateTime = new Date(`${date}T${time}`);
@@ -72,7 +73,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
 
   const deleteTask = async (id: string) => {
     const task = tasks.find(t => t.id === id);
-    const confirmed = await showDialog({ title: 'Delete Task', message: 'Are you sure you want to delete this task?', type: 'confirm', confirmText: 'Delete' });
+    const confirmed = await showDialog({ title: t('common.delete'), message: 'Are you sure you want to delete this task?', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deleteTask(id);
       refresh();
@@ -94,7 +95,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
             style={{ background: 'hsl(var(--info) / 0.15)', color: 'hsl(var(--info))' }}
             onClick={() => moveTask(task.id, 'in-progress')}
           >
-            <ArrowRight className="w-3 h-3" /> Progress
+            <ArrowRight className="w-3 h-3" /> {t('planner.progress')}
           </button>
         )}
         {task.status === 'in-progress' && (
@@ -103,7 +104,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
             style={{ background: 'hsl(var(--warning) / 0.15)', color: 'hsl(var(--warning))' }}
             onClick={() => moveTask(task.id, 'todo')}
           >
-            <Undo2 className="w-3 h-3" /> To Do
+            <Undo2 className="w-3 h-3" /> {t('planner.todo')}
           </button>
         )}
         {task.status !== 'done' && (
@@ -112,7 +113,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
             style={{ background: 'hsl(var(--green) / 0.15)', color: 'hsl(var(--green))' }}
             onClick={() => moveTask(task.id, 'done')}
           >
-            <CheckCircle2 className="w-3 h-3" /> Done
+            <CheckCircle2 className="w-3 h-3" /> {t('planner.done')}
           </button>
         )}
         {task.status === 'done' && (
@@ -121,7 +122,7 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
             style={{ background: 'hsl(var(--info) / 0.15)', color: 'hsl(var(--info))' }}
             onClick={() => moveTask(task.id, 'todo')}
           >
-            <Undo2 className="w-3 h-3" /> Reopen
+            <Undo2 className="w-3 h-3" /> {t('planner.reopen')}
           </button>
         )}
         <button
@@ -141,49 +142,49 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Daily Planner</h1>
-            <p className="text-muted-foreground text-sm">Master your schedule, conquer your goals.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('planner.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('planner.subtitle')}</p>
           </div>
         </div>
         <div className="search-input-wrap w-full sm:w-60">
           <Search className="w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Search tasks..." />
+          <input type="text" placeholder={t('planner.search_tasks')} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
         <div className="glass-card">
           <h3 className="flex items-center gap-2 font-semibold text-foreground mb-5">
-            <span className="text-primary text-lg">+</span> New Task
+            <span className="text-primary text-lg">+</span> {t('planner.new_task')}
           </h3>
-          <label className="form-label">TASK TITLE</label>
-          <input type="text" id="task-title" className="input-simple mb-4" placeholder="What needs to be done" />
+          <label className="form-label">{t('planner.task_title')}</label>
+          <input type="text" id="task-title" className="input-simple mb-4" placeholder={t('planner.what_needs')} />
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div><label className="form-label">DATE</label><input type="date" id="task-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
-            <div><label className="form-label">TIME</label><input type="time" id="task-time" className="input-simple" defaultValue="12:00" /></div>
+            <div><label className="form-label">{t('planner.date')}</label><input type="date" id="task-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
+            <div><label className="form-label">{t('planner.time')}</label><input type="time" id="task-time" className="input-simple" defaultValue="12:00" /></div>
           </div>
-          <label className="form-label">PRIORITY</label>
+          <label className="form-label">{t('planner.priority')}</label>
           <div className="priority-group">
-            {['low', 'medium', 'high'].map(p => (
-              <button key={p} className={`priority-btn ${priority === p ? 'active' : ''}`} onClick={() => setPriority(p)}>{p.toUpperCase()}</button>
+            {[{ key: 'low', label: t('planner.low') }, { key: 'medium', label: t('planner.medium') }, { key: 'high', label: t('planner.high') }].map(p => (
+              <button key={p.key} className={`priority-btn ${priority === p.key ? 'active' : ''}`} onClick={() => setPriority(p.key)}>{p.label}</button>
             ))}
           </div>
-          <label className="form-label">REMINDERS</label>
+          <label className="form-label">{t('planner.reminders')}</label>
           <select id="task-reminder" className="input-simple mb-5">
-            <option value="">No reminders</option>
-            <option value="5">5 minutes before</option>
-            <option value="15">15 minutes before</option>
-            <option value="30">30 minutes before</option>
-            <option value="60">1 hour before</option>
+            <option value="">{t('planner.no_reminders')}</option>
+            <option value="5">{t('planner.5_min')}</option>
+            <option value="15">{t('planner.15_min')}</option>
+            <option value="30">{t('planner.30_min')}</option>
+            <option value="60">{t('planner.1_hour')}</option>
           </select>
-          <button className="btn-green w-full" onClick={createTask}><span className="text-lg">+</span> CREATE TASK</button>
+          <button className="btn-green w-full" onClick={createTask}><span className="text-lg">+</span> {t('planner.create_task')}</button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { title: 'TO DO', tasks: todoTasks, dot: 'bg-primary' },
-            { title: 'IN PROGRESS', tasks: inProgressTasks, dot: 'bg-warning' },
-            { title: 'DONE', tasks: doneTasks, dot: 'bg-muted-foreground' },
+            { title: t('planner.todo'), tasks: todoTasks, dot: 'bg-primary' },
+            { title: t('planner.in_progress'), tasks: inProgressTasks, dot: 'bg-warning' },
+            { title: t('planner.done'), tasks: doneTasks, dot: 'bg-muted-foreground' },
           ].map(col => (
             <div key={col.title}>
               <div className="flex items-center justify-between mb-3">
@@ -194,8 +195,8 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
               </div>
               {col.tasks.length === 0 ? (
                 <div className="empty-state !p-8">
-                  <span className="text-3xl mb-1">{col.title === 'TO DO' ? '📋' : col.title === 'IN PROGRESS' ? '⚡' : '🎉'}</span>
-                  <p className="text-sm">{col.title === 'DONE' ? 'Complete tasks to see them here!' : 'Your agenda is clear.'}</p>
+                  <span className="text-3xl mb-1">{col.title === t('planner.todo') ? '📋' : col.title === t('planner.in_progress') ? '⚡' : '🎉'}</span>
+                  <p className="text-sm">{col.title === t('planner.done') ? t('planner.complete_to_see') : t('planner.clear_agenda')}</p>
                 </div>
               ) : col.tasks.map(t => renderTaskCard(t))}
             </div>
