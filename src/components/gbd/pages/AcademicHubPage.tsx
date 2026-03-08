@@ -213,7 +213,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
                         <div><label className="form-label">COURSE</label><input type="text" id={`course-name-${s.id}`} className="input-simple" placeholder="e.g. Calculus I" /></div>
                         <div><label className="form-label">GRADE</label><select id={`course-grade-${s.id}`} className="input-simple" defaultValue="A">{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g} ({GRADE_MAP[g].toFixed(2)})</option>)}</select></div>
                         <div><label className="form-label">CREDITS</label><input type="number" id={`course-credits-${s.id}`} className="input-simple" defaultValue={3} min={1} max={10} /></div>
-                        <div className="col-span-3 flex gap-2 mt-2">
+                        <div className="sm:col-span-3 flex gap-2 mt-2">
                           <button className="btn-green flex-1" onClick={() => addCourse(s.id)}>Add Course</button>
                           <button className="btn-outline" onClick={() => setShowAddCourse(null)}>Cancel</button>
                         </div>
