@@ -18,6 +18,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
