@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import appIcon from '@/assets/icon.svg';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,22 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
   const [otp, setOtp] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      clearInterval(cooldownRef.current);
+      return;
+    }
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(cooldownRef.current);
+  }, [resendCooldown > 0]);
 
   const showToast = (msg: string, type: 'error' | 'success' = 'error') => {
     setToast({ msg, type });
@@ -80,6 +96,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       }
     } else {
       showToast('Verification code sent to your email! 📬', 'success');
+      setResendCooldown(60);
       setMode('verify');
     }
   };
@@ -106,6 +123,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   };
 
   const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
     setLoading(true);
     const { error } = await supabase.auth.resend({
       type: 'signup',
@@ -116,6 +134,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       showToast(error.message);
     } else {
       showToast('New code sent! Check your inbox 📬', 'success');
+      setResendCooldown(60);
     }
   };
 
@@ -281,8 +300,13 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
               </button>
 
               <div className="text-center mt-4 space-y-2">
-                <button className="text-xs text-primary hover:underline font-medium" onClick={handleResendOtp} disabled={loading}>
-                  Resend code
+                <button
+                  className="text-xs font-medium transition-colors"
+                  onClick={handleResendOtp}
+                  disabled={loading || resendCooldown > 0}
+                  style={{ color: resendCooldown > 0 ? 'hsl(var(--muted-foreground))' : undefined }}
+                >
+                  {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
                 </button>
                 <p className="text-muted-foreground text-xs">
                   Wrong email?{' '}
