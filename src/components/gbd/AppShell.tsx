@@ -135,6 +135,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
           </main>
         </div>
         <InstallPrompt />
+        <AIChatFAB onDataChanged={() => setRefreshKey(k => k + 1)} />
       </DialogProvider>
     </GamificationProvider>
   );
