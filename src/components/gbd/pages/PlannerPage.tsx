@@ -20,6 +20,21 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
+  // Pre-fill date from calendar quick-add
+  useEffect(() => {
+    const prefillDate = sessionStorage.getItem('calendar_prefill_date');
+    if (prefillDate) {
+      sessionStorage.removeItem('calendar_prefill_date');
+      const dateInput = document.getElementById('task-date') as HTMLInputElement;
+      if (dateInput) dateInput.value = prefillDate;
+      // Focus the title input for quick entry
+      setTimeout(() => {
+        const titleInput = document.getElementById('task-title') as HTMLInputElement;
+        titleInput?.focus();
+      }, 100);
+    }
+  }, []);
+
   const tasks = Storage.getTasks();
   const todoTasks = tasks.filter(t => t.status === 'todo');
   const inProgressTasks = tasks.filter(t => t.status === 'in-progress');

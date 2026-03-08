@@ -31,6 +31,21 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     syncRoutineFromDB().then(() => refresh());
   }, []);
 
+  // Pre-fill day from calendar quick-add
+  useEffect(() => {
+    const prefillDate = sessionStorage.getItem('calendar_prefill_date');
+    if (prefillDate) {
+      sessionStorage.removeItem('calendar_prefill_date');
+      const date = new Date(prefillDate + 'T00:00:00');
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[date.getDay()];
+      if (DAYS.includes(dayName)) {
+        setSelectedDay(dayName);
+      }
+      setShowModal(true);
+    }
+  }, []);
+
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
