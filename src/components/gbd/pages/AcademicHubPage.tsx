@@ -24,7 +24,7 @@ function semGPA(courses: any[]) {
   return cr > 0 ? pts / cr : 0;
 }
 
-const AcademicHubPage = ({ }: AcademicHubPageProps) => {
+const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
   const [hubTab, setHubTab] = useState('tracker');
   const [semesters, setSemesters] = useState(Storage.getSemesters());
   const settings = Storage.getSettings();

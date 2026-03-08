@@ -11,7 +11,7 @@ interface NotesPageProps {
 
 const CATEGORIES = ['all', 'General', 'Study', 'Personal', 'Ideas'];
 
-const NotesPage = ({}: NotesPageProps) => {
+const NotesPage = ({ navigateTo }: NotesPageProps) => {
   const [category, setCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
