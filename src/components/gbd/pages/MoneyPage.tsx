@@ -256,10 +256,15 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           else personMap[d.person].borrowed += d.amount;
           personMap[d.person].debts.push(d);
         });
-        const people = Object.entries(personMap).map(([name, data]) => ({
+        const allPeople = Object.entries(personMap).map(([name, data]) => ({
           name, ...data, net: data.lent - data.borrowed
         }));
         const netTotal = totalLent - totalBorrowed;
+        const searchLower = debtSearch.toLowerCase().trim();
+        const people = searchLower ? allPeople.filter(p => p.name.toLowerCase().includes(searchLower)) : allPeople;
+
+        // Build unique contact names from all debts (active + history)
+        const allContactNames = Array.from(new Set(debts.map((d: any) => d.person).filter(Boolean)));
 
         return (
         <>
@@ -285,11 +290,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           </div>
 
           {/* People Summary */}
-          {people.length > 0 && (
+          {allPeople.length > 0 && (
             <div className="glass-card mb-6">
               <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 People Summary</h2>
               <div className="space-y-2">
-                {people.sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).map(p => (
+                {allPeople.sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).map(p => (
                   <div key={p.name} className="flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
@@ -300,7 +305,12 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-medium text-foreground text-sm">{p.name}</div>
+                        <div className="font-medium text-foreground text-sm flex items-center gap-1.5">
+                          {p.name}
+                          <button onClick={() => toggleFavorite(p.name)} className="opacity-60 hover:opacity-100 transition-opacity" title={favoriteContacts.includes(p.name) ? 'Remove from favorites' : 'Add to favorites'}>
+                            <Star className={`w-3.5 h-3.5 ${favoriteContacts.includes(p.name) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                          </button>
+                        </div>
                         <div className="text-[0.65rem] text-muted-foreground flex gap-2">
                           {p.lent > 0 && <span className="text-primary">Lent ৳{p.lent.toLocaleString()}</span>}
                           {p.borrowed > 0 && <span className="text-destructive">Borrowed ৳{p.borrowed.toLocaleString()}</span>}
@@ -336,6 +346,57 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 ↓ I Borrowed Money
               </button>
             </div>
+
+            {/* Favorite contacts quick-select */}
+            {favoriteContacts.length > 0 && (
+              <div className="mb-4">
+                <label className="form-label flex items-center gap-1.5">
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> QUICK SELECT
+                </label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {favoriteContacts.map(name => (
+                    <button
+                      key={name}
+                      onClick={() => selectContact(name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105"
+                      style={{ background: 'hsl(var(--primary) / 0.1)', color: 'hsl(var(--primary))' }}>
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-[0.55rem] font-bold" style={{ background: 'hsl(var(--primary) / 0.2)' }}>
+                        {name.charAt(0).toUpperCase()}
+                      </span>
+                      {name}
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleFavorite(name); }}
+                        className="ml-0.5 opacity-50 hover:opacity-100">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Also show non-favorited past contacts as subtle chips */}
+            {allContactNames.filter(n => !favoriteContacts.includes(n)).length > 0 && (
+              <div className="mb-4">
+                <label className="form-label">RECENT CONTACTS</label>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {allContactNames.filter(n => !favoriteContacts.includes(n)).map(name => (
+                    <button
+                      key={name}
+                      onClick={() => selectContact(name)}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-medium transition-all hover:scale-105 bg-muted text-muted-foreground hover:text-foreground">
+                      {name}
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleFavorite(name); }}
+                        className="ml-0.5 opacity-40 hover:opacity-100" title="Add to favorites">
+                        <Star className="w-2.5 h-2.5" />
+                      </button>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -365,11 +426,30 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
           {/* Active Debts grouped by person */}
           <div className="glass-card mb-6 min-h-[100px]">
-            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📋 Active Debts</h2>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">📋 Active Debts</h2>
+              {allPeople.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search person..."
+                    value={debtSearch}
+                    onChange={e => setDebtSearch(e.target.value)}
+                    className="input-simple !py-1.5 !pl-8 !pr-3 !text-xs !w-[160px]"
+                  />
+                  {debtSearch && (
+                    <button onClick={() => setDebtSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             {people.length === 0 ? (
               <div className="empty-state border border-dashed border-border rounded-xl !p-10 text-center">
-                <div className="text-3xl mb-2">🤝</div>
-                <p className="text-muted-foreground text-sm">No active debts — all clear!</p>
+                <div className="text-3xl mb-2">{debtSearch ? '🔍' : '🤝'}</div>
+                <p className="text-muted-foreground text-sm">{debtSearch ? `No debts matching "${debtSearch}"` : 'No active debts — all clear!'}</p>
               </div>
             ) : people.map(p => (
               <div key={p.name} className="mb-5 last:mb-0">
@@ -383,26 +463,33 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       {p.name.charAt(0).toUpperCase()}
                     </div>
                     <span className="text-xs font-semibold text-foreground">{p.name}</span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.net > 0 ? 'text-primary' : 'text-destructive'}`}
+                      style={{ background: p.net > 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)' }}>
+                      {p.net > 0 ? '+' : '-'}৳{Math.abs(p.net).toLocaleString()}
+                    </span>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.net > 0 ? 'text-primary' : 'text-destructive'}`}
-                    style={{ background: p.net > 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)' }}>
-                    Net: {p.net > 0 ? '+' : '-'}৳{Math.abs(p.net).toLocaleString()}
-                  </span>
+                  {p.debts.length > 1 && (
+                    <button
+                      onClick={() => settleAllForPerson(p.name, p.debts)}
+                      className="btn-outline !py-1 !px-2.5 !text-[0.65rem] !font-semibold !text-primary !rounded-lg flex items-center gap-1">
+                      ✓ Settle All
+                    </button>
+                  )}
                 </div>
                 <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
                   {p.debts.slice().reverse().map((d: any, i: number) => (
                     <div key={d.id} className="flex items-center justify-between py-3 px-3"
                       style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.15)' }}>
                       <div className="flex items-center gap-3">
-                        <span className={`text-base ${d.debtType === 'lend' ? '' : ''}`}>{d.debtType === 'lend' ? '🔼' : '🔽'}</span>
+                        <span className="text-base">{d.debtType === 'lend' ? '🔼' : '🔽'}</span>
                         <div>
-                          <div className="text-sm text-foreground font-medium">{d.description || d.debtType === 'lend' ? d.description || 'Lent' : d.description || 'Borrowed'}</div>
+                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? 'Lent' : 'Borrowed')}</div>
                           <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`font-bold text-sm ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount.toLocaleString()}</span>
-                        <button className="btn-outline !py-1 !px-2.5 !text-xs !font-semibold !text-primary !rounded-lg" onClick={() => settleDebt(d.id)}>✓ Settle</button>
+                        <button className="btn-outline !py-1 !px-2.5 !text-xs !font-semibold !text-primary !rounded-lg" onClick={() => settleDebt(d.id)}>✓</button>
                       </div>
                     </div>
                   ))}
