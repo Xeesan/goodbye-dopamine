@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
 
     if (remErr) {
       console.error("Error fetching reminders:", remErr);
-      return new Response(JSON.stringify({ error: remErr.message }), {
+      return new Response(JSON.stringify({ error: "Failed to fetch reminders" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
