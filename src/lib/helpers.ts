@@ -31,3 +31,20 @@ export function generateUniqueId(): string {
   for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
   return id;
 }
+
+export function formatTime12h(time: string): string {
+  if (!time) return '—';
+  // Handle range like "14:00-15:30"
+  if (time.includes('-')) {
+    const parts = time.split('-').map(t => formatTime12h(t.trim()));
+    return parts.join(' - ');
+  }
+  const m = time.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return time;
+  let h = parseInt(m[1]);
+  const min = m[2];
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${min}${ampm}`;
+}

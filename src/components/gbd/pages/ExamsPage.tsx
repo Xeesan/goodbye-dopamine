@@ -162,7 +162,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
                 <h3 className="font-semibold text-foreground">{e.subject}</h3>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
                   <span>📅 {formatDate(e.date)}</span>
-                  <span>🕐 {e.time || '—'}</span>
+                  <span>🕐 {formatTime12h(e.time)}</span>
                   {e.room && <span>📍 {e.room}</span>}
                   {e.teacher && <span>🎓 {e.teacher}</span>}
                 </div>
