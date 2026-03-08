@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Camera, ImageIcon, Loader2, X, Check, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import Tesseract from 'tesseract.js';
 
 interface ImageOCRImportProps {
   mode: 'routine' | 'exams';
@@ -11,6 +11,7 @@ interface ImageOCRImportProps {
 const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: ImageOCRImportProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<any[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,20 +34,99 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     reader.readAsDataURL(file);
   };
 
+  const parseRoutineFromText = (text: string): any[] => {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const timeRegex = /(\d{1,2}[:.]\d{2})\s*[-–to]+\s*(\d{1,2}[:.]\d{2})/i;
+    const items: any[] = [];
+    let currentDay = '';
+
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+      const foundDay = days.find(d => lower.includes(d));
+      if (foundDay) currentDay = foundDay;
+
+      const timeMatch = line.match(timeRegex);
+      if (timeMatch && currentDay) {
+        const startTime = timeMatch[1].replace('.', ':');
+        const endTime = timeMatch[2].replace('.', ':');
+        const subject = line
+          .replace(timeMatch[0], '')
+          .replace(new RegExp(currentDay, 'i'), '')
+          .replace(/room\s*[:\-]?\s*\S+/i, '')
+          .trim() || 'Unknown Subject';
+        const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
+        items.push({
+          day: currentDay,
+          subject,
+          startTime,
+          endTime,
+          room: roomMatch?.[1] || '',
+        });
+      }
+    }
+    return items;
+  };
+
+  const parseExamsFromText = (text: string): any[] => {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const dateRegex = /(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/;
+    const timeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
+    const items: any[] = [];
+
+    for (const line of lines) {
+      const dateMatch = line.match(dateRegex);
+      if (dateMatch) {
+        let date = dateMatch[1].replace(/\//g, '-');
+        // Try to normalize to YYYY-MM-DD
+        const parts = date.split('-');
+        if (parts[0].length <= 2) {
+          date = `20${parts[2].length === 2 ? parts[2] : parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+        }
+        const timeMatch = line.match(timeRegex);
+        const subject = line
+          .replace(dateMatch[0], '')
+          .replace(timeMatch?.[0] || '', '')
+          .replace(/room\s*[:\-]?\s*\S+/i, '')
+          .trim() || 'Unknown Subject';
+        const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
+        items.push({
+          subject,
+          date,
+          time: timeMatch?.[1]?.replace('.', ':') || '09:00',
+          room: roomMatch?.[1] || '',
+          teacher: '',
+          credits: 3,
+          grade: '',
+        });
+      }
+    }
+    return items;
+  };
+
   const processImage = async () => {
     if (!preview) return;
     setLoading(true);
     setError(null);
+    setLoadingMsg('Loading OCR engine...');
     try {
-      const base64 = preview.split(',')[1];
-      const { data, error: fnError } = await supabase.functions.invoke('ocr-extract', {
-        body: { imageBase64: base64, mode },
+      const { data: { text } } = await Tesseract.recognize(preview, 'eng', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setLoadingMsg(`Recognizing... ${Math.round((m.progress || 0) * 100)}%`);
+          }
+        },
       });
-      if (fnError) throw new Error(fnError.message || 'Failed to process image');
-      if (data?.error) throw new Error(data.error);
-      const items = data?.items || [];
+
+      if (!text.trim()) {
+        setError('No text could be extracted. Try a clearer, well-lit photo.');
+        return;
+      }
+
+      const items = mode === 'routine' ? parseRoutineFromText(text) : parseExamsFromText(text);
+
       if (items.length === 0) {
-        setError('No data could be extracted from this image. Try a clearer photo.');
+        setError('Text was found but no structured data could be parsed. Try a clearer image with visible times and dates.');
       } else {
         setResults(items);
       }
@@ -54,6 +134,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
       setError(err.message || 'Failed to process image');
     } finally {
       setLoading(false);
+      setLoadingMsg('');
     }
   };
 
@@ -70,6 +151,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     setResults(null);
     setError(null);
     setLoading(false);
+    setLoadingMsg('');
   };
 
   return (
@@ -92,7 +174,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
             </div>
 
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'} and AI will extract the data automatically.
+              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'} and the data will be extracted automatically (offline OCR).
             </p>
 
             {!preview && (
@@ -146,7 +228,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
                   </button>
                   <button className="btn-green flex-1" onClick={processImage} disabled={loading}>
                     {loading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin inline-block mr-1.5" /> Processing...</>
+                      <><Loader2 className="w-4 h-4 animate-spin inline-block mr-1.5" /> {loadingMsg || 'Processing...'}</>
                     ) : (
                       'Extract Data'
                     )}
