@@ -96,22 +96,41 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
             </p>
 
             {!preview && (
-              <div
-                className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors"
-                style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}
-                onClick={() => fileRef.current?.click()}
-              >
-                <Camera className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Click to upload or take a photo</p>
-                <p className="text-xs text-muted-foreground mt-1">Supports JPG, PNG, WEBP (max 10MB)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div
+                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:opacity-80"
+                  style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}
+                  onClick={() => cameraRef.current?.click()}
+                >
+                  <Camera className="w-8 h-8 mx-auto mb-2 text-primary" />
+                  <p className="text-sm font-medium text-foreground">Take Photo</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use camera</p>
+                </div>
+                <div
+                  className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:opacity-80"
+                  style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <ImageIcon className="w-8 h-8 mx-auto mb-2 text-primary" />
+                  <p className="text-sm font-medium text-foreground">Choose File</p>
+                  <p className="text-xs text-muted-foreground mt-1">From gallery</p>
+                </div>
               </div>
             )}
+
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleFile}
+            />
 
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleFile}
             />
