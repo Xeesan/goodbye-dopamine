@@ -15,7 +15,7 @@ const Storage = {
       localStorage.setItem('gbd_' + key, JSON.stringify(value));
     } catch (e: any) {
       if (e.name === 'QuotaExceededError') {
-        alert('Storage is full! Please clear some old data.');
+        console.error('Storage quota exceeded');
       }
     }
   },

@@ -158,10 +158,10 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <div className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <Link className="w-4 h-4" /> QUICK ACCESS
           </div>
-          <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={() => {
-            const name = prompt('Link name:');
+          <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={async () => {
+            const name = await showPrompt({ title: 'Add Quick Link', message: 'Enter the link name:', placeholder: 'e.g. Google Classroom' });
             if (!name) return;
-            const url = prompt('URL (include https://):');
+            const url = await showPrompt({ title: 'Link URL', message: 'Enter the URL (include https://):', placeholder: 'https://example.com' });
             if (!url) return;
             Storage.addQuickLink({ name, url });
             navigateTo('dashboard');
