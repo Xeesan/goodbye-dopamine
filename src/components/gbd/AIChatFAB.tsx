@@ -297,44 +297,55 @@ function executeToolCall(toolCall: ToolCall): string {
       const { section, identifier } = args;
       if (!identifier) return '😅 I need to know **which** entry to delete. Give me a name, subject, or title!';
 
+      const idLower = identifier.toLowerCase();
+
       if (section === 'task') {
         const tasks = Storage.getTasks();
-        const match = tasks.find((t: any) => t.title?.toLowerCase().includes(identifier.toLowerCase()));
-        if (!match) return `🤔 Couldn't find a task matching **"${identifier}"**. Double-check the name?`;
-        Storage.deleteTask(match.id);
-        return `🗑️ Task **"${match.title}"** has been deleted! One less thing to worry about 😌`;
+        const matches = idLower === 'all' ? tasks : tasks.filter((t: any) => t.title?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any task matching **"${identifier}"**.`;
+        matches.forEach((m: any) => Storage.deleteTask(m.id));
+        return `🗑️ Deleted **${matches.length}** task${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
       }
 
       if (section === 'exam') {
         const exams = Storage.getExams();
-        const match = exams.find((e: any) => e.subject?.toLowerCase().includes(identifier.toLowerCase()));
-        if (!match) return `🤔 Couldn't find an exam matching **"${identifier}"**. Check the subject name?`;
-        Storage.deleteExam(match.id);
-        return `🗑️ Exam **"${match.subject}"** (${match.date}) has been removed! ${match.date > new Date().toISOString().split('T')[0] ? 'Wait, was that on purpose? 😅' : ''}`;
+        let matches: any[];
+        if (idLower === 'all') {
+          matches = exams;
+        } else if (idLower.includes('this month')) {
+          const now = new Date();
+          const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          matches = exams.filter((e: any) => e.date?.startsWith(prefix));
+        } else {
+          matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
+        }
+        if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
+        matches.forEach((m: any) => Storage.deleteExam(m.id));
+        return `🗑️ Deleted **${matches.length}** exam${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].subject}" (${matches[0].date})` : ''}.`;
       }
 
       if (section === 'transaction') {
         const txns = Storage.getTransactions();
-        const match = txns.find((t: any) => t.description?.toLowerCase().includes(identifier.toLowerCase()));
-        if (!match) return `🤔 Couldn't find a transaction matching **"${identifier}"**. Check the description?`;
-        Storage.deleteTransaction(match.id);
-        return `🗑️ Transaction **"${match.description}"** (${match.type === 'income' ? '+' : '-'}${match.amount}) deleted!`;
+        const matches = idLower === 'all' ? txns : txns.filter((t: any) => t.description?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any transaction matching **"${identifier}"**.`;
+        matches.forEach((m: any) => Storage.deleteTransaction(m.id));
+        return `🗑️ Deleted **${matches.length}** transaction${matches.length > 1 ? 's' : ''}.`;
       }
 
       if (section === 'note') {
         const notes = Storage.getNotes();
-        const match = notes.find((n: any) => n.title?.toLowerCase().includes(identifier.toLowerCase()));
-        if (!match) return `🤔 Couldn't find a note matching **"${identifier}"**. Check the title?`;
-        Storage.deleteNote(match.id);
-        return `🗑️ Note **"${match.title}"** gone forever! Hope you didn't need that 😬`;
+        const matches = idLower === 'all' ? notes : notes.filter((n: any) => n.title?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any note matching **"${identifier}"**.`;
+        matches.forEach((m: any) => Storage.deleteNote(m.id));
+        return `🗑️ Deleted **${matches.length}** note${matches.length > 1 ? 's' : ''}.`;
       }
 
       if (section === 'debt') {
         const debts = Storage.getDebts();
-        const match = debts.find((d: any) => d.person?.toLowerCase().includes(identifier.toLowerCase()));
-        if (!match) return `🤔 Couldn't find a debt entry for **"${identifier}"**. Check the person's name?`;
-        Storage.deleteDebt(match.id);
-        return `🗑️ Debt entry with **${match.person}** (${match.debt_type === 'lend' ? 'lent' : 'borrowed'} ${match.amount}) deleted!`;
+        const matches = idLower === 'all' ? debts : debts.filter((d: any) => d.person?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any debt entry for **"${identifier}"**.`;
+        matches.forEach((m: any) => Storage.deleteDebt(m.id));
+        return `🗑️ Deleted **${matches.length}** debt entr${matches.length > 1 ? 'ies' : 'y'}.`;
       }
 
       return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **transaction**, **debt**, or **note**!';
