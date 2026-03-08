@@ -361,12 +361,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
 
 interface AIChatFABProps {
   onDataChanged?: () => void;
+  currentPage?: string;
 }
 
 const AI_RATE_LIMIT = 15; // max messages per minute
 const AI_RATE_WINDOW = 60_000; // 1 minute in ms
 
-const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
+const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
