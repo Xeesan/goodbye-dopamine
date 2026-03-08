@@ -593,7 +593,7 @@ body {
 }
 
 .mood-emoji { font-size: 1.5rem; }
-.mood-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; }
+.mood-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; }
 
 /* Star rating */
 .star-rating {
