@@ -49,7 +49,7 @@ const loadConfig = (): { ocrMode: OcrMode; api: ApiConfig } => {
       return { ...parsed, api: { ...parsed.api, apiKey: '' } };
     }
   } catch {}
-  return { ocrMode: 'offline', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
+  return { ocrMode: 'lovable', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
 };
 
 const saveConfig = (ocrMode: OcrMode, api: ApiConfig) => {
