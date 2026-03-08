@@ -321,7 +321,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
         }
         if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteExam(m.id));
+        for (const m of matches) { Storage.deleteExam(m.id); await deleteExamFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** exam${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].subject}" (${matches[0].date})` : ''}.`;
       }
 
