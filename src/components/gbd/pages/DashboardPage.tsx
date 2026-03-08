@@ -102,7 +102,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
             <div className="flex items-center gap-2 text-primary text-[0.7rem] font-bold tracking-widest uppercase mb-2">
               <span className="text-lg">❝</span> DAILY INSPIRATION
               <button className="ml-2 p-1 hover:bg-muted rounded transition-transform" onClick={refreshQuote}>
-                <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${spinning ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-700 ${spinning ? 'animate-[spin_0.9s_ease-in-out]' : ''}`} />
               </button>
             </div>
             <div key={quoteKey} className="text-lg font-semibold leading-relaxed text-foreground animate-fade-in">"{quote.text}"</div>
