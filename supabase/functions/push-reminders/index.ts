@@ -261,36 +261,46 @@ Deno.serve(async (req) => {
         .select("*")
         .eq("user_id", reminder.user_id);
 
-      if (!subs || subs.length === 0) continue;
+      const notifTitle = "⏰ Task Reminder";
+      const notifBody = reminder.task_title;
+      const notifTag = "TASK-REMINDER";
 
-      const payload = JSON.stringify({
-        title: "⏰ Task Reminder",
-        body: reminder.task_title,
-        icon: "/icon-512.svg",
-        badge: "/icon-512.svg",
-        tag: `reminder-${reminder.id}`,
-        data: { url: "/" },
+      // Log to notifications table (always, even without push subs)
+      await supabase.from("notifications").insert({
+        user_id: reminder.user_id,
+        title: notifTitle,
+        body: notifBody,
+        tag: notifTag,
       });
 
-      for (const sub of subs) {
-        try {
-          const res = await sendPushNotification(
-            { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
-            payload,
-            vapidPublicKey,
-            vapidPrivateKey,
-            "mailto:noreply@goodbye-dopamine.lovable.app"
-          );
+      if (subs && subs.length > 0) {
+        const payload = JSON.stringify({
+          title: notifTitle,
+          body: notifBody,
+          icon: "/icon-512.svg",
+          badge: "/icon-512.svg",
+          tag: `reminder-${reminder.id}`,
+          data: { url: "/" },
+        });
 
-          if (res.status === 410 || res.status === 404) {
-            // Subscription expired, clean up
-            await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+        for (const sub of subs) {
+          try {
+            const res = await sendPushNotification(
+              { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+              payload,
+              vapidPublicKey,
+              vapidPrivateKey,
+              "mailto:noreply@goodbye-dopamine.lovable.app"
+            );
+
+            if (res.status === 410 || res.status === 404) {
+              await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+            }
+
+            await res.text();
+          } catch (e) {
+            console.error("Push send error:", e);
           }
-
-          // Consume response body
-          await res.text();
-        } catch (e) {
-          console.error("Push send error:", e);
         }
       }
 
