@@ -418,6 +418,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       const customKey = localStorage.getItem('gbd_gemini_api_key') || '';
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
+      
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
@@ -429,7 +434,10 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
           context: buildContext(),
           ...(customKey ? { geminiApiKey: customKey } : {}),
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeout);
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
