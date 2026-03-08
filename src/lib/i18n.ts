@@ -44,7 +44,7 @@ const translations = {
   // ─── Dashboard ───
   'dash.welcome': { en: 'Welcome back,', bn: 'ওয়েলকাম ব্যাক,' },
   'dash.subtitle': { en: "Here's your productivity overview for this week.", bn: 'এই উইকের প্রোডাক্টিভিটি ওভারভিউ।' },
-  'dash.daily_inspiration': { en: 'DAILY INSPIRATION', bn: 'ডেইলি ইন্সপিরেশন' },
+  'dash.daily_inspiration': { en: 'DAILY INSPIRATION', bn: 'দৈনিক অনুপ্রেরণা' },
   'dash.quick_tiles': { en: 'QUICK TILES', bn: 'কুইক টাইলস' },
   'dash.quick_access': { en: 'QUICK ACCESS', bn: 'কুইক অ্যাক্সেস' },
   'dash.add_link': { en: '+ ADD LINK', bn: '+ অ্যাড লিংক' },
