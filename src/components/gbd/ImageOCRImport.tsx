@@ -251,7 +251,8 @@ If you cannot read anything, return an empty array: []`;
     const dataLines = lines.filter(l => {
       const lower = l.toLowerCase();
       return !lower.includes('semester') && !lower.includes('course code') &&
-             !lower.includes('course name') && !(lower.startsWith('date') && lower.includes('day'));
+             !lower.includes('course name') && !lower.includes('faculty member') &&
+             !(lower.startsWith('date') && (lower.includes('day') || lower.includes('time')));
     });
 
     for (const line of dataLines) {
