@@ -37,31 +37,44 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   }, []);
 
   const fetchProfile = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    if (data) {
-      setProfile(data);
-      setFullName(data.full_name || '');
-      setBio(data.bio || '');
-      setInstitution(data.institution || '');
-      setSubject(data.subject || '');
-      setSemester(data.semester || '');
-      setYear(data.year || '');
-      setGender(data.gender || '');
-      if (data.avatar_url) {
-        let avatarPath = data.avatar_url;
-        if (avatarPath.startsWith('http')) {
-          const match = avatarPath.match(/\/avatars\/(.+)$/);
-          if (match) avatarPath = match[1];
-        }
-        const { data: signedData } = await supabase.storage
-          .from('avatars')
-          .createSignedUrl(avatarPath, 3600);
-        if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) {
+        console.error('Failed to fetch profile:', error.message);
+        setLoading(false);
+        return;
       }
+      if (data) {
+        setProfile(data);
+        setFullName(data.full_name || '');
+        setBio(data.bio || '');
+        setInstitution(data.institution || '');
+        setSubject(data.subject || '');
+        setSemester(data.semester || '');
+        setYear(data.year || '');
+        setGender(data.gender || '');
+        if (data.avatar_url) {
+          try {
+            let avatarPath = data.avatar_url;
+            if (avatarPath.startsWith('http')) {
+              const match = avatarPath.match(/\/avatars\/(.+)$/);
+              if (match) avatarPath = match[1];
+            }
+            const { data: signedData } = await supabase.storage
+              .from('avatars')
+              .createSignedUrl(avatarPath, 3600);
+            if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+          } catch (e) {
+            console.error('Failed to get avatar URL:', e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Profile fetch error:', e);
     }
     setLoading(false);
   };
