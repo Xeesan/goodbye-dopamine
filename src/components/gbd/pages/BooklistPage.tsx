@@ -399,9 +399,13 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">PAGES</label>
+                  <label className="form-label">TOTAL PAGES</label>
                   <input type="number" id="book-pages" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.pages || ''} />
                 </div>
+              </div>
+              <div>
+                <label className="form-label">CURRENT PAGE</label>
+                <input type="number" id="book-current-page" className="input-simple" placeholder="0" min={0} defaultValue={editingBook?.currentPage || 0} />
               </div>
               <div>
                 <label className="form-label">STATUS</label>
