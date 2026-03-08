@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
-import { calcLevel } from '@/lib/leveling';
+import { calcLevel, levelTitle } from '@/lib/leveling';
+import { toast } from '@/hooks/use-toast';
 
 interface XPData {
   total: number;
