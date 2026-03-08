@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
+import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface MoneyPageProps {

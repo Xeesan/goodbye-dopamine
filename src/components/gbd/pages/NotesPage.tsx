@@ -68,6 +68,13 @@ const NotesPage = ({}: NotesPageProps) => {
 
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
+      <div className="flex items-center gap-3 mb-5">
+        <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Notes</h1>
+          <p className="text-muted-foreground text-sm">Capture and organize your thoughts</p>
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
         <div>
           <button className="btn-green w-full mb-4" onClick={() => { setEditingId(null); setShowModal(true); }}>+ New Note</button>

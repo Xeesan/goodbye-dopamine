@@ -66,9 +66,12 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Daily Planner</h1>
-          <p className="text-muted-foreground text-sm">Master your schedule, conquer your goals.</p>
+        <div className="flex items-center gap-3">
+          <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Daily Planner</h1>
+            <p className="text-muted-foreground text-sm">Master your schedule, conquer your goals.</p>
+          </div>
         </div>
         <div className="search-input-wrap w-60">
           <Search className="w-4 h-4 text-muted-foreground" />

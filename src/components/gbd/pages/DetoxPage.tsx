@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
-import { Play, Square, Shield, Volume2, VolumeX } from 'lucide-react';
+import { Play, Square, Shield, Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface DetoxPageProps {
