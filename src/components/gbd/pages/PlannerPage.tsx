@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
-import { Search } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface PlannerPageProps {
