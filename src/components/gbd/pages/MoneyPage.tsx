@@ -310,6 +310,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
             const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
             const isOverBudget = thisWeekExpenses > weeklyAllowance && weeklyAllowance > 0;
+            const semesterEndStr = format(end, 'dd MMM yyyy');
 
             return (
               <div className="glass-card mb-6 !p-5">
