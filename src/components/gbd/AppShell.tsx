@@ -29,7 +29,6 @@ interface AppShellProps {
 const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Default open on desktop
     if (typeof window !== 'undefined') return window.innerWidth >= 1024;
     return false;
   });
@@ -37,9 +36,19 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
+
+  // Sync sidebar state on resize (close on mobile, open on desktop)
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 1024;
+      setSidebarOpen(isDesktop);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
-    // Close sidebar on mobile only
     if (window.innerWidth < 1024) setSidebarOpen(false);
     setRefreshKey(k => k + 1);
   }, []);
