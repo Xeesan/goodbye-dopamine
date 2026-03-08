@@ -2,10 +2,12 @@ import { useState, useRef } from 'react';
 import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import HealthRemindersCard from '../HealthRemindersCard';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
   refreshKey: number;
+  onRestartReminders?: () => void;
 }
 
 function getHealthData() {
@@ -21,7 +23,7 @@ function saveHealthData(data: any) {
   Storage.set('health', data.all);
 }
 
-const HealthPage = ({ navigateTo }: HealthPageProps) => {
+const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
   const [tab, setTab] = useState('overview');
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPhase, setBreathingPhase] = useState('START');
@@ -180,7 +182,7 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => adjustWater(1)}>
               <span className="text-2xl">💧</span>
               <span className="block text-xs font-medium text-foreground mt-1">+ Water</span>
@@ -198,6 +200,9 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
               <span className="block text-xs font-medium text-foreground mt-1">Log Steps</span>
             </button>
           </div>
+
+          {/* Health Reminders */}
+          <HealthRemindersCard onRestartReminders={onRestartReminders || (() => {})} />
         </>
       )}
 

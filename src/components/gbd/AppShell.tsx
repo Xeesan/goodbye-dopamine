@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
+import { useHealthReminders } from '@/hooks/useHealthReminders';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
 import RoutinePage from './pages/RoutinePage';
@@ -30,7 +31,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-
+  const { restart: restartHealthReminders } = useHealthReminders();
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
     setSidebarOpen(false);
@@ -49,7 +50,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'notes': return <NotesPage {...props} />;
       case 'booklist': return <BooklistPage {...props} />;
       case 'detox': return <DetoxPage {...props} />;
-      case 'health': return <HealthPage {...props} />;
+      case 'health': return <HealthPage {...props} onRestartReminders={restartHealthReminders} />;
       case 'reports': return <ReportsPage {...props} />;
       case 'notifications': return <NotificationsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
