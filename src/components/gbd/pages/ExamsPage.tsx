@@ -117,7 +117,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
 
   const handleOCRImport = (items: any[]) => {
     items.forEach((item: any) => {
-      Storage.addExam({
+      const examData = {
         subject: item.subject || 'Unknown',
         date: item.date || new Date().toISOString().split('T')[0],
         time: item.time || '09:00',
@@ -126,7 +126,9 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         credits: item.credits || 3,
         grade: item.grade || '',
         type: examTab,
-      });
+      };
+      Storage.addExam(examData);
+      addExamToDB(examData);
     });
     addXP(items.length * 15);
     refresh();
