@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2 } from 'lucide-react';
+import Storage from '@/lib/storage';
+import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { toast } from '@/hooks/use-toast';
 
 interface ProfilePageProps {
   navigateTo: (page: string) => void;
@@ -274,7 +276,49 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
           </button>
         </div>
 
-        {/* Actions */}
+        {/* Data Management */}
+        <div className="glass-card-accent">
+          <h3 className="font-semibold text-foreground mb-5">Data Management</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button className="btn-outline flex-1 flex items-center justify-center gap-2" onClick={() => {
+              const json = Storage.exportAllData();
+              const blob = new Blob([json], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `gbd-backup-${new Date().toISOString().split('T')[0]}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast({ title: 'Export complete', description: 'Your data has been downloaded.' });
+            }}>
+              <Download className="w-4 h-4" /> Export Data
+            </button>
+            <button className="btn-outline flex-1 flex items-center justify-center gap-2" onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.json';
+              input.onchange = async (e: any) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const confirmed = await showDialog({ title: 'Import Data', message: 'This will overwrite your current local data. Continue?', type: 'confirm', confirmText: 'Import' });
+                if (!confirmed) return;
+                const text = await file.text();
+                try {
+                  Storage.importAllData(text);
+                  toast({ title: 'Import complete', description: 'Your data has been restored. Refreshing...' });
+                  setTimeout(() => window.location.reload(), 1000);
+                } catch {
+                  toast({ title: 'Import failed', description: 'Invalid JSON file.', variant: 'destructive' });
+                }
+              };
+              input.click();
+            }}>
+              <Upload className="w-4 h-4" /> Import Data
+            </button>
+          </div>
+        </div>
+
+        {/* Account */}
         <div className="glass-card-accent">
           <h3 className="font-semibold text-foreground mb-5">Account</h3>
           <button className="w-full flex items-center gap-2 justify-center py-3 rounded-[var(--radius-sm)] text-destructive font-semibold transition-all hover:bg-destructive/10" style={{ border: '1px solid hsl(var(--destructive) / 0.3)' }} onClick={onLogout}>
