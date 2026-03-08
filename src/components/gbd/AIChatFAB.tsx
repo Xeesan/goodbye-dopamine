@@ -457,7 +457,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
     setLoading(true);
 
     try {
-      const customKey = localStorage.getItem('gbd_gemini_api_key') || '';
+      const customKey = sessionStorage.getItem('gbd_gemini_api_key') || '';
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
