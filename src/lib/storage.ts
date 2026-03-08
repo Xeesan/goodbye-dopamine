@@ -72,6 +72,9 @@ const Storage = {
     routine[day] = routine[day].filter(p => p.id !== id);
     this.setRoutine(routine);
   },
+  clearRoutine() {
+    this.setRoutine({ monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] });
+  },
 
   // Exams
   getExams(): any[] {
