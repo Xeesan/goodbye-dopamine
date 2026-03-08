@@ -31,7 +31,7 @@ function getExamCountdown(dateStr: string, timeStr?: string) {
   } catch { return { text: '—', days: 99, urgency: 'safe' }; }
 }
 
-const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
+const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
   const [examTab, setExamTab] = useState('exams');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -42,7 +42,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
 
   useEffect(() => {
     syncExamsFromDB().then(() => refresh());
-  }, []);
+  }, [refreshKey]);
 
   // Pre-fill date from calendar quick-add
   useEffect(() => {
