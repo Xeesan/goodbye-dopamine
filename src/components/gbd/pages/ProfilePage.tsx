@@ -48,16 +48,19 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       setYear(data.year || '');
       setGender(data.gender || '');
       if (data.avatar_url) {
-        // If it's a file path (not a full URL), generate a signed URL
-        const avatarPath = data.avatar_url;
+        // Extract file path from full URL if needed, then generate signed URL
+        let avatarPath = data.avatar_url;
         if (avatarPath.startsWith('http')) {
-          setAvatarUrl(avatarPath);
-        } else {
-          const { data: signedData } = await supabase.storage
-            .from('avatars')
-            .createSignedUrl(avatarPath, 3600);
-          if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
+          // Extract path after /avatars/
+          const match = avatarPath.match(/\/avatars\/(.+)$/);
+          if (match) {
+            avatarPath = match[1];
+          }
         }
+        const { data: signedData } = await supabase.storage
+          .from('avatars')
+          .createSignedUrl(avatarPath, 3600);
+        if (signedData?.signedUrl) setAvatarUrl(signedData.signedUrl);
       }
     }
     setLoading(false);
