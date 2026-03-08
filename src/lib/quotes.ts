@@ -1,4 +1,11 @@
-export const QUOTES = [
+import { getLang } from './i18n';
+
+export interface Quote {
+  text: string;
+  author: string;
+}
+
+export const QUOTES_EN: Quote[] = [
   { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
   { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
   { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
@@ -41,19 +48,71 @@ export const QUOTES = [
   { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
 ];
 
-export function getDailyQuote() {
+export const QUOTES_BN: Quote[] = [
+  { text: "তুমি যদি সূর্যের মতো উজ্জ্বল হতে চাও, তাহলে প্রথমে সূর্যের মতো পুড়তে শেখো।", author: "এ.পি.জে আব্দুল কালাম" },
+  { text: "স্বপ্ন সেটা নয় যেটা তুমি ঘুমিয়ে দেখো, স্বপ্ন সেটা যেটা তোমাকে ঘুমাতে দেয় না।", author: "এ.পি.জে আব্দুল কালাম" },
+  { text: "জীবন হলো সাইকেল চালানোর মতো। ভারসাম্য রাখতে হলে তোমাকে চলতে হবে।", author: "আলবার্ট আইনস্টাইন" },
+  { text: "শিক্ষা হলো সবচেয়ে শক্তিশালী অস্ত্র যা দিয়ে তুমি পৃথিবী বদলাতে পারো।", author: "নেলসন ম্যান্ডেলা" },
+  { text: "তুমি যা ভাবো, তাই হয়ে যাও।", author: "গৌতম বুদ্ধ" },
+  { text: "পরিশ্রম সৌভাগ্যের প্রসূতি।", author: "বাংলা প্রবাদ" },
+  { text: "যে পরিশ্রম করে, সাফল্য তার কাছেই আসে।", author: "বাংলা প্রবাদ" },
+  { text: "আজকের কাজ আজই করো, কালের উপর ভরসা করো না।", author: "বাংলা প্রবাদ" },
+  { text: "থেমে যাওয়া মানে হেরে যাওয়া নয়, থেমে গিয়ে আবার শুরু করা মানে জিতে যাওয়া।", author: "অজানা" },
+  { text: "ব্যর্থতা মানে হেরে যাওয়া নয়, ব্যর্থতা মানে এখনও শেখা হয়নি।", author: "অজানা" },
+  { text: "যে গাছ ঝড়ে টিকে থাকে, সে গাছের শেকড় গভীর।", author: "বাংলা প্রবাদ" },
+  { text: "ধৈর্য ধরো, সাফল্য আসবেই।", author: "বাংলা প্রবাদ" },
+  { text: "বিশ্বাস হলো সেই পাখি যে অন্ধকারেও গান গায়।", author: "রবীন্দ্রনাথ ঠাকুর" },
+  { text: "তুমি যদি কাউকে ভালোবাসতে চাও, প্রথমে নিজেকে ভালোবাসো।", author: "রবীন্দ্রনাথ ঠাকুর" },
+  { text: "মানুষ তার স্বপ্নের সমান বড়।", author: "এ.পি.জে আব্দুল কালাম" },
+  { text: "চেষ্টা করলে কেষ্টা মেলে।", author: "বাংলা প্রবাদ" },
+  { text: "অসম্ভব বলে কিছু নেই, অসম্ভব শব্দটা শুধু বোকারা ব্যবহার করে।", author: "মুহাম্মদ আলী" },
+  { text: "জ্ঞানই শক্তি।", author: "ফ্রান্সিস বেকন" },
+  { text: "একটু একটু করে শেখো, একদিন সবকিছু জানবে।", author: "অজানা" },
+  { text: "যার মধ্যে শেখার আগ্রহ আছে, তাকে কেউ থামাতে পারে না।", author: "অজানা" },
+  { text: "সময় এবং স্রোত কারো জন্য অপেক্ষা করে না।", author: "বাংলা প্রবাদ" },
+  { text: "কঠিন সময়ে যে হাল ছাড়ে না, জয় তারই হয়।", author: "অজানা" },
+  { text: "প্রতিটি সকাল একটি নতুন সুযোগ।", author: "অজানা" },
+  { text: "নিজেকে চেনো, নিজেকে জানো, তাহলে জীবনে সফল হবে।", author: "সক্রেটিস" },
+  { text: "ভুল থেকে শিখে যে এগিয়ে যায়, সে-ই সত্যিকারের জয়ী।", author: "অজানা" },
+  { text: "পড়ো, শেখো, বদলে যাও।", author: "অজানা" },
+  { text: "যে জাতি শিক্ষিত, সে জাতি উন্নত।", author: "বাংলা প্রবাদ" },
+  { text: "তোমার ভবিষ্যৎ তৈরি হচ্ছে আজ তুমি কী করছো তার উপর।", author: "মহাত্মা গান্ধী" },
+  { text: "ছোট ছোট পদক্ষেপই বড় গন্তব্যে পৌঁছে দেয়।", author: "অজানা" },
+  { text: "হার মানা সহজ, কিন্তু জিতে যাওয়ার স্বাদই আলাদা।", author: "অজানা" },
+  { text: "সফলতা কোনো গন্তব্য নয়, এটি একটি যাত্রা।", author: "অজানা" },
+  { text: "তুমি পারবে — এটাই সবচেয়ে বড় শক্তি।", author: "অজানা" },
+  { text: "যতবার পড়বে, ততবার উঠে দাঁড়াও।", author: "বাংলা প্রবাদ" },
+  { text: "জীবনে সবচেয়ে বড় ভুল হলো ভুল করার ভয়ে কিছু না করা।", author: "অজানা" },
+  { text: "আগে নিজে জ্বলো, তারপর অন্যকে আলো দাও।", author: "স্বামী বিবেকানন্দ" },
+  { text: "ওঠো, জাগো এবং লক্ষ্যে না পৌঁছানো পর্যন্ত থেমো না।", author: "স্বামী বিবেকানন্দ" },
+  { text: "মনের জোরই আসল জোর।", author: "স্বামী বিবেকানন্দ" },
+  { text: "পৃথিবীতে যত মহান কাজ হয়েছে, সব একসময় অসম্ভব মনে হয়েছিল।", author: "অজানা" },
+  { text: "লেখাপড়া করে যে, গাড়িঘোড়া চড়ে সে।", author: "বাংলা প্রবাদ" },
+  { text: "আত্মবিশ্বাস হলো সাফল্যের প্রথম ধাপ।", author: "অজানা" },
+];
+
+// Keep backward compat
+export const QUOTES = QUOTES_EN;
+
+function getQuoteList(): Quote[] {
+  return getLang() === 'bn' ? QUOTES_BN : QUOTES_EN;
+}
+
+export function getDailyQuote(): Quote {
+  const quotes = getQuoteList();
   const today = new Date();
   const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
-  return QUOTES[dayOfYear % QUOTES.length];
+  return quotes[dayOfYear % quotes.length];
 }
 
 let currentQuoteIndex = -1;
 
-export function getRandomQuote() {
+export function getRandomQuote(): Quote {
+  const quotes = getQuoteList();
   let idx;
   do {
-    idx = Math.floor(Math.random() * QUOTES.length);
-  } while (idx === currentQuoteIndex && QUOTES.length > 1);
+    idx = Math.floor(Math.random() * quotes.length);
+  } while (idx === currentQuoteIndex && quotes.length > 1);
   currentQuoteIndex = idx;
-  return QUOTES[idx];
+  return quotes[idx];
 }
