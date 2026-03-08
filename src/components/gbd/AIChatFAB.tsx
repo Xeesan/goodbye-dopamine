@@ -562,8 +562,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
 
       {/* Chat Panel — fullscreen on mobile, floating panel on sm+ */}
       {open && (
-        <div className="fixed inset-0 sm:inset-auto sm:bottom-5 sm:right-5 z-50 sm:w-[380px] sm:max-h-[70vh] flex flex-col sm:rounded-2xl shadow-2xl overflow-hidden"
-          style={{ background: 'hsl(var(--background))', border: 'none' }}>
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[380px] sm:max-h-[70vh] flex flex-col sm:rounded-2xl shadow-2xl overflow-hidden"
+          style={{ background: 'hsl(var(--background))', border: 'none', zIndex: 1100 }}>
           {/* Outer border only on desktop */}
           <div className="hidden sm:block absolute inset-0 rounded-2xl pointer-events-none" style={{ border: '1px solid hsl(var(--border))' }} />
           {/* Header */}
