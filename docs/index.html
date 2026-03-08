@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GBD – Good Bye Dopamine | Student Productivity Dashboard</title>
-  <meta name="description" content="GBD is a free, gamified student productivity app. Track tasks, exams, money, reading, focus sessions, and build discipline with AI-powered tools." />
+  <meta name="description" content="GBD is a free, gamified student productivity app with an AI assistant. Track tasks, exams, money, reading, focus sessions, and build discipline." />
   <link rel="icon" href="https://goodbye-dopamine.lovable.app/favicon.svg" type="image/svg+xml" />
   <meta property="og:title" content="GBD – Good Bye Dopamine" />
   <meta property="og:description" content="A personal challenge wrapped inside a student dashboard. Stop doomscrolling, start building discipline." />
@@ -69,6 +69,14 @@
     .ocr-card h3{font-size:1rem;font-weight:600;margin-bottom:.35rem}
     .ocr-card p{font-size:.85rem;color:var(--muted)}
 
+    /* AI Assistant */
+    .ai-demo{background:var(--surface);border:1px solid var(--border);border-radius:.75rem;padding:2rem;margin-top:1.5rem}
+    .ai-demo-msgs{display:flex;flex-direction:column;gap:.75rem}
+    .ai-msg{padding:.6rem 1rem;border-radius:.5rem;font-size:.9rem;max-width:85%;animation:fadeIn .4s ease}
+    .ai-msg-user{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);color:var(--accent);align-self:flex-end}
+    .ai-msg-bot{background:var(--bg);border:1px solid var(--border);color:var(--text);align-self:flex-start}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
     /* CTA */
     .cta{text-align:center;padding:6rem 1.5rem}
     .cta h2{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:700;margin-bottom:1rem}
@@ -97,10 +105,10 @@
   <div class="hero">
     <div class="hero-badge">🎮 <span>Gamified Productivity</span> for Students</div>
     <h1>Stop Doomscrolling.<br/>Start Building <em>Discipline</em>.</h1>
-    <p>GBD is a free, all-in-one student dashboard — tasks, exams, money, reading, focus sessions — powered by AI and wrapped in a gamification layer that rewards you with XP.</p>
+    <p>GBD is a free, all-in-one student dashboard — tasks, exams, money, reading, focus sessions — powered by an AI assistant and wrapped in a gamification layer that rewards you with XP.</p>
     <div class="hero-actions">
       <a href="https://goodbye-dopamine.lovable.app" class="btn btn-primary" target="_blank">🚀 Launch App</a>
-      <a href="https://github.com/" class="btn btn-outline">⭐ Star on GitHub</a>
+      <a href="#features" class="btn btn-outline">✨ See Features</a>
     </div>
   </div>
 
@@ -115,22 +123,40 @@
       <div class="feature-card"><div class="feature-icon">⏰</div><h3>Routine</h3><p>Weekly schedule builder. Snap a photo of your timetable and AI-import it instantly.</p><span class="tag tag-ai">AI OCR</span></div>
       <div class="feature-card"><div class="feature-icon">📝</div><h3>Exams</h3><p>Track exams with countdown timers, urgency indicators, and AI-powered bulk import from photos.</p><span class="tag tag-ai">AI OCR</span></div>
       <div class="feature-card"><div class="feature-icon">🎓</div><h3>Academic Hub</h3><p>GPA Tracker, Calculator, and Simulator — log courses and project your target CGPA.</p></div>
-      <div class="feature-card"><div class="feature-icon">💰</div><h3>Money Manager</h3><p>Income & expense tracker, debt manager, and savings goals with visual progress.</p></div>
+      <div class="feature-card"><div class="feature-icon">💰</div><h3>Money Manager</h3><p>Income & expense tracker, debt manager with settle/repay, and savings goals with visual progress.</p></div>
       <div class="feature-card"><div class="feature-icon">📓</div><h3>Notes</h3><p>Rich notes with categories, full-text search, and an inline viewer.</p></div>
       <div class="feature-card"><div class="feature-icon">📚</div><h3>Booklist</h3><p>Personal reading library with status tabs, page tracking, and star ratings.</p></div>
       <div class="feature-card"><div class="feature-icon">🧘</div><h3>Digital Detox</h3><p>Focus timer with ambient sounds, growing tree visualization, and session history.</p></div>
-      <div class="feature-card"><div class="feature-icon">❤️</div><h3>Health</h3><p>Breathing exercises and customizable health reminders — water, posture, eye breaks, stretching.</p><span class="tag tag-new">New</span></div>
+      <div class="feature-card"><div class="feature-icon">❤️</div><h3>Health</h3><p>Breathing exercises and customizable health reminders — water, posture, eye breaks, stretching.</p></div>
       <div class="feature-card"><div class="feature-icon">📈</div><h3>Reports</h3><p>Productivity analytics and insights to see how you're improving over time.</p></div>
       <div class="feature-card"><div class="feature-icon">📅</div><h3>Global Calendar</h3><p>Unified calendar accessible from any page. Tap events to jump directly to exams, tasks, or routine.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔔</div><h3>Notifications</h3><p>Push notifications for task reminders and health alerts. In-app notification center to review history.</p><span class="tag tag-new">New</span></div>
-      <div class="feature-card"><div class="feature-icon">🌐</div><h3>Multi-language</h3><p>Full English and Bengali (বাংলা) support with one-tap language toggle from the sidebar.</p><span class="tag tag-new">New</span></div>
+      <div class="feature-card"><div class="feature-icon">🔔</div><h3>Notifications</h3><p>Push notifications for task reminders and health alerts. In-app notification center to review history.</p></div>
+      <div class="feature-card"><div class="feature-icon">🌐</div><h3>Multi-language</h3><p>Full English and Bengali (বাংলা) support with one-tap language toggle from the sidebar.</p></div>
       <div class="feature-card"><div class="feature-icon">📱</div><h3>PWA & Offline</h3><p>Install on any device. Works offline with automatic sync queue when back online.</p></div>
+      <div class="feature-card"><div class="feature-icon">🤖</div><h3>AI Assistant</h3><p>Floating AI chat — add tasks, settle debts, query your data, and get study advice via natural language.</p><span class="tag tag-ai">AI Powered</span></div>
+    </div>
+  </section>
+
+  <!-- AI Assistant -->
+  <section id="ai-assistant">
+    <div class="section-label">AI Assistant</div>
+    <div class="section-title">Talk to your dashboard.</div>
+    <p class="section-desc">The floating AI chat understands your tasks, exams, debts, notes, and routine. Ask it anything or tell it to take action — it auto-refreshes the UI instantly.</p>
+    <div class="ai-demo">
+      <div class="ai-demo-msgs">
+        <div class="ai-msg ai-msg-user">Add a task: finish physics assignment by Friday</div>
+        <div class="ai-msg ai-msg-bot">✅ Done! I've added "Finish physics assignment" with a Friday deadline. (+10 XP)</div>
+        <div class="ai-msg ai-msg-user">Settle the debt from Rahim</div>
+        <div class="ai-msg ai-msg-bot">✅ Settled! Rahim's debt of ৳500 has been marked as repaid.</div>
+        <div class="ai-msg ai-msg-user">How many exams do I have this week?</div>
+        <div class="ai-msg ai-msg-bot">You have 2 exams this week: Calculus II (Tue) and Digital Logic (Thu). Good luck! 🎯</div>
+      </div>
     </div>
   </section>
 
   <!-- AI OCR -->
   <section id="ai-ocr">
-    <div class="section-label">AI-Powered</div>
+    <div class="section-label">AI-Powered OCR</div>
     <div class="section-title">Import schedules from photos.</div>
     <p class="section-desc">Snap a photo of your university timetable or exam list. GBD extracts every entry automatically using three OCR modes.</p>
     <div class="ocr-grid">
@@ -163,7 +189,7 @@
   <section id="security">
     <div class="section-label">Security</div>
     <div class="section-title">Your data. Your rules.</div>
-    <p class="section-desc">Row-Level Security on every table. Server-side XP. JWT-verified edge functions. Email OTP on signup. No anonymous accounts. Private storage with signed URLs.</p>
+    <p class="section-desc">Row-Level Security on every table. Server-side XP. JWT-verified edge functions. Email OTP on signup. No anonymous accounts. Private storage with signed URLs. UUID validation on all DB operations.</p>
   </section>
 
   <!-- Tech Stack -->
@@ -177,7 +203,7 @@
       <span class="tech-chip">🎨 Tailwind CSS</span>
       <span class="tech-chip">🧩 shadcn/ui</span>
       <span class="tech-chip">🔐 Supabase</span>
-      <span class="tech-chip">🤖 Lovable AI</span>
+      <span class="tech-chip">🤖 Lovable AI (Gemini)</span>
       <span class="tech-chip">👁️ Tesseract.js</span>
       <span class="tech-chip">📲 PWA + Workbox</span>
       <span class="tech-chip">📊 Recharts</span>
