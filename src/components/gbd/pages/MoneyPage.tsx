@@ -18,9 +18,24 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [debtSearch, setDebtSearch] = useState('');
+  const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
+  const saveFavorites = (contacts: string[]) => {
+    setFavoriteContacts(contacts);
+    Storage.set('favoriteContacts', contacts);
+  };
+  const toggleFavorite = (name: string) => {
+    if (favoriteContacts.includes(name)) saveFavorites(favoriteContacts.filter(c => c !== name));
+    else saveFavorites([...favoriteContacts, name]);
+  };
+  const selectContact = (name: string) => {
+    const el = document.getElementById('debt-person') as HTMLInputElement;
+    if (el) { el.value = name; el.focus(); }
+  };
 
   // Hydrate from DB on mount
   useEffect(() => {
