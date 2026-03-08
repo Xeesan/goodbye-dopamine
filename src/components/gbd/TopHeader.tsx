@@ -4,8 +4,6 @@ import { formatDateShort } from '@/lib/helpers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { supabase } from '@/integrations/supabase/client';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
