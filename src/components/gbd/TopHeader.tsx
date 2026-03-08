@@ -1,6 +1,7 @@
-import { Menu, Bell, User, Calendar } from 'lucide-react';
+import { Menu, Bell, User, Calendar, Wifi, WifiOff } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 import { useState } from 'react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
