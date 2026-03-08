@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Rate limit: 30 requests per 60 seconds per user
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW = 60;
 
 const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student productivity buddy inside the "Good Bye Dopamine" app.
 
@@ -128,13 +133,60 @@ serve(async (req) => {
   }
 
   try {
+    // ── Auth check ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Server-side rate limiting ──
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { data: allowed, error: rlError } = await adminClient.rpc("check_rate_limit", {
+      p_user_id: user.id,
+      p_function_name: "ai-assistant",
+      p_max_requests: RATE_LIMIT_MAX,
+      p_window_seconds: RATE_LIMIT_WINDOW,
+    });
+
+    if (rlError || allowed === false) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Please wait a moment before trying again." }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(RATE_LIMIT_WINDOW),
+          },
+        }
+      );
+    }
+
+    // ── Parse and validate request ──
     const { messages, context, geminiApiKey } = await req.json();
 
-    // Determine which API to use
     const useCustomGemini = !!geminiApiKey;
-    
+
     if (!useCustomGemini && !LOVABLE_API_KEY) {
       throw new Error("No AI API key configured");
     }
@@ -144,6 +196,16 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Validate message content length to prevent abuse
+    for (const msg of messages) {
+      if (typeof msg.content === 'string' && msg.content.length > 5000) {
+        return new Response(JSON.stringify({ error: "Message too long (max 5000 chars)" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Limit message history to last 20 messages
