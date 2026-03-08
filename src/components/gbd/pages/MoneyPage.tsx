@@ -70,8 +70,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const balance = income - expense;
   const activeDebts = debts.filter((d: any) => !d.settled);
   const historyDebts = debts.filter((d: any) => d.settled);
-  const totalLent = activeDebts.filter((d: any) => d.debtType === 'lend').reduce((a: number, d: any) => a + d.amount, 0);
-  const totalBorrowed = activeDebts.filter((d: any) => d.debtType === 'borrow').reduce((a: number, d: any) => a + d.amount, 0);
+  const totalLent = activeDebts.filter((d: any) => d.debtType === 'lend').reduce((a: number, d: any) => a + (Number(d.amount) || 0), 0);
+  const totalBorrowed = activeDebts.filter((d: any) => d.debtType !== 'lend').reduce((a: number, d: any) => a + (Number(d.amount) || 0), 0);
 
   const addTransaction = async () => {
     const description = (document.getElementById('txn-desc') as HTMLInputElement)?.value.trim();
