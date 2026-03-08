@@ -151,6 +151,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     setResults(null);
     setError(null);
     setLoading(false);
+    setLoadingMsg('');
   };
 
   return (
