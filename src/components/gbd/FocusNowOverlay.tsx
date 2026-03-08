@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import Storage from '@/lib/storage';
 import type { TranslationKey } from '@/lib/i18n';
 
-interface FocusTask {
+export interface FocusTask {
   id: string;
   title: string;
   type: 'task' | 'exam';
@@ -26,18 +26,30 @@ interface FocusNowOverlayProps {
 const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverlayProps) => {
   const { t } = useI18n();
   const { addXP } = useGamification();
-  const [secondsLeft, setSecondsLeft] = useState(duration * 60);
+
+  // Clamp duration to 1-120 min
+  const safeDuration = Math.max(1, Math.min(120, Math.round(duration || 25)));
+  const totalSeconds = safeDuration * 60;
+
+  const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
   const [running, setRunning] = useState(true);
   const [completed, setCompleted] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const totalSeconds = duration * 60;
+  const completedRef = useRef(false); // prevent double-complete
+
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (running && secondsLeft > 0) {
       intervalRef.current = setInterval(() => {
         setSecondsLeft(s => {
           if (s <= 1) {
-            clearInterval(intervalRef.current!);
+            if (intervalRef.current) clearInterval(intervalRef.current);
             setRunning(false);
             setCompleted(true);
             return 0;
@@ -45,37 +57,80 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
           return s - 1;
         });
       }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, secondsLeft]);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [running]); // only depend on running, not secondsLeft
+
+  // Prevent body scroll while overlay is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, []);
 
   const togglePause = useCallback(() => setRunning(r => !r), []);
 
   const reset = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     setSecondsLeft(totalSeconds);
     setRunning(false);
     setCompleted(false);
+    completedRef.current = false;
   }, [totalSeconds]);
 
   const markDone = useCallback(() => {
+    // Prevent double invocation
+    if (completedRef.current) return;
+    completedRef.current = true;
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
     const elapsed = Math.max(1, Math.round((totalSeconds - secondsLeft) / 60));
-    // Save focus session
-    Storage.addFocusSession({
-      duration: elapsed,
-      taskTitle: task.title,
-      taskType: task.type,
-      completedAt: new Date().toISOString(),
-    });
+
+    try {
+      Storage.addFocusSession({
+        duration: elapsed,
+        taskTitle: (task.title || '').slice(0, 200),
+        taskType: task.type,
+        completedAt: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error('Failed to save focus session:', e);
+    }
 
     // Mark task done if it's a planner task
-    if (task.type === 'task') {
-      Storage.updateTask(task.id, { status: 'done' });
+    if (task.type === 'task' && task.id) {
+      try {
+        Storage.updateTask(task.id, { status: 'done' });
+      } catch (e) {
+        console.error('Failed to update task:', e);
+      }
     }
 
     addXP(30);
-    toast({ title: t('focus.completed_toast' as TranslationKey), description: `${elapsed} min → ${task.title}` });
+    toast({
+      title: t('focus.completed_toast' as TranslationKey),
+      description: `${elapsed} min → ${(task.title || '').slice(0, 60)}`,
+    });
     onComplete();
   }, [totalSeconds, secondsLeft, task, addXP, t, onComplete]);
+
+  // Keyboard: Escape to close, Space to pause/resume
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === ' ' && !completed) {
+        e.preventDefault();
+        togglePause();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose, togglePause, completed]);
 
   const mins = Math.floor(secondsLeft / 60);
   const secs = secondsLeft % 60;
@@ -90,11 +145,13 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
-      style={{ background: 'hsl(var(--background) / 0.97)', backdropFilter: 'blur(20px)' }}>
-      
+      style={{ background: 'hsl(var(--background) / 0.97)', backdropFilter: 'blur(20px)' }}
+      role="dialog" aria-modal="true" aria-label="Focus Timer">
+
       {/* Close button */}
       <button onClick={onClose}
-        className="absolute top-5 right-5 p-2 rounded-full hover:bg-muted transition-colors">
+        className="absolute top-5 right-5 p-2 rounded-full hover:bg-muted transition-colors"
+        aria-label="Close timer">
         <X className="w-5 h-5 text-muted-foreground" />
       </button>
 
@@ -105,13 +162,13 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
           <Zap className="w-3 h-3" />
           {task.type === 'exam' ? t('focus.exam_prep' as TranslationKey) : t('focus.task_focus' as TranslationKey)}
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{task.title}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 break-words">{task.title}</h1>
         <p className="text-sm text-muted-foreground">{task.reason}</p>
       </div>
 
       {/* Timer ring */}
       <div className="relative mb-8">
-        <svg width={size} height={size} className="transform -rotate-90">
+        <svg width={size} height={size} className="transform -rotate-90" aria-hidden="true">
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none"
             stroke="hsl(var(--muted))" strokeWidth={stroke} />
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none"
@@ -122,7 +179,8 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
             className="transition-all duration-1000 ease-linear" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl sm:text-6xl font-mono font-bold text-foreground tabular-nums">
+          <span className="text-5xl sm:text-6xl font-mono font-bold text-foreground tabular-nums"
+            aria-live="polite" aria-label={`${mins} minutes ${secs} seconds remaining`}>
             {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
           </span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -137,17 +195,20 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
           <>
             <button onClick={reset}
               className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: 'hsl(var(--muted))' }}>
+              style={{ background: 'hsl(var(--muted))' }}
+              aria-label="Reset timer">
               <RotateCcw className="w-5 h-5 text-muted-foreground" />
             </button>
             <button onClick={togglePause}
               className="w-16 h-16 rounded-full flex items-center justify-center transition-all hover:scale-105"
-              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
+              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+              aria-label={running ? 'Pause' : 'Resume'}>
               {running ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
             </button>
             <button onClick={markDone}
               className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: 'hsl(var(--green) / 0.15)', color: 'hsl(var(--green))' }}>
+              style={{ background: 'hsl(var(--green) / 0.15)', color: 'hsl(var(--green))' }}
+              aria-label="Mark done early">
               <CheckCircle2 className="w-5 h-5" />
             </button>
           </>
@@ -159,101 +220,125 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
           </button>
         )}
       </div>
+
+      {/* Keyboard hint */}
+      <p className="absolute bottom-5 text-[0.6rem] text-muted-foreground/50 tracking-wider hidden sm:block">
+        SPACE to pause · ESC to exit
+      </p>
     </div>
   );
 };
 
 // ─── Urgency Algorithm ───
-export function pickMostUrgentTask(): FocusTask | null {
+export function getRankedTasks(): FocusTask[] {
   const now = new Date();
   const candidates: FocusTask[] = [];
 
   // 1. Planner tasks (not done)
-  const tasks = Storage.getTasks().filter((t: any) => t.status !== 'done');
-  for (const task of tasks) {
-    let score = 50; // base
-    // Priority boost
-    if (task.priority === 'high') score += 40;
-    else if (task.priority === 'medium') score += 20;
-    // Deadline proximity
-    if (task.date) {
-      try {
-        const deadline = new Date(task.date + (task.time ? `T${task.time}` : 'T23:59'));
-        const hoursUntil = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
-        if (hoursUntil < 0) score += 60; // overdue!
-        else if (hoursUntil < 3) score += 50;
-        else if (hoursUntil < 12) score += 35;
-        else if (hoursUntil < 24) score += 25;
-        else if (hoursUntil < 72) score += 15;
-      } catch { /* skip date errors */ }
-    }
-    // In-progress gets a small bump
-    if (task.status === 'in-progress') score += 10;
+  try {
+    const tasks = Storage.getTasks().filter((t: any) => t && t.status !== 'done');
+    for (const task of tasks) {
+      if (!task.id || !task.title) continue;
+      let score = 50;
+      if (task.priority === 'high') score += 40;
+      else if (task.priority === 'medium') score += 20;
 
-    let reason = '';
-    if (task.priority === 'high') reason = 'High priority';
-    if (task.date) {
-      const deadline = new Date(task.date + (task.time ? `T${task.time}` : 'T23:59'));
-      const hoursUntil = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
-      if (hoursUntil < 0) reason = 'Overdue!';
-      else if (hoursUntil < 24) reason = `Due in ${Math.max(1, Math.round(hoursUntil))}h`;
-      else if (hoursUntil < 72) reason = `Due in ${Math.round(hoursUntil / 24)}d`;
-      else reason = reason || `Due ${task.date}`;
-    }
+      if (task.date) {
+        try {
+          const timeStr = typeof task.time === 'string' && task.time ? `T${task.time}` : 'T23:59';
+          const deadline = new Date(task.date + timeStr);
+          if (!isNaN(deadline.getTime())) {
+            const hoursUntil = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+            if (hoursUntil < 0) score += 60;
+            else if (hoursUntil < 3) score += 50;
+            else if (hoursUntil < 12) score += 35;
+            else if (hoursUntil < 24) score += 25;
+            else if (hoursUntil < 72) score += 15;
+          }
+        } catch { /* skip */ }
+      }
+      if (task.status === 'in-progress') score += 10;
 
-    candidates.push({
-      id: task.id,
-      title: task.title,
-      type: 'task',
-      date: task.date,
-      priority: task.priority,
-      urgencyScore: score,
-      reason: reason || 'Pending task',
-    });
+      let reason = '';
+      if (task.date) {
+        try {
+          const timeStr = typeof task.time === 'string' && task.time ? `T${task.time}` : 'T23:59';
+          const deadline = new Date(task.date + timeStr);
+          if (!isNaN(deadline.getTime())) {
+            const hoursUntil = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+            if (hoursUntil < 0) reason = 'Overdue!';
+            else if (hoursUntil < 24) reason = `Due in ${Math.max(1, Math.round(hoursUntil))}h`;
+            else if (hoursUntil < 72) reason = `Due in ${Math.round(hoursUntil / 24)}d`;
+            else reason = `Due ${task.date}`;
+          }
+        } catch { /* skip */ }
+      }
+      if (!reason && task.priority === 'high') reason = 'High priority';
+
+      candidates.push({
+        id: task.id,
+        title: String(task.title).slice(0, 200),
+        type: 'task',
+        date: task.date,
+        priority: task.priority,
+        urgencyScore: score,
+        reason: reason || 'Pending task',
+      });
+    }
+  } catch (e) {
+    console.error('Focus algorithm: error reading tasks', e);
   }
 
   // 2. Upcoming exams (next 14 days)
-  const exams = Storage.getExams();
-  for (const exam of exams) {
-    if (!exam.date) continue;
-    try {
-      const examDate = new Date(exam.date + (exam.time ? `T${exam.time}` : 'T09:00'));
-      const hoursUntil = (examDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-      if (hoursUntil < 0 || hoursUntil > 14 * 24) continue; // skip past or far-future
-      
-      let score = 60; // exams are inherently important
-      // Credits weight
-      const credits = exam.credits || 3;
-      score += credits * 5;
-      // Proximity
-      if (hoursUntil < 24) score += 60;
-      else if (hoursUntil < 48) score += 45;
-      else if (hoursUntil < 72) score += 30;
-      else if (hoursUntil < 168) score += 15;
+  try {
+    const exams = Storage.getExams();
+    for (const exam of exams) {
+      if (!exam.date || !exam.id || !exam.subject) continue;
+      try {
+        const timeStr = typeof exam.time === 'string' && exam.time ? `T${exam.time}` : 'T09:00';
+        const examDate = new Date(exam.date + timeStr);
+        if (isNaN(examDate.getTime())) continue;
+        const hoursUntil = (examDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (hoursUntil < 0 || hoursUntil > 14 * 24) continue;
 
-      const daysUntil = Math.max(0, Math.round(hoursUntil / 24));
-      const reason = daysUntil === 0
-        ? `Exam today!`
-        : daysUntil === 1
-        ? `Exam tomorrow`
-        : `Exam in ${daysUntil} days (${credits} credits)`;
+        let score = 60;
+        const credits = Math.max(1, Math.min(20, Number(exam.credits) || 3));
+        score += credits * 5;
+        if (hoursUntil < 24) score += 60;
+        else if (hoursUntil < 48) score += 45;
+        else if (hoursUntil < 72) score += 30;
+        else if (hoursUntil < 168) score += 15;
 
-      candidates.push({
-        id: exam.id,
-        title: `Study: ${exam.subject}`,
-        type: 'exam',
-        date: exam.date,
-        urgencyScore: score,
-        reason,
-      });
-    } catch { /* skip date errors */ }
+        const daysUntil = Math.max(0, Math.round(hoursUntil / 24));
+        const reason = daysUntil === 0
+          ? 'Exam today!'
+          : daysUntil === 1
+          ? 'Exam tomorrow'
+          : `Exam in ${daysUntil} days (${credits} cr)`;
+
+        candidates.push({
+          id: exam.id,
+          title: `Study: ${String(exam.subject).slice(0, 100)}`,
+          type: 'exam',
+          date: exam.date,
+          urgencyScore: score,
+          reason,
+        });
+      } catch { /* skip */ }
+    }
+  } catch (e) {
+    console.error('Focus algorithm: error reading exams', e);
   }
-
-  if (candidates.length === 0) return null;
 
   // Sort by urgency score descending
   candidates.sort((a, b) => b.urgencyScore - a.urgencyScore);
-  return candidates[0];
+  return candidates;
+}
+
+/** Legacy compat — returns the single most urgent task */
+export function pickMostUrgentTask(): FocusTask | null {
+  const ranked = getRankedTasks();
+  return ranked.length > 0 ? ranked[0] : null;
 }
 
 export default FocusNowOverlay;

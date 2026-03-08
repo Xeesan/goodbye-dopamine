@@ -432,6 +432,7 @@ const translations = {
   'focus.mark_done': { en: 'Mark Done & Exit', bn: 'সম্পন্ন করুন' },
   'focus.completed_toast': { en: 'Focus session complete!', bn: 'ফোকাস সেশন সম্পন্ন!' },
   'focus.most_urgent': { en: 'MOST URGENT', bn: 'সবচেয়ে জরুরি' },
+  'focus.skip': { en: 'Skip', bn: 'স্কিপ' },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

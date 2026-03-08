@@ -6,8 +6,8 @@ import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
-import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target } from 'lucide-react';
-import FocusNowOverlay, { pickMostUrgentTask } from '../FocusNowOverlay';
+import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target, SkipForward } from 'lucide-react';
+import FocusNowOverlay, { getRankedTasks, type FocusTask } from '../FocusNowOverlay';
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
@@ -35,15 +35,18 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [showXpBadge, setShowXpBadge] = useState(false);
   const [refreshSpinning, setRefreshSpinning] = useState(false);
   const [focusDuration, setFocusDuration] = useState<number | null>(null);
-  const [focusTask, setFocusTask] = useState<ReturnType<typeof pickMostUrgentTask>>(null);
+  const [focusTask, setFocusTask] = useState<FocusTask | null>(null);
+  const [skipIndex, setSkipIndex] = useState(0);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
   useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
 
-  // Compute urgent task
-  const urgentTask = pickMostUrgentTask();
+  // Compute ranked tasks for Focus Now
+  const rankedTasks = getRankedTasks();
+  const safeIndex = rankedTasks.length > 0 ? skipIndex % rankedTasks.length : 0;
+  const urgentTask = rankedTasks.length > 0 ? rankedTasks[safeIndex] : null;
 
 
   const refreshQuote = useCallback(() => {
@@ -108,13 +111,27 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
           </div>
           {urgentTask ? (
             <div>
-              <p className="text-lg font-bold text-foreground mb-1">{urgentTask.title}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-lg font-bold text-foreground break-words min-w-0">{urgentTask.title}</p>
+                {rankedTasks.length > 1 && (
+                  <button
+                    onClick={() => setSkipIndex(i => i + 1)}
+                    className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.65rem] font-semibold transition-all hover:scale-105 cursor-pointer"
+                    style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}
+                    title={t('focus.skip' as TranslationKey)}>
+                    <SkipForward className="w-3 h-3" /> {t('focus.skip' as TranslationKey)}
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-[0.65rem] font-bold tracking-wider px-2 py-0.5 rounded-full"
                   style={{ background: 'hsl(var(--warning) / 0.15)', color: 'hsl(var(--warning))' }}>
                   {t('focus.most_urgent' as TranslationKey)}
                 </span>
                 <span className="text-xs text-muted-foreground">{urgentTask.reason}</span>
+                {rankedTasks.length > 1 && (
+                  <span className="text-[0.6rem] text-muted-foreground/60">{safeIndex + 1}/{rankedTasks.length}</span>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {[15, 25, 45, 60].map(min => (
