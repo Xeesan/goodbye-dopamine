@@ -183,7 +183,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
                     {noteTags.slice(0, 3).map(tag => (
                       <span key={tag} className="tag-pill text-[0.6rem]">{tag}</span>
                     ))}
-                    <span className="text-[0.6rem] text-muted-foreground ml-auto">{formatDate(n.updatedAt)}</span>
+                    <span className="text-[0.7rem] text-muted-foreground ml-auto">{formatDate(n.updatedAt)}</span>
                   </div>
                 </div>
               );
