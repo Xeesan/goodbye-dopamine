@@ -461,7 +461,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 {!isActive && (
                   <div className="mt-3 text-[0.65rem] text-muted-foreground flex items-center gap-1.5">
                     <CalendarDays className="w-3 h-3" />
-                    {now < start ? 'Semester starts ' + semesterBudget.startDate : 'Semester ended'}
+                    {now < start ? `Semester starts ${format(start, 'dd MMM yyyy')}` : `Semester ended ${semesterEndStr}`}
                   </div>
                 )}
               </div>
