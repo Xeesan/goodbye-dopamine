@@ -237,11 +237,13 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
             <div className="space-y-2 mb-4">
               <div className="hidden sm:grid grid-cols-[1fr_120px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE NAME</span><span>GRADE</span><span>CREDITS</span><span></span></div>
               {calcCourses.map((row, i) => (
-                <div key={i} className="grid grid-cols-[1fr_120px_80px_40px] gap-2 items-center">
-                  <input type="text" className="input-simple" placeholder="Course name" value={row.name} onChange={e => updateCalcRow(i, 'name', e.target.value)} />
-                  <select className="input-simple" value={row.grade} onChange={e => updateCalcRow(i, 'grade', e.target.value)}>{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}</select>
-                  <input type="number" className="input-simple" min={1} max={10} value={row.credits} onChange={e => updateCalcRow(i, 'credits', parseInt(e.target.value) || 1)} />
-                  <button className="icon-btn !w-8 !h-8 !text-destructive" onClick={() => removeCalcRow(i)} disabled={calcCourses.length <= 1}><Trash2 className="w-3.5 h-3.5" /></button>
+                <div key={i} className="flex items-center justify-between gap-2 sm:grid sm:grid-cols-[1fr_120px_80px_40px]">
+                  <input type="text" className="input-simple flex-1 sm:flex-none" placeholder="Course name" value={row.name} onChange={e => updateCalcRow(i, 'name', e.target.value)} />
+                  <div className="flex items-center gap-2 sm:contents shrink-0">
+                    <select className="input-simple w-20 sm:w-auto" value={row.grade} onChange={e => updateCalcRow(i, 'grade', e.target.value)}>{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}</select>
+                    <input type="number" className="input-simple w-16 sm:w-auto" min={1} max={10} value={row.credits} onChange={e => updateCalcRow(i, 'credits', parseInt(e.target.value) || 1)} />
+                    <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => removeCalcRow(i)} disabled={calcCourses.length <= 1}><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
                 </div>
               ))}
             </div>
