@@ -1,5 +1,5 @@
 import Storage from '@/lib/storage';
-import { Copy, LogOut } from 'lucide-react';
+import { Copy, LogOut, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface ProfilePageProps {
