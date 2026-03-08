@@ -437,9 +437,18 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
 
     const localTxns = Storage.getTransactions();
 
-    if (remoteTxns.length === 0 && localTxns.length === 0) return [];
+    if (remoteTxns.length === 0 && localTxns.length === 0) {
+      Storage.setTransactions([]);
+      return [];
+    }
 
     if (remoteTxns.length === 0 && localTxns.length > 0) {
+      const hasLocalOnly = localTxns.some(t => String(t.id).includes('_'));
+      if (!hasLocalOnly) {
+        // All local txns have DB IDs but DB is empty → deleted remotely
+        Storage.setTransactions([]);
+        return [];
+      }
       for (const t of localTxns) {
         await supabase.from('user_transactions').insert({
           user_id: userId,
@@ -452,8 +461,14 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
       return localTxns;
     }
 
-    // LWW merge
-    const localWithDbIds = localTxns.filter(t => !String(t.id).includes('_'));
+    const remoteIdSet = new Set(remoteTxns.map(t => String(t.id)));
+
+    // LWW merge — only keep local DB-id items that still exist in remote
+    const localWithDbIds = localTxns.filter(t => {
+      const id = String(t.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
     const localOnly = localTxns.filter(t => String(t.id).includes('_'));
 
     const { merged } = lwwMerge(localWithDbIds, remoteTxns, (t) => t.updatedAt || t.date || '1970-01-01');
