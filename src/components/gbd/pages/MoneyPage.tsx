@@ -29,7 +29,7 @@ interface MoneyPageProps {
   refreshKey: number;
 }
 
-const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
+const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
   const [moneyTab, setMoneyTab] = useState('transactions');
   const [debtType, setDebtType] = useState('lend');
   const [showTxnModal, setShowTxnModal] = useState(false);
