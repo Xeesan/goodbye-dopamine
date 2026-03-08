@@ -1,4 +1,4 @@
-import { Menu, Bell, User } from 'lucide-react';
+import { Menu, Bell, User, Calendar } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 
 interface TopHeaderProps {
@@ -27,8 +27,5 @@ const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
     </header>
   );
 };
-
-// Need Calendar icon
-import { Calendar } from 'lucide-react';
 
 export default TopHeader;
