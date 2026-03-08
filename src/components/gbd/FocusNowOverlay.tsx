@@ -52,7 +52,9 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
     } catch { /* not supported */ }
     // Audio beep using Web Audio API (no file needed)
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
       const playBeep = (freq: number, delay: number) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -68,6 +70,8 @@ const FocusNowOverlay = ({ task, duration, onClose, onComplete }: FocusNowOverla
       playBeep(880, 0);
       playBeep(880, 0.5);
       playBeep(1100, 1.0);
+      // Close AudioContext after beeps finish to free resources
+      setTimeout(() => { try { ctx.close(); } catch {} }, 2000);
     } catch { /* audio not supported */ }
   }, []);
 
