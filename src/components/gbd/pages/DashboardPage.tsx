@@ -34,7 +34,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
     setSpinning(true);
     setQuoteKey(k => k + 1);
     setQuote(getRandomQuote());
-    setTimeout(() => setSpinning(false), 500);
+    setTimeout(() => setSpinning(false), 900);
   }, []);
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
