@@ -2,10 +2,12 @@ import { useState, useRef } from 'react';
 import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import HealthRemindersCard from '../HealthRemindersCard';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
   refreshKey: number;
+  onRestartReminders?: () => void;
 }
 
 function getHealthData() {
