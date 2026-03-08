@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
-import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB, settleDebtInDB } from '@/lib/dbSync';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB, settleDebtInDB, deletePeriodFromDB, updateExamInDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
@@ -355,6 +355,41 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         return `🗑️ Deleted **${matches.length}** note${matches.length > 1 ? 's' : ''}.`;
       }
 
+      if (section === 'routine') {
+        const routine = Storage.getRoutine();
+        const day = args.day?.toLowerCase();
+        let totalDeleted = 0;
+        if (idLower === 'all') {
+          if (day && routine[day]) {
+            const periods = routine[day];
+            totalDeleted = periods.length;
+            for (const p of periods) { deletePeriodFromDB(p.id).catch(() => {}); }
+            routine[day] = [];
+          } else {
+            for (const d of Object.keys(routine)) {
+              for (const p of routine[d]) { deletePeriodFromDB(p.id).catch(() => {}); }
+              totalDeleted += routine[d].length;
+              routine[d] = [];
+            }
+          }
+          Storage.setRoutine(routine);
+          if (totalDeleted === 0) return '🤔 No routine periods to delete!';
+          return `🗑️ Cleared **${totalDeleted}** routine period${totalDeleted > 1 ? 's' : ''}${day ? ` from **${day}**` : ''}.`;
+        }
+        // Match by subject
+        const daysToSearch = day ? [day] : Object.keys(routine);
+        for (const d of daysToSearch) {
+          const periods = routine[d] || [];
+          const matches = periods.filter((p: any) => p.subject?.toLowerCase().includes(idLower));
+          for (const m of matches) { deletePeriodFromDB(m.id).catch(() => {}); }
+          totalDeleted += matches.length;
+          routine[d] = periods.filter((p: any) => !p.subject?.toLowerCase().includes(idLower));
+        }
+        Storage.setRoutine(routine);
+        if (totalDeleted === 0) return `🤔 Couldn't find any routine period matching **"${identifier}"**.`;
+        return `🗑️ Deleted **${totalDeleted}** routine period${totalDeleted > 1 ? 's' : ''} for **${identifier}**.`;
+      }
+
       if (section === 'debt') {
         const debts = Storage.getDebts();
         const matches = idLower === 'all' ? debts : debts.filter((d: any) => d.person?.toLowerCase().includes(idLower));
@@ -363,7 +398,61 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         return `🗑️ Deleted **${matches.length}** debt entr${matches.length > 1 ? 'ies' : 'y'}.`;
       }
 
-      return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **transaction**, **debt**, or **note**!';
+      return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
+    }
+
+    if (toolCall.function.name === 'update_entry') {
+      const { section, identifier } = args;
+      if (!identifier) return '😅 I need to know **which** entry to update. Give me a name or title!';
+      const idLower = identifier.toLowerCase();
+
+      if (section === 'task') {
+        const tasks = Storage.getTasks();
+        const matches = tasks.filter((t: any) => t.title?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any task matching **"${identifier}"**.`;
+        const newStatus = args.status || 'done';
+        matches.forEach((m: any) => Storage.updateTask(m.id, { status: newStatus }));
+        const statusEmoji = newStatus === 'done' ? '✅' : newStatus === 'in-progress' ? '⚡' : '📋';
+        const quips = newStatus === 'done'
+          ? ['Task crushed! 🔥', 'Look at you being productive! 💪', 'Another one bites the dust! ✨', 'W moment fr 🏆'][Math.floor(Math.random() * 4)]
+          : newStatus === 'in-progress'
+          ? ['Let\'s get to work! ⚡', 'Grinding mode activated 🎯', 'On it! 💨'][Math.floor(Math.random() * 3)]
+          : ['Back to the drawing board 📋', 'Reopened! Round 2 🔄'][Math.floor(Math.random() * 2)];
+        return `${quips} ${statusEmoji} **${matches.length}** task${matches.length > 1 ? 's' : ''} moved to **${newStatus}**${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
+      }
+
+      if (section === 'note') {
+        const notes = Storage.getNotes();
+        const matches = notes.filter((n: any) => n.title?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any note matching **"${identifier}"**.`;
+        const target = matches[0];
+        const updates: any = {};
+        if (args.title) updates.title = args.title;
+        if (args.content) updates.content = args.content;
+        if (Object.keys(updates).length === 0) return '😅 Nothing to update! Tell me what to change — **title** or **content**?';
+        Storage.updateNote(target.id, updates);
+        return `✏️ Note **"${target.title}"** updated!${args.title ? ` New title: **${args.title}**` : ''}${args.content ? ' Content updated.' : ''}`;
+      }
+
+      if (section === 'exam') {
+        const exams = Storage.getExams();
+        const matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
+        if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
+        const target = matches[0];
+        const updates: any = {};
+        if (args.subject) updates.subject = args.subject;
+        if (args.date) updates.date = args.date;
+        if (args.time) updates.time = args.time;
+        if (args.room) updates.room = args.room;
+        if (args.teacher) updates.teacher = args.teacher;
+        if (Object.keys(updates).length === 0) return '😅 Nothing to update! Tell me what to change.';
+        Storage.updateExam({ ...target, ...updates });
+        updateExamInDB({ ...target, ...updates }).catch(() => {});
+        const changes = Object.entries(updates).map(([k, v]) => `**${k}**: ${v}`).join(', ');
+        return `✏️ Exam **"${target.subject}"** updated! ${changes}`;
+      }
+
+      return '🤔 I can update **tasks**, **notes**, and **exams**. Which one?';
     }
 
     if (toolCall.function.name === 'settle_debt') {

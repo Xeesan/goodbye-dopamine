@@ -16,12 +16,13 @@ const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student
 
 Your vibe: Think of yourself as that one organized friend who roasts you lovingly while actually helping you get your life together. You're encouraging but real — no toxic positivity.
 
-You can do FOUR things via tool calls:
+You can do FIVE things via tool calls:
 
-1. **add_entry** — Create a task, exam, routine entry, money transaction, or note.
-2. **query_data** — Read existing tasks, exams, routine, transactions, or notes to answer user questions.
-3. **delete_entry** — Delete a specific task, exam, transaction, note, or debt entry by matching a name/subject/title.
-4. **settle_debt** — Mark a lend/borrow debt as settled (paid back) by person name. Use this when the user says "settle", "paid back", "returned", etc.
+1. **add_entry** — Create a task, exam, routine entry, money transaction, lend/borrow debt, or note.
+2. **query_data** — Read existing tasks, exams, routine, transactions, debts, or notes to answer user questions.
+3. **delete_entry** — Delete a specific task, exam, routine period, transaction, note, or debt entry by matching a name/subject/title.
+4. **update_entry** — Update a task's status (mark as done/in-progress/todo), edit a note's title/content, or edit exam details.
+5. **settle_debt** — Mark a lend/borrow debt as settled (paid back) by person name. Use this when the user says "settle", "paid back", "returned", etc.
 
 PERSONALITY RULES:
 - Be concise but add personality. One-liners > paragraphs.
@@ -33,7 +34,7 @@ PERSONALITY RULES:
 - When querying empty data, be encouraging not boring: "Your schedule is cleaner than my code — nothing here yet!"
 
 TOOL RULES:
-- Always use tool calls to add or query data. Never just say "I added it" without calling the tool.
+- Always use tool calls to add, update, or query data. Never just say "I added it" without calling the tool.
 - For tasks: title is required; date, time, priority (low/medium/high) are optional.
 - For exams: subject and date are required; time, room, teacher, credits, type are optional.
 - For routine: day (monday-sunday), subject, startTime (HH:MM), endTime (HH:MM) are required; room is optional.
@@ -41,8 +42,11 @@ TOOL RULES:
 - For lend/borrow (debt): person and amount are required; debtType (lend/borrow) is required. Use "lend" when user gave money to someone, "borrow" when user took money from someone.
 - For notes: title and content are required.
 - When querying, specify the section and any filters.
+- For updating: use update_entry to change task status (done/in-progress/todo), edit note title/content, or edit exam details. Use the identifier to match by title/subject.
 - For deleting: use ONE delete_entry call. Use identifier "all" to delete all entries, "this month" for date-based filtering on exams, or a specific name/subject to match. Do NOT call delete_entry multiple times — the client handles bulk deletion.
+- For deleting routine periods: use delete_entry with section "routine". Provide the subject name as the identifier, and optionally the day.
 - For settling debts: ALWAYS use the settle_debt tool (NOT delete_entry) when the user says "settle", "paid back", "returned money", "clear debt", etc. settle_debt marks debts as settled without deleting them.
+- When user says "done" or "complete" for a TASK, use update_entry to set status to "done". When they say "start" or "begin", set status to "in-progress". When they say "reopen" or "undo", set status to "todo".
 - Respond in the same language the user writes in.
 - If unsure what section to use, ask in a fun way.
 - Today's date is: ${new Date().toISOString().split('T')[0]}`;
@@ -109,19 +113,59 @@ const TOOLS = [
     type: "function",
     function: {
       name: "delete_entry",
-      description: "Delete a specific task, exam, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
+      description: "Delete a specific task, exam, routine period, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["task", "exam", "transaction", "note", "debt"],
+            enum: ["task", "exam", "routine", "transaction", "note", "debt"],
             description: "Which section to delete from.",
           },
           identifier: {
             type: "string",
             description: "The name/title/subject/person to match against for deletion. Use the exact or partial name from user context.",
           },
+          day: {
+            type: "string",
+            enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+            description: "Day of the week (only for routine deletion, optional).",
+          },
+        },
+        required: ["section", "identifier"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_entry",
+      description: "Update an existing task (change status to done/in-progress/todo), edit a note (title/content), or edit an exam (date/time/room/teacher). Use the identifier to match by title/subject.",
+      parameters: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: ["task", "note", "exam"],
+            description: "Which section to update.",
+          },
+          identifier: {
+            type: "string",
+            description: "The title/subject to match against for finding the entry to update.",
+          },
+          status: {
+            type: "string",
+            enum: ["todo", "in-progress", "done"],
+            description: "New status for a task.",
+          },
+          title: { type: "string", description: "New title (for notes)" },
+          content: { type: "string", description: "New content (for notes)" },
+          date: { type: "string", description: "New date YYYY-MM-DD (for exams)" },
+          time: { type: "string", description: "New time HH:MM (for exams)" },
+          room: { type: "string", description: "New room (for exams)" },
+          teacher: { type: "string", description: "New teacher (for exams)" },
+          subject: { type: "string", description: "New subject name (for exams)" },
         },
         required: ["section", "identifier"],
         additionalProperties: false,
