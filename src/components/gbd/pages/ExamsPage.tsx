@@ -130,7 +130,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         <div className="flex items-center gap-3 flex-wrap">
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
           <div className="tab-group">
-          <div className="tab-group">
             <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
             <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>
           </div>
