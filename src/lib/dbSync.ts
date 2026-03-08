@@ -576,7 +576,7 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
 
 export async function settleDebtInDB(id: string) {
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId || !isDbId(id)) return;
   try {
     await supabase.from('user_debts').update({
       settled: true,
