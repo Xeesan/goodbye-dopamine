@@ -15,8 +15,10 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [debtType, setDebtType] = useState('lend');
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
