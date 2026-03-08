@@ -23,7 +23,7 @@ function collectLocalData(): Record<string, any> {
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith('gbd_')) {
+      if (key?.startsWith('gbd_') && key !== 'gbd_gemini_api_key') {
         try {
           data[key] = JSON.parse(localStorage.getItem(key)!);
         } catch {

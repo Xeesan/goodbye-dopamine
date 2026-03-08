@@ -16,15 +16,17 @@ interface ProfilePageProps {
 }
 
 const AiKeyInput = () => {
-  const [key, setKey] = useState(() => localStorage.getItem('gbd_gemini_api_key') || '');
+  const [key, setKey] = useState(() => sessionStorage.getItem('gbd_gemini_api_key') || '');
   const [show, setShow] = useState(false);
   const save = () => {
     const trimmed = key.trim();
     if (trimmed) {
-      localStorage.setItem('gbd_gemini_api_key', trimmed);
+      sessionStorage.setItem('gbd_gemini_api_key', trimmed);
     } else {
-      localStorage.removeItem('gbd_gemini_api_key');
+      sessionStorage.removeItem('gbd_gemini_api_key');
     }
+    // Clean up any legacy localStorage entry
+    localStorage.removeItem('gbd_gemini_api_key');
     toast({ title: trimmed ? 'API key saved' : 'API key removed', description: trimmed ? 'Your Gemini key will be used for AI requests.' : 'Default AI will be used.' });
   };
   return (
