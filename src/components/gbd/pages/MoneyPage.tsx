@@ -411,8 +411,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 </div>
               </div>
               <div>
-                <label className="form-label">REASON (OPTIONAL)</label>
-                <input type="text" id="debt-description" className="input-simple" placeholder="What for?" />
+                <label className="form-label">{t('money.reason')}</label>
+                <input type="text" id="debt-description" className="input-simple" placeholder={t('money.what_for')} />
               </div>
               <div>
                 <label className="form-label">DATE</label>
