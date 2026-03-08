@@ -7,7 +7,7 @@ interface ReportsPageProps {
   refreshKey: number;
 }
 
-const ReportsPage = ({}: ReportsPageProps) => {
+const ReportsPage = ({ navigateTo }: ReportsPageProps) => {
   const productivityRef = useRef<HTMLCanvasElement>(null);
   const moneyRef = useRef<HTMLCanvasElement>(null);
 
