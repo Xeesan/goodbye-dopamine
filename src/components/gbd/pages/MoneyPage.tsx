@@ -516,7 +516,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Settled History */}
           {historyDebts.length > 0 && (
             <div className="glass-card min-h-[100px]" style={{ opacity: 0.75 }}>
-              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ Settled History</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ {t('money.settled_history')}</h2>
               {historyDebts.slice().reverse().map((d: any) => (
                 <div key={d.id} className="flex items-center justify-between py-3.5 px-1" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                   <div className="flex items-center gap-3">
