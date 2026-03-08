@@ -235,7 +235,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
             <h2 className="text-lg font-semibold text-foreground mb-4">GPA Calculator</h2>
             <p className="text-sm text-muted-foreground mb-4">Enter your courses to calculate semester GPA instantly.</p>
             <div className="space-y-2 mb-4">
-              <div className="grid grid-cols-[1fr_120px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE NAME</span><span>GRADE</span><span>CREDITS</span><span></span></div>
+              <div className="hidden sm:grid grid-cols-[1fr_120px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE NAME</span><span>GRADE</span><span>CREDITS</span><span></span></div>
               {calcCourses.map((row, i) => (
                 <div key={i} className="grid grid-cols-[1fr_120px_80px_40px] gap-2 items-center">
                   <input type="text" className="input-simple" placeholder="Course name" value={row.name} onChange={e => updateCalcRow(i, 'name', e.target.value)} />
