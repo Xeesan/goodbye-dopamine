@@ -451,7 +451,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {people.length === 0 ? (
               <div className="empty-state border border-dashed border-border rounded-xl !p-10 text-center">
                 <div className="text-3xl mb-2">{debtSearch ? '🔍' : '🤝'}</div>
-                <p className="text-muted-foreground text-sm">{debtSearch ? `No debts matching "${debtSearch}"` : 'No active debts — all clear!'}</p>
+                <p className="text-muted-foreground text-sm">{debtSearch ? `${t('money.no_match')} "${debtSearch}"` : t('money.no_debts')}</p>
               </div>
             ) : people.map(p => (
               <div key={p.name} className="mb-5 last:mb-0">
