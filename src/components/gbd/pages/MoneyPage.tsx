@@ -37,7 +37,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
-    Storage.addXP(5);
+    addXP(5);
     setShowTxnModal(false);
     navigateTo('money');
   };
