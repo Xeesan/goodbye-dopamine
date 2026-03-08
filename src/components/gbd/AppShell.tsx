@@ -17,6 +17,7 @@ import DetoxPage from './pages/DetoxPage';
 import HealthPage from './pages/HealthPage';
 import ReportsPage from './pages/ReportsPage';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
 
 interface AppShellProps {
   user: any;
@@ -50,6 +51,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'detox': return <DetoxPage {...props} />;
       case 'health': return <HealthPage {...props} />;
       case 'reports': return <ReportsPage {...props} />;
+      case 'notifications': return <NotificationsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
       default: return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
     }

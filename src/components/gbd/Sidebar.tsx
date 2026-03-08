@@ -1,4 +1,4 @@
-import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User } from 'lucide-react';
+import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User, Bell } from 'lucide-react';
 import appLogo from '@/assets/icon.svg';
 
 interface SidebarProps {
@@ -24,6 +24,8 @@ const navItems = [
   { id: 'detox', label: 'Detox', icon: Timer, category: 'wellness' },
   { id: 'health', label: 'Health', icon: Heart, category: 'wellness' },
   { id: 'reports', label: 'Reports', icon: BarChart3, category: 'wellness' },
+  { id: '_system', label: 'SYSTEM', icon: null, category: 'header' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, category: 'system' },
 ];
 
 const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarProps) => {
