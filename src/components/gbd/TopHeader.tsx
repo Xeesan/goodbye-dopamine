@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Menu, Bell, User, Calendar, WifiOff, Sun, Moon, Zap } from 'lucide-react';
+import { Menu, Bell, User, Calendar, WifiOff, Sun, Moon } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
-import { useGamification } from '@/hooks/useGamification';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
