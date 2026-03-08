@@ -97,8 +97,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addDebt = async () => {
     const person = (document.getElementById('debt-person') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('debt-amount') as HTMLInputElement)?.value);
-    if (!person || !amount) {
-      await showDialog({ title: 'Missing Info', message: 'Please enter a person name and amount.', type: 'alert' });
+    if (!person || !amount || isNaN(amount) || amount <= 0 || amount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid person name and amount (1 — 10,000,000).', type: 'alert' });
       return;
     }
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
