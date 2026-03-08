@@ -435,7 +435,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Search person..."
+                    placeholder={t('money.search_person')}
                     value={debtSearch}
                     onChange={e => setDebtSearch(e.target.value)}
                     className="input-simple !py-1.5 !pl-8 !pr-3 !text-xs !w-[160px]"
