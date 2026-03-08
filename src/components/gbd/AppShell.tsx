@@ -41,8 +41,25 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const { restart: restartHealthReminders } = useHealthReminders();
 
   // Run silent auto-backup on mount (once per 24h)
+  // Also show local backup reminder every 7 days
   useEffect(() => {
     const timer = setTimeout(() => { runAutoBackup().catch(() => {}); }, 5000);
+
+    // Local backup reminder
+    const REMINDER_KEY = 'gbd_backup_reminder_at';
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    const lastReminder = localStorage.getItem(REMINDER_KEY);
+    if (!lastReminder || Date.now() - Number(lastReminder) > SEVEN_DAYS) {
+      setTimeout(() => {
+        toast({
+          title: '💾 Backup Reminder',
+          description: 'It\'s been a while! Go to Profile → Export Data to save a local backup.',
+          duration: 8000,
+        });
+        localStorage.setItem(REMINDER_KEY, String(Date.now()));
+      }, 10000);
+    }
+
     return () => clearTimeout(timer);
   }, []);
 
