@@ -519,33 +519,24 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       return localDebts;
     }
 
-    // When remote data exists, it is the source of truth.
-    // Only merge local items that have DB UUIDs (no underscore in id).
-    // Discard local-only items (with '_' ids) — they are stale cache duplicates.
-    const localWithDbIds = localDebts.filter(d => !String(d.id).includes('_'));
-
-    const { merged, toUpload } = lwwMerge(localWithDbIds, remoteDebts, (d) => d.updatedAt || d.date || '1970-01-01');
-
-    // Always trust remote for immutable fields (debtType, person, amount)
-    const remoteMap = new Map(remoteDebts.map(d => [String(d.id), d]));
-    for (const m of merged) {
-      const remote = remoteMap.get(String(m.id));
-      if (remote) {
-        m.debtType = remote.debtType;
-        m.person = remote.person;
-        m.amount = remote.amount;
+    // Remote is the source of truth — use remote data directly.
+    // Only push local settled-status changes to DB if local is newer.
+    const localByIdMap = new Map(localDebts.filter(d => !String(d.id).includes('_')).map(d => [String(d.id), d]));
+    for (const remote of remoteDebts) {
+      const local = localByIdMap.get(String(remote.id));
+      if (local && local.settled && !remote.settled) {
+        // Local settled a debt that remote hasn't caught up to
+        await supabase.from('user_debts').update({
+          settled: true,
+          settled_date: local.settledDate || new Date().toISOString(),
+        }).eq('id', remote.id).eq('user_id', userId);
+        remote.settled = true;
+        remote.settledDate = local.settledDate || new Date().toISOString();
       }
     }
 
-    // Push newer local settled-status to DB (only mutable fields)
-    for (const d of toUpload) {
-      await supabase.from('user_debts').update({
-        settled: d.settled,
-        settled_date: d.settledDate || null,
-      }).eq('id', d.id).eq('user_id', userId);
-    }
-
-    const finalDebts = merged;
+    // Use remote data as final truth, discard all local-only entries
+    const finalDebts = remoteDebts;
     Storage.setDebts(finalDebts);
     return finalDebts;
   } catch (e) {
