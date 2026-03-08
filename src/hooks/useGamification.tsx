@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
+import { calcLevel } from '@/lib/leveling';
 
 interface XPData {
   total: number;
@@ -19,7 +20,7 @@ const GamificationContext = createContext<GamificationContextType>({
 
 export const useGamification = () => useContext(GamificationContext);
 
-const calcLevel = (total: number) => Math.floor(total / 100) + 1;
+
 
 export const GamificationProvider = ({ children }: { children: ReactNode }) => {
   const [xp, setXp] = useState<XPData>(() => Storage.getXP());

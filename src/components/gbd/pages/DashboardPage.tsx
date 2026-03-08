@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
+import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
 import UnifiedCalendarWidget from '../UnifiedCalendarWidget';
@@ -57,7 +58,8 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         </div>
         <div className="flex items-center gap-3">
           <div className="glass-card !p-2 !px-4 flex items-center gap-2 text-xs font-semibold tracking-wider">
-            LEVEL {xp.level}
+            <span className="text-muted-foreground">{levelTitle(xp.level)}</span>
+            LVL {xp.level}
             <span className="text-primary font-bold">{xp.total} XP</span>
           </div>
         </div>
@@ -74,20 +76,32 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
         {/* Level Progress */}
         <div className="glass-card-accent flex items-center gap-6">
-          <div className="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0" style={{ background: 'hsl(var(--accent-dim))', border: '2px solid hsl(var(--primary))' }}>
-            <span className="text-xl font-bold text-primary">{xp.level}</span>
-            <span className="text-[0.5rem] font-semibold text-muted-foreground tracking-widest">LEVEL</span>
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-foreground mb-1">Progress to Level {xp.level + 1}</h3>
-            <p className="text-xs text-muted-foreground mb-2">{xp.total % 100} / 100 XP earned</p>
-            <div className="xp-bar">
-              <div className="xp-bar-fill" style={{ width: `${xp.total % 100}%` }} />
-            </div>
-            <div className="flex items-center gap-4 mt-2 text-[0.7rem] text-muted-foreground">
-              <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {xp.total} TOTAL XP</span>
-            </div>
-          </div>
+          {(() => {
+            const prog = levelProgress(xp.total);
+            const title = levelTitle(xp.level);
+            return (
+              <>
+                <div className="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0" style={{ background: 'hsl(var(--accent-dim))', border: '2px solid hsl(var(--primary))' }}>
+                  <span className="text-xl font-bold text-primary">{xp.level}</span>
+                  <span className="text-[0.5rem] font-semibold text-muted-foreground tracking-widest">LEVEL</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-foreground">Progress to Level {xp.level + 1}</h3>
+                    <span className="text-[0.6rem] font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">{title}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">{prog.current} / {prog.required} XP earned</p>
+                  <div className="xp-bar">
+                    <div className="xp-bar-fill" style={{ width: `${prog.percent}%` }} />
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-[0.7rem] text-muted-foreground">
+                    <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {xp.total} TOTAL XP</span>
+                    <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Next: {prog.required - prog.current} XP to go</span>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* Daily Inspiration */}
