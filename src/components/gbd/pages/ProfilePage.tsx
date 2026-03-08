@@ -84,18 +84,23 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
       return;
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get signed URL (private bucket access)
+    const { data: signedData, error: signedError } = await supabase.storage
       .from('avatars')
-      .getPublicUrl(filePath);
+      .createSignedUrl(filePath, 3600);
 
-    // Add cache-busting param
-    const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+    if (signedError || !signedData?.signedUrl) {
+      setUploadingAvatar(false);
+      await showDialog({ title: 'Error', message: 'Failed to get avatar URL.', type: 'alert' });
+      return;
+    }
 
-    // Update profile
+    const avatarDisplayUrl = signedData.signedUrl;
+
+    // Store the file path (not URL) in profile so we can always generate new signed URLs
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('id', user.id);
 
     setUploadingAvatar(false);
