@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
+  refreshKey?: number;
 }
 
 interface DayEvent {
