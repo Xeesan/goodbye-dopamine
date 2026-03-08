@@ -247,7 +247,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
           {/* Semester Fee & Budget Widget */}
           {(() => {
-            if (!semesterBudget) {
+            if (!semesterBudget || !semesterBudget.startDate || !semesterBudget.totalFee) {
               return (
                 <div className="glass-card mb-6 !p-5">
                   <div className="flex items-center justify-between">
@@ -266,47 +266,59 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               );
             }
 
+            let start: Date;
+            try {
+              start = parseISO(semesterBudget.startDate);
+              if (isNaN(start.getTime())) throw new Error('Invalid date');
+            } catch {
+              // Corrupted data — reset
+              Storage.setSemesterBudget(null);
+              setSemesterBudgetState(null);
+              return null;
+            }
+
             const now = new Date();
-            const start = parseISO(semesterBudget.startDate);
-            const semMonths = semesterBudget.semesterMonths || 6;
+            const semMonths = Math.max(1, Math.min(24, semesterBudget.semesterMonths || 6));
             const end = addMonths(start, semMonths);
             const remainingDays = Math.max(0, differenceInDays(end, now));
-            const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
             const isActive = now >= start && now <= end;
             const elapsedMonths = Math.max(0, Math.min(semMonths, Math.floor(differenceInDays(now, start) / 30)));
             const remainingMonths = Math.max(0, semMonths - elapsedMonths);
 
-            // Fee tracking
-            const installments: Installment[] = semesterBudget.installments || [];
-            const totalPaid = installments.reduce((sum: number, inst: Installment) => sum + inst.amount, 0);
-            const totalFee = semesterBudget.totalFee || 0;
+            // Fee tracking — guard against corrupt installment data
+            const installments: Installment[] = Array.isArray(semesterBudget.installments)
+              ? semesterBudget.installments.filter(inst => inst && typeof inst.amount === 'number' && inst.amount > 0 && inst.id && inst.paidDate)
+              : [];
+            const totalPaid = installments.reduce((sum, inst) => sum + inst.amount, 0);
+            const totalFee = Math.max(0, semesterBudget.totalFee);
             const feeRemaining = Math.max(0, totalFee - totalPaid);
             const feeProgress = totalFee > 0 ? Math.min(100, Math.round((totalPaid / totalFee) * 100)) : 0;
 
             // Next installment due calculation
-            const monthlyInstallment = semesterBudget.monthlyInstallment || 0;
+            const monthlyInstallment = Math.max(0, semesterBudget.monthlyInstallment || 0);
             const installmentsDueCount = monthlyInstallment > 0 ? Math.ceil(totalFee / monthlyInstallment) : 0;
             const installmentsPaidCount = installments.length;
             const nextInstallmentNumber = installmentsPaidCount + 1;
             const nextDueDate = installmentsDueCount > 0 && nextInstallmentNumber <= installmentsDueCount
               ? addMonths(start, installmentsPaidCount)
               : null;
-            const isOverdue = nextDueDate && isBefore(nextDueDate, now);
+            const isOverdue = nextDueDate ? isBefore(nextDueDate, now) : false;
 
             // Weekly spending from living budget
             const weekStart = startOfWeek(now, { weekStartsOn: 6 });
             const weekEnd = endOfWeek(now, { weekStartsOn: 6 });
             const thisWeekExpenses = txns
-              .filter((tx: any) => tx.type === 'expense' && (() => {
+              .filter((tx: any) => {
+                if (tx.type !== 'expense' || typeof tx.amount !== 'number') return false;
                 try {
                   const d = new Date(tx.date);
-                  return isWithinInterval(d, { start: weekStart, end: weekEnd });
+                  return !isNaN(d.getTime()) && isWithinInterval(d, { start: weekStart, end: weekEnd });
                 } catch { return false; }
-              })())
+              })
               .reduce((sum: number, tx: any) => sum + tx.amount, 0);
 
-            const livingBudget = semesterBudget.livingBudget || 0;
-            const weeklyAllowance = livingBudget > 0 ? Math.round((livingBudget * 12) / 52) : 0; // monthly to weekly
+            const livingBudget = Math.max(0, semesterBudget.livingBudget || 0);
+            const weeklyAllowance = livingBudget > 0 ? Math.round((livingBudget * 12) / 52) : 0;
             const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
             const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
             const isOverBudget = thisWeekExpenses > weeklyAllowance && weeklyAllowance > 0;
