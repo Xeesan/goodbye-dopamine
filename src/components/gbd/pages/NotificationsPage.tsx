@@ -44,12 +44,14 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
     if (!user) return;
     await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    window.dispatchEvent(new Event('notifications-updated'));
     toast({ title: t('notifications.mark_all_read') });
   };
 
   const deleteNotification = async (id: string) => {
     await supabase.from('notifications').delete().eq('id', id);
     setNotifications(prev => prev.filter(n => n.id !== id));
+    window.dispatchEvent(new Event('notifications-updated'));
   };
 
   const clearAll = async () => {
@@ -57,6 +59,7 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
     if (!user) return;
     await supabase.from('notifications').delete().eq('user_id', user.id);
     setNotifications([]);
+    window.dispatchEvent(new Event('notifications-updated'));
     toast({ title: t('notifications.clear_all') });
   };
 

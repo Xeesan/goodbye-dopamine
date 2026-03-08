@@ -38,7 +38,9 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
 
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
-    return () => { cancelled = true; clearInterval(interval); };
+    const onRefresh = () => fetchUnread();
+    window.addEventListener('notifications-updated', onRefresh);
+    return () => { cancelled = true; clearInterval(interval); window.removeEventListener('notifications-updated', onRefresh); };
   }, []);
 
   return (
