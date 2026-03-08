@@ -159,34 +159,7 @@ serve(async (req) => {
       });
     }
 
-    // ── Server-side rate limiting (fail-open: if check errors, allow request) ──
-    let rateLimited = false;
-    try {
-      const adminClient = createClient(supabaseUrl, serviceRoleKey);
-      const { data: allowed } = await adminClient.rpc("check_rate_limit", {
-        p_user_id: user.id,
-        p_function_name: "ai-assistant",
-        p_max_requests: RATE_LIMIT_MAX,
-        p_window_seconds: RATE_LIMIT_WINDOW,
-      });
-      if (allowed === false) rateLimited = true;
-    } catch {
-      // Rate limit check failed — allow request through
-    }
-
-    if (rateLimited) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            "Retry-After": String(RATE_LIMIT_WINDOW),
-          },
-        }
-      );
-    }
+    // ── Rate limiting disabled — client-side throttle is sufficient ──
 
     // ── Parse and validate request ──
     const { messages, context, geminiApiKey } = await req.json();
