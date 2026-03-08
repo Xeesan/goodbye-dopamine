@@ -278,6 +278,7 @@ If you cannot read anything, return an empty array: []`;
       if (ocrMode === 'online') {
         if (!apiConfig.apiKey) {
           setError('Please add your API key in settings first.');
+          setLoading(false);
           return;
         }
         setLoadingMsg('Sending to AI...');
