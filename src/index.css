@@ -688,6 +688,33 @@ body {
   border-color: hsl(var(--primary));
 }
 
+/* Tag pills */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  background: hsl(var(--accent-dim));
+  border: 1px solid hsl(var(--border-accent));
+  border-radius: 12px;
+  color: hsl(var(--primary));
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-pill:hover {
+  background: hsl(var(--accent-glow));
+}
+
+.tag-pill.active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
 /* Blocked site chips */
 .blocked-chip {
   display: inline-flex;

@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
+import UnifiedCalendarWidget from '../UnifiedCalendarWidget';
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
