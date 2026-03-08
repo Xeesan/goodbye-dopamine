@@ -7,9 +7,6 @@ import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
-import { useDialog } from '../DialogProvider';
-import { useGamification } from '@/hooks/useGamification';
-import { toast } from '@/hooks/use-toast';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
