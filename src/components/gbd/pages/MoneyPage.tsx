@@ -2,17 +2,26 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2 } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2, CreditCard, Plus, CircleCheck } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 import { useI18n } from '@/hooks/useI18n';
-import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
+import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore, isAfter } from 'date-fns';
+
+interface Installment {
+  id: string;
+  amount: number;
+  paidDate: string;
+}
 
 interface SemesterBudget {
-  totalAmount: number;
+  totalFee: number;
+  monthlyInstallment: number;
   startDate: string;
   endDate: string;
+  installments: Installment[];
+  livingBudget: number; // monthly living/spending budget
 }
 
 interface MoneyPageProps {
@@ -236,7 +245,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             </div>
           </div>
 
-          {/* Semester Budget Widget */}
+          {/* Semester Fee & Budget Widget */}
           {(() => {
             if (!semesterBudget) {
               return (
@@ -244,11 +253,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(var(--primary) / 0.12)' }}>
-                        <Wallet className="w-5 h-5 text-primary" />
+                        <CreditCard className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-foreground">Semester Budget</h3>
-                        <p className="text-xs text-muted-foreground">Set your allowance to track weekly spending</p>
+                        <h3 className="text-sm font-semibold text-foreground">Semester Fee Tracker</h3>
+                        <p className="text-xs text-muted-foreground">Track tuition fees, installments & spending</p>
                       </div>
                     </div>
                     <button className="btn-green !text-xs !px-4 !py-2" onClick={() => setShowBudgetSetup(true)}>Set Up</button>
@@ -260,13 +269,30 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             const now = new Date();
             const start = parseISO(semesterBudget.startDate);
             const end = parseISO(semesterBudget.endDate);
-            const totalWeeks = Math.max(1, differenceInWeeks(end, start, { roundingMethod: 'ceil' }));
+            const totalMonths = Math.max(1, Math.ceil(differenceInDays(end, start) / 30));
             const remainingDays = Math.max(0, differenceInDays(end, now));
             const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
             const isActive = now >= start && now <= end;
 
-            // Calculate expenses this week
-            const weekStart = startOfWeek(now, { weekStartsOn: 6 }); // Saturday start (common in BD)
+            // Fee tracking
+            const installments: Installment[] = semesterBudget.installments || [];
+            const totalPaid = installments.reduce((sum: number, inst: Installment) => sum + inst.amount, 0);
+            const totalFee = semesterBudget.totalFee || 0;
+            const feeRemaining = Math.max(0, totalFee - totalPaid);
+            const feeProgress = totalFee > 0 ? Math.min(100, Math.round((totalPaid / totalFee) * 100)) : 0;
+
+            // Next installment due calculation
+            const monthlyInstallment = semesterBudget.monthlyInstallment || 0;
+            const installmentsDueCount = monthlyInstallment > 0 ? Math.ceil(totalFee / monthlyInstallment) : 0;
+            const installmentsPaidCount = installments.length;
+            const nextInstallmentNumber = installmentsPaidCount + 1;
+            const nextDueDate = installmentsDueCount > 0 && nextInstallmentNumber <= installmentsDueCount
+              ? addMonths(start, installmentsPaidCount)
+              : null;
+            const isOverdue = nextDueDate && isBefore(nextDueDate, now);
+
+            // Weekly spending from living budget
+            const weekStart = startOfWeek(now, { weekStartsOn: 6 });
             const weekEnd = endOfWeek(now, { weekStartsOn: 6 });
             const thisWeekExpenses = txns
               .filter((tx: any) => tx.type === 'expense' && (() => {
@@ -277,29 +303,18 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               })())
               .reduce((sum: number, tx: any) => sum + tx.amount, 0);
 
-            // Total spent so far in semester
-            const semesterExpenses = txns
-              .filter((tx: any) => tx.type === 'expense' && (() => {
-                try {
-                  const d = new Date(tx.date);
-                  return d >= start && d <= end;
-                } catch { return false; }
-              })())
-              .reduce((sum: number, tx: any) => sum + tx.amount, 0);
-
-            const remaining = Math.max(0, semesterBudget.totalAmount - semesterExpenses);
-            const weeklyAllowance = isActive ? Math.round(remaining / remainingWeeks) : Math.round(semesterBudget.totalAmount / totalWeeks);
+            const livingBudget = semesterBudget.livingBudget || 0;
+            const weeklyAllowance = livingBudget > 0 ? Math.round((livingBudget * 12) / 52) : 0; // monthly to weekly
             const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
             const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
-            const semesterProgress = semesterBudget.totalAmount > 0 ? Math.min(100, Math.round((semesterExpenses / semesterBudget.totalAmount) * 100)) : 0;
-            const isOverBudget = thisWeekExpenses > weeklyAllowance;
+            const isOverBudget = thisWeekExpenses > weeklyAllowance && weeklyAllowance > 0;
 
             return (
               <div className="glass-card mb-6 !p-5">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2.5">
-                    <Wallet className="w-4.5 h-4.5 text-primary" />
-                    <h3 className="text-sm font-semibold text-foreground">Semester Budget</h3>
+                    <CreditCard className="w-4.5 h-4.5 text-primary" />
+                    <h3 className="text-sm font-semibold text-foreground">Semester Fee Tracker</h3>
                   </div>
                   <button
                     onClick={() => setShowBudgetSetup(true)}
@@ -308,48 +323,137 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   </button>
                 </div>
 
-                {/* Safe to spend this week */}
-                <div className="rounded-xl p-4 mb-4" style={{ background: isOverBudget ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--primary) / 0.08)' }}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Safe to spend this week</span>
-                    <span className="text-[0.65rem] text-muted-foreground">{remainingWeeks}w left</span>
+                {/* Fee Overview Cards */}
+                <div className="grid grid-cols-3 gap-2.5 mb-5">
+                  <div className="rounded-xl p-3 text-center" style={{ background: 'hsl(var(--primary) / 0.08)' }}>
+                    <div className="text-[0.6rem] font-semibold text-muted-foreground tracking-wider mb-1">TOTAL FEE</div>
+                    <div className="text-base font-bold text-foreground">৳{totalFee.toLocaleString()}</div>
                   </div>
-                  <div className={`text-2xl font-bold mb-3 ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
-                    ৳{safeToSpend.toLocaleString()}
+                  <div className="rounded-xl p-3 text-center" style={{ background: 'hsl(142 71% 45% / 0.08)' }}>
+                    <div className="text-[0.6rem] font-semibold text-muted-foreground tracking-wider mb-1">PAID</div>
+                    <div className="text-base font-bold text-primary">৳{totalPaid.toLocaleString()}</div>
                   </div>
-                  <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${weekProgress}%`,
-                        background: isOverBudget
-                          ? 'hsl(var(--destructive))'
-                          : weekProgress > 75
-                            ? 'hsl(38 92% 50%)'
-                            : 'hsl(var(--primary))',
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1.5 text-[0.6rem] text-muted-foreground">
-                    <span>৳{thisWeekExpenses.toLocaleString()} spent</span>
-                    <span>৳{weeklyAllowance.toLocaleString()} / week</span>
+                  <div className="rounded-xl p-3 text-center" style={{ background: feeRemaining > 0 ? 'hsl(var(--destructive) / 0.08)' : 'hsl(142 71% 45% / 0.08)' }}>
+                    <div className="text-[0.6rem] font-semibold text-muted-foreground tracking-wider mb-1">DUE</div>
+                    <div className={`text-base font-bold ${feeRemaining > 0 ? 'text-destructive' : 'text-primary'}`}>৳{feeRemaining.toLocaleString()}</div>
                   </div>
                 </div>
 
-                {/* Semester overview */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>Semester total</span>
-                  <span>৳{semesterExpenses.toLocaleString()} / ৳{semesterBudget.totalAmount.toLocaleString()}</span>
+                {/* Fee Progress Bar */}
+                <div className="mb-5">
+                  <div className="flex justify-between text-[0.65rem] text-muted-foreground mb-1.5">
+                    <span>Fee Payment Progress</span>
+                    <span>{feeProgress}%</span>
+                  </div>
+                  <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${feeProgress}%`,
+                        background: feeProgress >= 100 ? 'hsl(142 71% 45%)' : 'hsl(var(--primary))',
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${semesterProgress}%`,
-                      background: semesterProgress > 90 ? 'hsl(var(--destructive))' : 'hsl(var(--primary) / 0.6)',
-                    }}
-                  />
-                </div>
+
+                {/* Next Installment Due */}
+                {monthlyInstallment > 0 && feeRemaining > 0 && (
+                  <div className={`rounded-xl p-4 mb-5 flex items-center justify-between`}
+                    style={{ background: isOverdue ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--accent))' }}>
+                    <div>
+                      <div className="text-xs font-medium text-muted-foreground mb-0.5">
+                        {isOverdue ? '⚠️ Overdue — Installment #' : '📅 Next — Installment #'}{nextInstallmentNumber}
+                      </div>
+                      <div className={`text-xl font-bold ${isOverdue ? 'text-destructive' : 'text-foreground'}`}>
+                        ৳{Math.min(monthlyInstallment, feeRemaining).toLocaleString()}
+                      </div>
+                      {nextDueDate && (
+                        <div className="text-[0.65rem] text-muted-foreground mt-0.5">
+                          Due: {format(nextDueDate, 'dd MMM yyyy')}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const amt = Math.min(monthlyInstallment, feeRemaining);
+                        const newInst: Installment = {
+                          id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+                          amount: amt,
+                          paidDate: new Date().toISOString(),
+                        };
+                        const updated = {
+                          ...semesterBudget,
+                          installments: [...installments, newInst],
+                        };
+                        Storage.setSemesterBudget(updated);
+                        setSemesterBudgetState(updated as any);
+                        refresh();
+                        toast({ title: 'Installment recorded ✓', description: `৳${amt.toLocaleString()} — Installment #${nextInstallmentNumber}` });
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105 active:scale-95"
+                      style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
+                      <CircleCheck className="w-4 h-4" /> Mark Paid
+                    </button>
+                  </div>
+                )}
+
+                {feeRemaining === 0 && totalFee > 0 && (
+                  <div className="rounded-xl p-4 mb-5 text-center" style={{ background: 'hsl(142 71% 45% / 0.1)' }}>
+                    <div className="text-lg mb-1">🎉</div>
+                    <div className="text-sm font-semibold text-primary">All fees paid!</div>
+                  </div>
+                )}
+
+                {/* Paid Installments History */}
+                {installments.length > 0 && (
+                  <div className="mb-5">
+                    <div className="text-xs font-semibold text-muted-foreground mb-2">Payment History</div>
+                    <div className="space-y-1.5">
+                      {installments.slice().reverse().map((inst, i) => (
+                        <div key={inst.id} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: 'hsl(var(--muted) / 0.3)' }}>
+                          <div className="flex items-center gap-2">
+                            <CircleCheck className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-xs text-foreground">Installment #{installments.length - i}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-semibold text-primary">৳{inst.amount.toLocaleString()}</span>
+                            <span className="text-[0.6rem] text-muted-foreground">{format(parseISO(inst.paidDate), 'dd MMM')}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weekly Spending Guide */}
+                {livingBudget > 0 && (
+                  <div className="rounded-xl p-4" style={{ background: isOverBudget ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--primary) / 0.06)' }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">💰 Safe to spend this week</span>
+                      <span className="text-[0.65rem] text-muted-foreground">{remainingWeeks}w left</span>
+                    </div>
+                    <div className={`text-2xl font-bold mb-3 ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
+                      ৳{safeToSpend.toLocaleString()}
+                    </div>
+                    <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${weekProgress}%`,
+                          background: isOverBudget
+                            ? 'hsl(var(--destructive))'
+                            : weekProgress > 75
+                              ? 'hsl(38 92% 50%)'
+                              : 'hsl(var(--primary))',
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1.5 text-[0.6rem] text-muted-foreground">
+                      <span>৳{thisWeekExpenses.toLocaleString()} spent</span>
+                      <span>৳{weeklyAllowance.toLocaleString()} / week</span>
+                    </div>
+                  </div>
+                )}
 
                 {!isActive && (
                   <div className="mt-3 text-[0.65rem] text-muted-foreground flex items-center gap-1.5">
@@ -740,17 +844,25 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {showBudgetSetup && (
         <div className="modal-overlay" onClick={() => setShowBudgetSetup(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-1">Semester Budget</h2>
-            <p className="text-xs text-muted-foreground mb-5">Set your total allowance and semester dates to get a weekly spending guide.</p>
-            <label className="form-label">Total Budget (৳)</label>
-            <input type="number" id="budget-total" className="input-simple mb-4" placeholder="e.g. 50000" min={1} defaultValue={semesterBudget?.totalAmount || ''} />
+            <h2 className="text-lg font-bold text-foreground mb-1">Semester Fee Setup</h2>
+            <p className="text-xs text-muted-foreground mb-5">Enter your tuition fee details and monthly living budget.</p>
+            
+            <label className="form-label">Total Semester Fee (৳)</label>
+            <input type="number" id="budget-total-fee" className="input-simple mb-4" placeholder="e.g. 120000" min={1} defaultValue={semesterBudget?.totalFee || ''} />
+            
+            <label className="form-label">Monthly Installment (৳)</label>
+            <input type="number" id="budget-installment" className="input-simple mb-4" placeholder="e.g. 20000" min={0} defaultValue={semesterBudget?.monthlyInstallment || ''} />
+            
+            <label className="form-label">Monthly Living/Spending Budget (৳)</label>
+            <input type="number" id="budget-living" className="input-simple mb-4" placeholder="e.g. 8000" min={0} defaultValue={semesterBudget?.livingBudget || ''} />
+            
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="form-label">Start Date</label>
+                <label className="form-label">Semester Start</label>
                 <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
               </div>
               <div>
-                <label className="form-label">End Date</label>
+                <label className="form-label">Semester End</label>
                 <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
               </div>
             </div>
@@ -760,31 +872,36 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   Storage.setSemesterBudget(null);
                   setSemesterBudgetState(null);
                   setShowBudgetSetup(false);
-                  toast({ title: 'Budget removed' });
+                  toast({ title: 'Fee tracker removed' });
                 }}>Remove</button>
               )}
               <button className="btn-outline flex-1" onClick={() => setShowBudgetSetup(false)}>{t('common.cancel')}</button>
               <button className="btn-green flex-1" onClick={() => {
-                const total = parseFloat((document.getElementById('budget-total') as HTMLInputElement)?.value);
+                const totalFee = parseFloat((document.getElementById('budget-total-fee') as HTMLInputElement)?.value);
+                const monthlyInstallment = parseFloat((document.getElementById('budget-installment') as HTMLInputElement)?.value) || 0;
+                const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
                 const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
-                if (!total || total <= 0 || !startDate || !endDate) {
-                  toast({ title: 'Missing info', description: 'Please fill in all fields.', variant: 'destructive' });
+                if (!totalFee || totalFee <= 0 || !startDate || !endDate) {
+                  toast({ title: 'Missing info', description: 'Please fill total fee and semester dates.', variant: 'destructive' });
                   return;
                 }
                 if (new Date(endDate) <= new Date(startDate)) {
                   toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
                   return;
                 }
-                if (total > 10000000) {
-                  toast({ title: 'Invalid amount', description: 'Budget seems too high.', variant: 'destructive' });
-                  return;
-                }
-                const budget: SemesterBudget = { totalAmount: total, startDate, endDate };
+                const budget: SemesterBudget = {
+                  totalFee,
+                  monthlyInstallment,
+                  livingBudget,
+                  startDate,
+                  endDate,
+                  installments: semesterBudget?.installments || [],
+                };
                 Storage.setSemesterBudget(budget);
                 setSemesterBudgetState(budget);
                 setShowBudgetSetup(false);
-                toast({ title: 'Budget saved ✓', description: `৳${total.toLocaleString()} for ${startDate} to ${endDate}` });
+                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} total fee` });
               }}>Save</button>
             </div>
           </div>
