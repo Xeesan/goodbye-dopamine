@@ -558,7 +558,10 @@ export async function syncDebtsFromDB(): Promise<any[]> {
 
     const localDebts = Storage.getDebts();
 
-    if (remoteDebts.length === 0 && localDebts.length === 0) return [];
+    if (remoteDebts.length === 0 && localDebts.length === 0) {
+      Storage.setDebts([]);
+      return [];
+    }
 
     if (remoteDebts.length === 0 && localDebts.length > 0) {
       for (const d of localDebts) {
