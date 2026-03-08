@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2 } from 'lucide-react';
+import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2, Sparkles } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -9,7 +9,7 @@ interface ImageOCRImportProps {
   buttonClassName?: string;
 }
 
-type OcrMode = 'offline' | 'online';
+type OcrMode = 'lovable' | 'offline' | 'online';
 
 interface ApiConfig {
   provider: 'gemini' | 'openai' | 'custom';
@@ -49,7 +49,7 @@ const loadConfig = (): { ocrMode: OcrMode; api: ApiConfig } => {
       return { ...parsed, api: { ...parsed.api, apiKey: '' } };
     }
   } catch {}
-  return { ocrMode: 'offline', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
+  return { ocrMode: 'lovable', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
 };
 
 const saveConfig = (ocrMode: OcrMode, api: ApiConfig) => {
@@ -130,12 +130,20 @@ If you cannot read anything, return an empty array: []`;
         systemPrompt: getSystemPrompt(),
       },
     });
-    if (error) {
-      throw new Error(error.message || 'Edge function error');
-    }
-    if (data?.error) {
-      throw new Error(data.error);
-    }
+    if (error) throw new Error(error.message || 'Edge function error');
+    if (data?.error) throw new Error(data.error);
+    return data?.items || [];
+  };
+
+  const processViaLovableAI = async (base64: string): Promise<any[]> => {
+    const { data, error } = await supabase.functions.invoke('ocr-lovable', {
+      body: {
+        base64,
+        systemPrompt: getSystemPrompt(),
+      },
+    });
+    if (error) throw new Error(error.message || 'AI processing error');
+    if (data?.error) throw new Error(data.error);
     return data?.items || [];
   };
 
@@ -275,7 +283,17 @@ If you cannot read anything, return an empty array: []`;
     setError(null);
 
     try {
-      if (ocrMode === 'online') {
+      if (ocrMode === 'lovable') {
+        setLoadingMsg('Analyzing with AI...');
+        const base64 = preview.split(',')[1];
+        const items = await processViaLovableAI(base64);
+        const arr = Array.isArray(items) ? items : [];
+        if (arr.length === 0) {
+          setError('No data could be extracted. Try a clearer photo.');
+        } else {
+          setResults(arr);
+        }
+      } else if (ocrMode === 'online') {
         if (!apiConfig.apiKey) {
           setError('Please add your API key in settings first.');
           setLoading(false);
@@ -396,21 +414,21 @@ If you cannot read anything, return an empty array: []`;
               </div>
             </div>
 
-            {/* OCR Mode Toggle */}
-            <div className="flex items-center gap-2 mb-3 p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
+            {/* OCR Mode Toggle - 3 tabs */}
+            <div className="flex items-center gap-1 mb-3 p-1.5 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
               <button
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  ocrMode === 'offline'
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
+                  ocrMode === 'lovable'
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                onClick={() => setOcrMode('offline')}
+                onClick={() => setOcrMode('lovable')}
               >
-                <WifiOff className="w-3.5 h-3.5" />
-                Offline OCR
+                <Sparkles className="w-3.5 h-3.5" />
+                AI (Free)
               </button>
               <button
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
                   ocrMode === 'online'
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -418,11 +436,35 @@ If you cannot read anything, return an empty array: []`;
                 onClick={() => setOcrMode('online')}
               >
                 <Wifi className="w-3.5 h-3.5" />
-                AI API
+                Your API
+              </button>
+              <button
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-medium transition-all ${
+                  ocrMode === 'offline'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setOcrMode('offline')}
+              >
+                <WifiOff className="w-3.5 h-3.5" />
+                Offline
               </button>
             </div>
 
-            {/* Settings Panel */}
+            {/* Lovable AI info */}
+            {ocrMode === 'lovable' && (
+              <div className="mb-4 p-3 rounded-lg border" style={{ borderColor: 'hsl(var(--primary) / 0.3)', background: 'hsl(var(--primary) / 0.05)' }}>
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-1">
+                  <Sparkles className="w-4 h-4" />
+                  Powered by AI
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Best accuracy — no API key needed. Uses advanced vision AI to extract structured data from your images.
+                </p>
+              </div>
+            )}
+
+            {/* Settings Panel for online mode */}
             {showSettings && ocrMode === 'online' && (
               <div className="mb-4 p-3 rounded-lg space-y-3 border" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}>
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -530,7 +572,7 @@ If you cannot read anything, return an empty array: []`;
 
             <p className="text-sm text-muted-foreground mb-4">
               Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'}.
-              {ocrMode === 'offline' ? ' Text will be extracted offline using Tesseract.js.' : ' AI will analyze and extract structured data.'}
+              {ocrMode === 'lovable' ? ' AI will analyze and extract structured data.' : ocrMode === 'offline' ? ' Text will be extracted offline using Tesseract.js.' : ' AI will analyze and extract structured data.'}
             </p>
 
             {!preview && (
