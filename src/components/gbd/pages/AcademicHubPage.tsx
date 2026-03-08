@@ -195,7 +195,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
                   <div className="mt-4 border-t pt-4" style={{ borderColor: 'hsl(var(--border))' }}>
                     {s.courses.length > 0 && (
                       <div className="space-y-2 mb-3">
-                        <div className="grid grid-cols-[1fr_80px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE</span><span>GRADE</span><span>CREDITS</span><span></span></div>
+                        <div className="hidden sm:grid grid-cols-[1fr_80px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE</span><span>GRADE</span><span>CREDITS</span><span></span></div>
                         {s.courses.map((c: any) => (
                           <div key={c.id} className="grid grid-cols-[1fr_80px_80px_40px] gap-2 items-center p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
                             <span className="text-sm font-medium text-foreground truncate">{c.name}</span>
