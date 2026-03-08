@@ -345,7 +345,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         const debts = Storage.getDebts();
         const matches = idLower === 'all' ? debts : debts.filter((d: any) => d.person?.toLowerCase().includes(idLower));
         if (matches.length === 0) return `🤔 Couldn't find any debt entry for **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteDebt(m.id));
+        for (const m of matches) { Storage.deleteDebt(m.id); await deleteDebtFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** debt entr${matches.length > 1 ? 'ies' : 'y'}.`;
       }
 
