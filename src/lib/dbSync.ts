@@ -239,7 +239,8 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     const { data, error } = await supabase
       .from('user_routine')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .is('deleted_at', null);
 
     if (error) {
       console.error('Failed to fetch routine from DB:', error);
