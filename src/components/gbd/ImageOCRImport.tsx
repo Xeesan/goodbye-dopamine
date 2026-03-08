@@ -17,8 +17,22 @@ interface ApiConfig {
   endpoint: string;
 }
 
+const GEMINI_MODELS = [
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Fast)' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Best)' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+];
+
+const OPENAI_MODELS = [
+  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)' },
+  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+];
+
 const DEFAULT_CONFIGS: Record<string, Partial<ApiConfig>> = {
-  gemini: { model: 'gemini-2.0-flash', endpoint: 'https://generativelanguage.googleapis.com/v1beta' },
+  gemini: { model: 'gemini-2.5-flash', endpoint: 'https://generativelanguage.googleapis.com/v1beta' },
   openai: { model: 'gpt-4o-mini', endpoint: 'https://api.openai.com/v1/chat/completions' },
   custom: { model: '', endpoint: '' },
 };
@@ -463,14 +477,30 @@ If you cannot read anything, return an empty array: []`;
                 {/* Model */}
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Model</label>
-                  <input
-                    type="text"
-                    value={apiConfig.model}
-                    onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
-                    placeholder="Model name"
-                    className="w-full px-3 py-2 rounded-md text-sm"
-                    style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
-                  />
+                  {apiConfig.provider === 'gemini' || apiConfig.provider === 'openai' ? (
+                    <div className="relative">
+                      <select
+                        value={apiConfig.model}
+                        onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-md text-sm appearance-none cursor-pointer"
+                        style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                      >
+                        {(apiConfig.provider === 'gemini' ? GEMINI_MODELS : OPENAI_MODELS).map(m => (
+                          <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={apiConfig.model}
+                      onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
+                      placeholder="Model name"
+                      className="w-full px-3 py-2 rounded-md text-sm"
+                      style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                    />
+                  )}
                 </div>
 
                 {/* Custom Endpoint (only for custom provider) */}
