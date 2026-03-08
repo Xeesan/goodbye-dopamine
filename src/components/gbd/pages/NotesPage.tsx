@@ -158,7 +158,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
             </div>
           )}
 
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-3">{filtered.length} NOTE{filtered.length !== 1 ? 'S' : ''}</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground mb-3">{filtered.length} NOTE{filtered.length !== 1 ? 'S' : ''}</div>
 
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {filtered.length === 0 ? (
