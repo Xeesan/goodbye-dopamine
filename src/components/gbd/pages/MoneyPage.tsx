@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 
 interface MoneyPageProps {
@@ -60,6 +61,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     (document.getElementById('debt-description') as HTMLInputElement).value = '';
     (document.getElementById('debt-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
     refresh();
+    toast({ title: 'Debt added', description: `${debtType === 'lend' ? 'Lent to' : 'Borrowed from'} ${person} — ৳${amount}` });
   };
 
   const addGoal = async () => {
