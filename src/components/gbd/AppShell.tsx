@@ -31,7 +31,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-
+  const { restart: restartHealthReminders } = useHealthReminders();
   const navigateTo = useCallback((page: string) => {
     setCurrentPage(page);
     setSidebarOpen(false);
