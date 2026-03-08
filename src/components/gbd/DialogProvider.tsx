@@ -101,7 +101,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const type = dialog?.type || 'confirm';
 
   return (
-    <DialogContext.Provider value={{ showDialog, showPrompt }}>
+    <DialogContext.Provider value={{ showDialog, showPrompt, showTileCustomizer }}>
       {children}
       {dialog && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => handleClose(type === 'prompt' ? null : false)}>
@@ -207,6 +207,87 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
                     {dialog.confirmText || 'OK'}
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tile Customizer Dialog */}
+      {tileDialog && (
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4" onClick={() => handleTileClose(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
+          <div
+            className="relative w-full max-w-[420px] rounded-xl overflow-hidden animate-[slideUp_0.2s_ease]"
+            style={{
+              background: 'hsl(var(--bg-card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="h-1" style={{ background: 'hsl(var(--primary))' }} />
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-foreground mb-1">Customize Quick Tiles</h3>
+              <p className="text-sm text-muted-foreground mb-5">Toggle which tiles appear on your dashboard</p>
+
+              <div className="flex flex-col gap-1">
+                {tileDialog.tiles.map(tile => {
+                  const Icon = tile.icon;
+                  const isOn = tileEnabled.includes(tile.id);
+                  return (
+                    <button
+                      key={tile.id}
+                      className="flex items-center gap-3 px-3 py-3.5 rounded-lg transition-colors hover:bg-accent/30"
+                      onClick={() => toggleTile(tile.id)}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          background: `hsl(${tile.tokenColor} / 0.12)`,
+                          color: `hsl(${tile.tokenColor})`,
+                        }}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="flex-1 text-left text-sm font-medium text-foreground">{tile.name}</span>
+                      {/* Toggle switch */}
+                      <div
+                        className="w-12 h-7 rounded-full p-0.5 transition-colors duration-200 cursor-pointer"
+                        style={{
+                          background: isOn ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+                        }}
+                      >
+                        <div
+                          className="w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-200"
+                          style={{ transform: isOn ? 'translateX(20px)' : 'translateX(0)' }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-3 mt-5">
+                <button
+                  className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all text-primary"
+                  style={{
+                    background: 'hsl(var(--bg-input))',
+                    border: '1px solid hsl(var(--border))',
+                  }}
+                  onClick={() => handleTileClose(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all hover:opacity-90 text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+                  }}
+                  onClick={() => handleTileClose(true)}
+                >
+                  Save
+                </button>
               </div>
             </div>
           </div>
