@@ -214,22 +214,22 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">+</div> TOTAL INCOME</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">+</div> {t('money.total_income')}</div>
               <div className="text-xl font-bold text-primary">৳ {income.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">-</div> TOTAL EXPENSE</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">-</div> {t('money.total_expense')}</div>
               <div className="text-xl font-bold text-destructive">৳ {expense.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon blue">$</div> BALANCE</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon blue">$</div> {t('money.balance')}</div>
               <div className="text-xl font-bold text-foreground">৳ {balance.toLocaleString()}</div>
             </div>
           </div>
           <div className="glass-card min-h-[200px]">
-            <h2 className="text-base font-semibold text-foreground mb-5">Recent Transactions</h2>
+            <h2 className="text-base font-semibold text-foreground mb-5">{t('money.recent_txns')}</h2>
             {txns.length === 0 ? (
-              <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>No transactions yet.</p></div>
+              <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>{t('money.no_txns')}</p></div>
             ) : txns.slice().reverse().map((t: any) => (
               <div key={t.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                 <div className="flex items-center gap-3">
