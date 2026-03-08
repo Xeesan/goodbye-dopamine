@@ -107,6 +107,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Delete Transaction', message: 'Are you sure you want to delete this transaction?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteTransaction(id);
+      deleteTransactionFromDB(id);
       refresh();
       toast({ title: 'Transaction deleted', description: txn?.description || '' });
     }
