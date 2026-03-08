@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Storage from '@/lib/storage';
-import { CheckSquare, Clock, TrendingUp, Flag } from 'lucide-react';
+import { CheckSquare, Clock, TrendingUp, Flag, ArrowLeft } from 'lucide-react';
 
 interface ReportsPageProps {
   navigateTo: (page: string) => void;
