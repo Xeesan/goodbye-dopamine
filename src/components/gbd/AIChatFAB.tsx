@@ -284,7 +284,8 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           const name = d.person || 'Unknown';
           if (!byPerson[name]) byPerson[name] = { lent: 0, borrowed: 0, count: 0 };
           byPerson[name].count++;
-          if (d.debt_type === 'lend') byPerson[name].lent += Number(d.amount);
+          const dtype = d.debtType || d.debt_type || 'lend';
+          if (dtype === 'lend') byPerson[name].lent += Number(d.amount);
           else byPerson[name].borrowed += Number(d.amount);
         }
 
