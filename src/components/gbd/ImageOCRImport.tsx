@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Camera, ImageIcon, Loader2, X, Check, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import Tesseract from 'tesseract.js';
 
 interface ImageOCRImportProps {
   mode: 'routine' | 'exams';
