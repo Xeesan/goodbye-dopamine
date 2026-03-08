@@ -50,10 +50,10 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       {/* Welcome + XP */}
-      <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
-          <p className="text-muted-foreground text-sm">Here's your productivity overview for this week.</p>
+      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 truncate">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Here's your productivity overview for this week.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="glass-card !p-2 !px-4 flex items-center gap-2 text-xs font-semibold tracking-wider">
