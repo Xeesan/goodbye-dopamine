@@ -164,12 +164,12 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5" style={{
+    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-5 overflow-y-auto" style={{
       background: `radial-gradient(ellipse at top left, hsl(187 82% 53% / 0.06) 0%, transparent 50%),
         radial-gradient(ellipse at bottom right, hsl(263 70% 76% / 0.06) 0%, transparent 50%),
         hsl(var(--bg-primary))`
     }}>
-      <div className="w-full max-w-[440px] animate-[slideUp_0.5s_ease]" onKeyDown={handleKeyDown}>
+      <div className="w-full max-w-[440px] animate-[slideUp_0.5s_ease] my-auto" onKeyDown={handleKeyDown}>
         {/* Brand */}
         <div className="text-center mb-8">
           <img src={appIcon} alt="GBD" className="w-16 h-16 rounded-2xl mx-auto mb-4" style={{
