@@ -9,10 +9,20 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Supabase-Backend-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/PWA-Installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Vite-Build-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+</p>
+
+<p align="center">
   <a href="https://goodbye-dopamine.lovable.app">Live App</a> · 
   <a href="#features">Features</a> · 
   <a href="#tech-stack">Tech Stack</a> · 
-  <a href="#getting-started">Getting Started</a>
+  <a href="#getting-started">Getting Started</a> · 
+  <a href="#contributing">Contributing</a>
 </p>
 
 ---
@@ -183,6 +193,47 @@ src/
 ├── integrations/          # Supabase client & types
 └── pages/                 # Route-level pages
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create a branch** for your feature or fix: `git checkout -b feat/my-feature`
+3. **Commit** your changes with a clear message: `git commit -m "feat: add awesome feature"`
+4. **Push** to your branch: `git push origin feat/my-feature`
+5. **Open a Pull Request** describing what you changed and why
+
+### Guidelines
+
+- Follow the existing code style (TypeScript, functional components, Tailwind tokens)
+- Keep PRs focused — one feature or fix per PR
+- Test your changes locally before submitting
+- Update the README if you add new features
+- Be respectful and constructive in discussions
+
+### Reporting Bugs
+
+Open an issue with:
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
+- Device / browser info
+
+---
+
+## 📜 Code of Conduct
+
+We are committed to providing a welcoming and inclusive experience for everyone. All participants are expected to:
+
+- **Be respectful** — Treat everyone with dignity regardless of background or experience level
+- **Be constructive** — Offer helpful feedback; avoid personal attacks or dismissive language
+- **Be collaborative** — Work together toward shared goals; welcome newcomers
+- **Be accountable** — If you make a mistake, own it, learn from it, and move on
+
+Harassment, discrimination, and abusive behavior will not be tolerated. Maintainers reserve the right to remove, edit, or reject contributions that violate these principles.
 
 ---
 
