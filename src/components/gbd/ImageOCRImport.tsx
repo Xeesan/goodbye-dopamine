@@ -572,7 +572,7 @@ If you cannot read anything, return an empty array: []`;
 
             <p className="text-sm text-muted-foreground mb-4">
               Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'}.
-              {ocrMode === 'offline' ? ' Text will be extracted offline using Tesseract.js.' : ' AI will analyze and extract structured data.'}
+              {ocrMode === 'lovable' ? ' AI will analyze and extract structured data.' : ocrMode === 'offline' ? ' Text will be extracted offline using Tesseract.js.' : ' AI will analyze and extract structured data.'}
             </p>
 
             {!preview && (
