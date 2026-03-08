@@ -112,8 +112,18 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   };
 
   const moveBook = (id: string, status: string) => {
-    Storage.updateBook(id, { status });
+    const book = books.find((b: any) => b.id === id);
+    const updates: any = { status };
+    if (status === 'finished' && book?.pages) updates.currentPage = book.pages;
+    Storage.updateBook(id, updates);
     if (status === 'finished') Storage.addXP(25);
+    refresh();
+  };
+
+  const updateProgress = (id: string, currentPage: number) => {
+    const book = books.find((b: any) => b.id === id);
+    const maxPage = book?.pages || 9999;
+    Storage.updateBook(id, { currentPage: Math.max(0, Math.min(currentPage, maxPage)) });
     refresh();
   };
 
