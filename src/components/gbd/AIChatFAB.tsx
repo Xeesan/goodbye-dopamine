@@ -544,28 +544,30 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+          className="fixed bottom-5 right-5 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 66%))',
             color: 'hsl(var(--primary-foreground))',
           }}
           aria-label="Open AI Assistant"
         >
-          <Bot className="w-6 h-6" />
+          <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       )}
 
-      {/* Backdrop */}
+      {/* Backdrop — only on desktop (mobile chat is fullscreen) */}
       {open && (
-        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+        <div className="hidden sm:block fixed inset-0 z-40" onClick={() => setOpen(false)} />
       )}
 
-      {/* Chat Panel */}
+      {/* Chat Panel — fullscreen on mobile, floating panel on sm+ */}
       {open && (
-        <div className="fixed bottom-5 right-5 z-50 w-[340px] sm:w-[380px] max-h-[70vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
-          style={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}>
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-5 sm:right-5 z-50 sm:w-[380px] sm:max-h-[70vh] flex flex-col sm:rounded-2xl shadow-2xl overflow-hidden"
+          style={{ background: 'hsl(var(--background))', border: 'none' }}>
+          {/* Outer border only on desktop */}
+          <div className="hidden sm:block absolute inset-0 rounded-2xl pointer-events-none" style={{ border: '1px solid hsl(var(--border))' }} />
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 shrink-0"
+          <div className="flex items-center justify-between px-4 py-3 sm:py-3 shrink-0"
             style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 66%))', color: 'hsl(var(--primary-foreground))' }}>
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5" />
@@ -573,19 +575,19 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
             </div>
             <div className="flex items-center gap-1">
               {messages.length > 0 && (
-                <button onClick={() => setMessages([])} className="p-1 rounded-full hover:bg-white/20 transition-colors" title="Clear chat">
-                  <Trash2 className="w-3.5 h-3.5" />
+                <button onClick={() => setMessages([])} className="p-1.5 rounded-full hover:bg-white/20 transition-colors" title="Clear chat">
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-white/20 transition-colors">
-                <X className="w-4 h-4" />
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-full hover:bg-white/20 transition-colors">
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[50vh]">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 sm:min-h-[200px] sm:max-h-[50vh]">
             {messages.length === 0 && (
-              <div className="text-center py-8">
+              <div className="text-center py-8 sm:py-8">
                 <Bot className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
                 <p className="text-sm text-muted-foreground font-medium">Hey there! I'm your GBD Assistant 👋</p>
                 <p className="text-xs text-muted-foreground/70 mt-1 italic">Crafted with care by Zisan to keep you on track</p>
@@ -625,8 +627,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
             )}
           </div>
 
-          {/* Input */}
-          <div className="p-3 shrink-0" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+          {/* Input — safe area padding on mobile for bottom notch */}
+          <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3 shrink-0" style={{ borderTop: '1px solid hsl(var(--border))' }}>
             <form onSubmit={e => { e.preventDefault(); send(); }} className="flex items-center gap-2">
               <input
                 ref={inputRef}
