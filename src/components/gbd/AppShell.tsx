@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 import { DialogProvider } from './DialogProvider';
+import InstallPrompt from './InstallPrompt';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
 import RoutinePage from './pages/RoutinePage';
