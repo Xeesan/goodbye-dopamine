@@ -182,7 +182,7 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => adjustWater(1)}>
               <span className="text-2xl">💧</span>
               <span className="block text-xs font-medium text-foreground mt-1">+ Water</span>
@@ -200,6 +200,9 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
               <span className="block text-xs font-medium text-foreground mt-1">Log Steps</span>
             </button>
           </div>
+
+          {/* Health Reminders */}
+          <HealthRemindersCard onRestartReminders={onRestartReminders || (() => {})} />
         </>
       )}
 
