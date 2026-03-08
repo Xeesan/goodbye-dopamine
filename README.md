@@ -196,6 +196,47 @@ src/
 
 ---
 
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create a branch** for your feature or fix: `git checkout -b feat/my-feature`
+3. **Commit** your changes with a clear message: `git commit -m "feat: add awesome feature"`
+4. **Push** to your branch: `git push origin feat/my-feature`
+5. **Open a Pull Request** describing what you changed and why
+
+### Guidelines
+
+- Follow the existing code style (TypeScript, functional components, Tailwind tokens)
+- Keep PRs focused — one feature or fix per PR
+- Test your changes locally before submitting
+- Update the README if you add new features
+- Be respectful and constructive in discussions
+
+### Reporting Bugs
+
+Open an issue with:
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
+- Device / browser info
+
+---
+
+## 📜 Code of Conduct
+
+We are committed to providing a welcoming and inclusive experience for everyone. All participants are expected to:
+
+- **Be respectful** — Treat everyone with dignity regardless of background or experience level
+- **Be constructive** — Offer helpful feedback; avoid personal attacks or dismissive language
+- **Be collaborative** — Work together toward shared goals; welcome newcomers
+- **Be accountable** — If you make a mistake, own it, learn from it, and move on
+
+Harassment, discrimination, and abusive behavior will not be tolerated. Maintainers reserve the right to remove, edit, or reject contributions that violate these principles.
+
+---
+
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
