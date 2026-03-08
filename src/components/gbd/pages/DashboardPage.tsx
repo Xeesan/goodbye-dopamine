@@ -34,11 +34,16 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [spinning, setSpinning] = useState(false);
   const [showXpBadge, setShowXpBadge] = useState(false);
   const [refreshSpinning, setRefreshSpinning] = useState(false);
+  const [focusDuration, setFocusDuration] = useState<number | null>(null);
+  const [focusTask, setFocusTask] = useState<ReturnType<typeof pickMostUrgentTask>>(null);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
   useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
+
+  // Compute urgent task
+  const urgentTask = pickMostUrgentTask();
 
 
   const refreshQuote = useCallback(() => {
