@@ -161,10 +161,10 @@ function executeToolCall(toolCall: ToolCall): string {
           tasks = tasks.filter((t: any) => t.status !== 'done');
         }
         const summary = tasks.slice(0, 10).map((t: any) =>
-          `• **${t.title}**${t.date ? ` (${t.date})` : ''} — ${t.priority || 'medium'} priority, ${t.status}`
+          `- **${t.title}**${t.date ? ` · ${t.date}` : ''} · _${t.priority || 'medium'}_ · ${t.status}`
         ).join('\n');
         if (tasks.length === 0) return '✨ Your task list is squeaky clean! Either you\'re super productive or in denial 😄';
-        return `📋 You\'ve got **${tasks.length} task${tasks.length > 1 ? 's' : ''}** on deck:\n${summary}`;
+        return `📋 **${tasks.length} task${tasks.length > 1 ? 's' : ''}** on deck:\n\n${summary}`;
       }
 
       if (section === 'exams' || section === 'all') {
