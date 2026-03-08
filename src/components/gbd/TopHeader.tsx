@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Menu, Bell, User, Calendar, WifiOff, Sun, Moon } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -13,6 +15,24 @@ interface TopHeaderProps {
 
 const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar, theme, onToggleTheme }: TopHeaderProps) => {
   const isOnline = useOnlineStatus();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      setUnreadCount(count || 0);
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="grid grid-cols-3 items-center px-3 sm:px-6 h-[56px] sm:h-[60px] min-h-[56px] sm:min-h-[60px] relative" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
