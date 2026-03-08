@@ -77,7 +77,7 @@ function executeToolCall(toolCall: ToolCall): string {
 
       if (section === 'routine') {
         if (!args.day || !args.subject || !args.startTime || !args.endTime) {
-          return '❌ Routine needs day, subject, startTime, and endTime.';
+          return '😅 I need the **day**, **subject**, **startTime**, and **endTime** to set up your routine!';
         }
         Storage.addPeriod(args.day, {
           subject: args.subject,
@@ -85,7 +85,7 @@ function executeToolCall(toolCall: ToolCall): string {
           endTime: args.endTime,
           room: args.room || '',
         });
-        return `✅ Added ${args.subject} on ${args.day} (${args.startTime}-${args.endTime}).`;
+        return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
       return '❌ Unknown section.';
