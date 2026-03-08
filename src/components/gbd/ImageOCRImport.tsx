@@ -119,59 +119,24 @@ Return ONLY a valid JSON array of objects. No markdown, no explanation.
 If you cannot read anything, return an empty array: []`;
   };
 
-  const processOnlineGemini = async (base64: string): Promise<any[]> => {
-    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiConfig.apiKey,
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: getSystemPrompt() + '\n\nExtract all data from this image:' },
-            { inline_data: { mime_type: 'image/jpeg', data: base64 } },
-          ],
-        }],
-      }),
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API error (${res.status}): ${errText.slice(0, 200)}`);
-    }
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
-  };
-
-  const processOnlineOpenAI = async (base64: string): Promise<any[]> => {
-    const res = await fetch(apiConfig.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiConfig.apiKey}`,
-      },
-      body: JSON.stringify({
+  const processOnlineViaEdge = async (base64: string): Promise<any[]> => {
+    const { data, error } = await supabase.functions.invoke('ocr-extract', {
+      body: {
+        provider: apiConfig.provider,
+        apiKey: apiConfig.apiKey,
         model: apiConfig.model,
-        messages: [
-          { role: 'system', content: getSystemPrompt() },
-          { role: 'user', content: [
-            { type: 'text', text: 'Extract all data from this image:' },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
-          ]},
-        ],
-      }),
+        endpoint: apiConfig.endpoint,
+        base64,
+        systemPrompt: getSystemPrompt(),
+      },
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`OpenAI API error (${res.status}): ${errText.slice(0, 200)}`);
+    if (error) {
+      throw new Error(error.message || 'Edge function error');
     }
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content || '[]';
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+    return data?.items || [];
   };
 
   // -- Helpers --
