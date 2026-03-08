@@ -6,6 +6,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Rate limit config: 15 requests per 60 seconds per user
+const RATE_LIMIT_MAX = 15;
+const RATE_LIMIT_WINDOW = 60;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,11 +24,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
@@ -32,6 +38,29 @@ Deno.serve(async (req) => {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+
+  // Rate limit check
+  const adminClient = createClient(supabaseUrl, serviceRoleKey);
+  const { data: allowed, error: rlError } = await adminClient.rpc("check_rate_limit", {
+    p_user_id: user.id,
+    p_function_name: "ocr-extract",
+    p_max_requests: RATE_LIMIT_MAX,
+    p_window_seconds: RATE_LIMIT_WINDOW,
+  });
+
+  if (rlError || allowed === false) {
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please wait a moment before trying again." }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": String(RATE_LIMIT_WINDOW),
+        },
+      }
+    );
   }
 
   try {
@@ -51,7 +80,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    // Limit payload to ~10MB base64 (prevents abuse)
     if (base64.length > 10 * 1024 * 1024) {
       return new Response(
         JSON.stringify({ error: "Image too large (max 10MB)" }),
@@ -68,7 +96,6 @@ Deno.serve(async (req) => {
     let result: string;
 
     if (provider === "gemini") {
-      // Validate model name to prevent path injection
       if (!model || typeof model !== "string" || !/^[a-zA-Z0-9._-]+$/.test(model)) {
         return new Response(
           JSON.stringify({ error: "Invalid model name" }),
@@ -168,6 +195,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("OCR extract error:", err);
     return new Response(
       JSON.stringify({ error: "Server error processing request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
