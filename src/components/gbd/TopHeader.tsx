@@ -59,7 +59,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
       <div className="flex items-center justify-end gap-2">
         {!isOnline && (
           <span className="flex items-center gap-1 text-[0.7rem] font-semibold tracking-wider px-2 py-1 rounded-full text-warning" style={{ background: 'hsl(var(--warning) / 0.15)' }}>
-            <WifiOff className="w-3.5 h-3.5" /> OFFLINE
+            <WifiOff className="w-3.5 h-3.5" /> {t('common.offline')}
           </span>
         )}
         <button className="icon-btn" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
