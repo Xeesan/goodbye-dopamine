@@ -297,6 +297,14 @@ const Storage = {
     this.set('quick_links', this.getQuickLinks().filter(l => l.id !== id));
   },
 
+  // Semester Budget
+  getSemesterBudget() {
+    return this.get('semester_budget', null);
+  },
+  setSemesterBudget(budget: { totalAmount: number; startDate: string; endDate: string } | null) {
+    this.set('semester_budget', budget);
+  },
+
   // Dashboard tiles
   getDashboardTiles() {
     return this.get('dashboard_tiles', ['planner', 'routine', 'exams', 'money', 'notes']);
