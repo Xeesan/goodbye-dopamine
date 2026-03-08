@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2 } from 'lucide-react';
+import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2, Sparkles } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 
