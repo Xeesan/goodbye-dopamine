@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useRef, useEffect } from 'react';
 import { AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
+import { Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, BarChart3, type LucideIcon } from 'lucide-react';
 
 type DialogType = 'confirm' | 'alert' | 'success' | 'info' | 'prompt';
 
@@ -13,9 +14,17 @@ interface DialogOptions {
   defaultValue?: string;
 }
 
+export interface TileOption {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  tokenColor: string;
+}
+
 interface DialogContextType {
   showDialog: (options: DialogOptions) => Promise<boolean>;
   showPrompt: (options: DialogOptions) => Promise<string | null>;
+  showTileCustomizer: (tiles: TileOption[], enabledIds: string[]) => Promise<string[] | null>;
 }
 
 const DialogContext = createContext<DialogContextType | null>(null);
