@@ -413,6 +413,25 @@ const translations = {
 
   // ─── Language ───
   'lang.switch': { en: 'বাংলা', bn: 'English' },
+
+  // ─── Focus Now ───
+  'focus.title': { en: 'FOCUS NOW', bn: 'ফোকাস নাও' },
+  'focus.subtitle': { en: "What should I do right now?", bn: 'এখন কী করব?' },
+  'focus.no_tasks': { en: 'All clear! No pending tasks or exams.', bn: 'সব ক্লিয়ার! কোনো পেন্ডিং টাস্ক বা পরীক্ষা নেই।' },
+  'focus.start': { en: 'Start Focusing', bn: 'ফোকাস শুরু' },
+  'focus.pick_duration': { en: 'Pick duration', bn: 'সময় নির্বাচন' },
+  'focus.15_min': { en: '15 min', bn: '১৫ মিনিট' },
+  'focus.25_min': { en: '25 min', bn: '২৫ মিনিট' },
+  'focus.45_min': { en: '45 min', bn: '৪৫ মিনিট' },
+  'focus.60_min': { en: '60 min', bn: '৬০ মিনিট' },
+  'focus.exam_prep': { en: 'EXAM PREP', bn: 'পরীক্ষা প্রস্তুতি' },
+  'focus.task_focus': { en: 'TASK FOCUS', bn: 'টাস্ক ফোকাস' },
+  'focus.focusing': { en: 'Focusing...', bn: 'ফোকাসিং...' },
+  'focus.paused': { en: 'Paused', bn: 'পজড' },
+  'focus.times_up': { en: "Time's up!", bn: 'সময় শেষ!' },
+  'focus.mark_done': { en: 'Mark Done & Exit', bn: 'সম্পন্ন করুন' },
+  'focus.completed_toast': { en: 'Focus session complete!', bn: 'ফোকাস সেশন সম্পন্ন!' },
+  'focus.most_urgent': { en: 'MOST URGENT', bn: 'সবচেয়ে জরুরি' },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
