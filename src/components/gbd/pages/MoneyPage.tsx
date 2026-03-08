@@ -43,6 +43,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     addXP(5);
     setShowTxnModal(false);
     refresh();
+    toast({ title: 'Transaction added', description: `${txnType === 'income' ? '+' : '-'}৳${amount} — ${description}` });
   };
 
   const addDebt = async () => {
@@ -75,27 +76,50 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const targetDate = (document.getElementById('goal-date') as HTMLInputElement)?.value;
     Storage.addSavingsGoal({ title, targetAmount, initialAmount, targetDate });
     addXP(10);
+    (document.getElementById('goal-title') as HTMLInputElement).value = '';
+    (document.getElementById('goal-target') as HTMLInputElement).value = '';
     refresh();
+    toast({ title: 'Savings goal created', description: `${title} — ৳${targetAmount}` });
   };
 
   const deleteTxn = async (id: string) => {
+    const txn = txns.find((t: any) => t.id === id);
     const confirmed = await showDialog({ title: 'Delete Transaction', message: 'Are you sure you want to delete this transaction?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteTransaction(id); refresh(); }
+    if (confirmed) {
+      Storage.deleteTransaction(id);
+      refresh();
+      toast({ title: 'Transaction deleted', description: txn?.description || '' });
+    }
   };
 
   const settleDebt = async (id: string) => {
+    const debt = debts.find((d: any) => d.id === id);
     const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
-    if (confirmed) { Storage.settleDebt(id); refresh(); }
+    if (confirmed) {
+      Storage.settleDebt(id);
+      refresh();
+      toast({ title: 'Debt settled ✓', description: `${debt?.person} — ৳${debt?.amount}` });
+    }
   };
 
   const deleteDebt = async (id: string) => {
+    const debt = debts.find((d: any) => d.id === id);
     const confirmed = await showDialog({ title: 'Delete Debt', message: 'Are you sure you want to delete this debt record?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteDebt(id); refresh(); }
+    if (confirmed) {
+      Storage.deleteDebt(id);
+      refresh();
+      toast({ title: 'Debt deleted', description: debt?.person || '' });
+    }
   };
 
   const deleteGoal = async (id: string) => {
+    const goal = goals.find((g: any) => g.id === id);
     const confirmed = await showDialog({ title: 'Delete Goal', message: 'Are you sure you want to delete this savings goal?', type: 'confirm', confirmText: 'Delete' });
-    if (confirmed) { Storage.deleteSavingsGoal(id); refresh(); }
+    if (confirmed) {
+      Storage.deleteSavingsGoal(id);
+      refresh();
+      toast({ title: 'Goal deleted', description: goal?.title || '' });
+    }
   };
 
   return (

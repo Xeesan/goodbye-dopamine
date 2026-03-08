@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
@@ -24,6 +25,8 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
   const [tab, setTab] = useState('overview');
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPhase, setBreathingPhase] = useState('START');
+  const [, setRefreshCounter] = useState(0);
+  const refresh = () => setRefreshCounter(c => c + 1);
 
   const h = getHealthData();
   const t = h.today;
@@ -39,7 +42,8 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
     const data = getHealthData();
     data.today.water = Math.max(0, Math.min(20, data.today.water + delta));
     saveHealthData(data);
-    navigateTo('health');
+    refresh();
+    if (delta > 0) toast({ title: '💧 Water logged', description: `${data.today.water}/8 glasses` });
   };
 
   const updateSleep = (field: string, value: string) => {
@@ -54,13 +58,16 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
       data.today.sleepHours = +((wakeMin - bedMin) / 60).toFixed(1);
     }
     saveHealthData(data);
+    refresh();
+    toast({ title: '😴 Sleep updated', description: `${data.today.sleepHours}h logged` });
   };
 
   const rateSleep = (rating: number) => {
     const data = getHealthData();
     data.today.sleepRating = rating;
     saveHealthData(data);
-    navigateTo('health');
+    refresh();
+    toast({ title: 'Sleep quality rated', description: `${rating}/5 stars` });
   };
 
   const updateSteps = () => {
@@ -69,14 +76,16 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
     const data = getHealthData();
     data.today.steps = parseInt(input.value) || 0;
     saveHealthData(data);
-    navigateTo('health');
+    refresh();
+    toast({ title: '👟 Steps updated', description: `${data.today.steps.toLocaleString()} steps` });
   };
 
   const setMood = (mood: string) => {
     const data = getHealthData();
     data.today.mood = mood;
     saveHealthData(data);
-    navigateTo('health');
+    refresh();
+    toast({ title: 'Mood logged', description: `Feeling ${mood} today` });
   };
 
   const saveMoodNote = (note: string) => {
@@ -190,7 +199,6 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
 
       {tab === 'physical' && (
         <>
-          {/* Hydration */}
           <div className="glass-card mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground">💧 Hydration</h3>
@@ -206,7 +214,6 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
             </div>
           </div>
 
-          {/* Sleep */}
           <div className="glass-card mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground">😴 Sleep Tracker</h3>
@@ -224,7 +231,6 @@ const HealthPage = ({ navigateTo }: HealthPageProps) => {
             </div>
           </div>
 
-          {/* Activity */}
           <div className="glass-card">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground">👟 Activity</h3>

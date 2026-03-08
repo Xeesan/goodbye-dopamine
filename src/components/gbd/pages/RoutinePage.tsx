@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { getCurrentDayName } from '@/lib/helpers';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
@@ -17,8 +18,11 @@ const DAY_LABELS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SAT
 const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
@@ -34,14 +38,17 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     Storage.addPeriod(selectedDay, { subject, startTime, endTime, room });
     addXP(5);
     setShowModal(false);
-    navigateTo('routine');
+    refresh();
+    toast({ title: 'Period added', description: `${subject} on ${selectedDay}` });
   };
 
   const deletePeriod = async (id: string) => {
+    const period = periods.find((p: any) => p.id === id);
     const confirmed = await showDialog({ title: 'Delete Period', message: 'Are you sure you want to delete this period?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deletePeriod(selectedDay, id);
-      navigateTo('routine');
+      refresh();
+      toast({ title: 'Period deleted', description: period?.subject || '' });
     }
   };
 
@@ -53,7 +60,8 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
       }
     });
     addXP(items.length * 5);
-    navigateTo('routine');
+    refresh();
+    toast({ title: 'Routine imported', description: `${items.length} period(s) added` });
   };
 
   return (
