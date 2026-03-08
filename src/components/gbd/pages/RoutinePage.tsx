@@ -24,6 +24,11 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const { addXP } = useGamification();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
+  // Hydrate from DB on mount
+  useEffect(() => {
+    syncRoutineFromDB().then(() => refresh());
+  }, []);
+
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
@@ -36,7 +41,16 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     const startTime = (document.getElementById('period-start') as HTMLInputElement)?.value;
     const endTime = (document.getElementById('period-end') as HTMLInputElement)?.value;
     const room = (document.getElementById('period-room') as HTMLInputElement)?.value.trim();
-    Storage.addPeriod(selectedDay, { subject, startTime, endTime, room });
+    const periodData = { subject, startTime, endTime, room };
+    Storage.addPeriod(selectedDay, periodData);
+    addPeriodToDB(selectedDay, periodData).then(dbId => {
+      if (dbId) {
+        const r = Storage.getRoutine();
+        const dayPeriods = r[selectedDay] || [];
+        const last = dayPeriods[dayPeriods.length - 1];
+        if (last) { last.id = dbId; Storage.setRoutine(r); refresh(); }
+      }
+    });
     addXP(5);
     setShowModal(false);
     refresh();
@@ -48,6 +62,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     const confirmed = await showDialog({ title: 'Delete Period', message: 'Are you sure you want to delete this period?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deletePeriod(selectedDay, id);
+      deletePeriodFromDB(id);
       refresh();
       toast({ title: 'Period deleted', description: period?.subject || '' });
     }
@@ -57,7 +72,9 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     items.forEach((item: any) => {
       const day = (item.day || '').toLowerCase();
       if (DAYS.includes(day)) {
-        Storage.addPeriod(day, { subject: item.subject || 'Unknown', startTime: item.startTime || '09:00', endTime: item.endTime || '10:00', room: item.room || '' });
+        const periodData = { subject: item.subject || 'Unknown', startTime: item.startTime || '09:00', endTime: item.endTime || '10:00', room: item.room || '' };
+        Storage.addPeriod(day, periodData);
+        addPeriodToDB(day, periodData);
       }
     });
     addXP(items.length * 5);
@@ -71,6 +88,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     const confirmed = await showDialog({ title: 'Clear Entire Routine', message: `Are you sure you want to delete ALL ${totalPeriods} periods across all days? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
     if (confirmed) {
       Storage.clearRoutine();
+      clearRoutineInDB();
       refresh();
       toast({ title: 'Routine cleared', description: `${totalPeriods} period(s) removed` });
     }
