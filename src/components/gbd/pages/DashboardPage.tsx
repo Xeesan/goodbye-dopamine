@@ -142,7 +142,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           }}>+ ADD LINK</button>
         </div>
         {quickLinks.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No quick links added yet.</p>
+          <div className="glass-card !p-6 text-center"><span className="text-2xl mb-2 block">🔗</span><p className="text-muted-foreground text-sm">No quick links yet. Add your favorite resources!</p></div>
         ) : (
           <div className="flex flex-wrap gap-2">
             {quickLinks.map((l: any) => (
