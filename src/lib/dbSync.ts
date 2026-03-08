@@ -346,7 +346,7 @@ export async function deletePeriodFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_routine').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_routine').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete period DB error:', e);
   }
