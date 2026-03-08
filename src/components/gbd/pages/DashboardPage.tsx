@@ -128,6 +128,11 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
         )}
       </div>
 
+      {/* Unified Calendar */}
+      <div className="mb-6">
+        <UnifiedCalendarWidget navigateTo={navigateTo} />
+      </div>
+
       {/* Level & Achievements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div className="glass-card-accent flex items-center gap-6">
