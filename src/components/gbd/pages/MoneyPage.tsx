@@ -215,7 +215,20 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         </>
       )}
 
-      {moneyTab === 'lend' && (
+      {moneyTab === 'lend' && (() => {
+        // Compute per-person net balances
+        const personMap: Record<string, { lent: number; borrowed: number; debts: any[] }> = {};
+        activeDebts.forEach((d: any) => {
+          if (!personMap[d.person]) personMap[d.person] = { lent: 0, borrowed: 0, debts: [] };
+          if (d.debtType === 'lend') personMap[d.person].lent += d.amount;
+          else personMap[d.person].borrowed += d.amount;
+          personMap[d.person].debts.push(d);
+        });
+        const people = Object.entries(personMap).map(([name, data]) => ({
+          name, ...data, net: data.lent - data.borrowed
+        }));
+
+        return (
         <>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="glass-card-accent !p-4">
@@ -227,6 +240,41 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               <div className="text-xl font-bold text-destructive">৳ {totalBorrowed.toLocaleString()}</div>
             </div>
           </div>
+
+          {/* Per-person summary */}
+          {people.length > 0 && (
+            <div className="glass-card mb-6">
+              <h2 className="text-base font-semibold text-foreground mb-4">People Summary</h2>
+              <div className="space-y-3">
+                {people.map(p => (
+                  <div key={p.name} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: 'hsl(var(--muted) / 0.4)' }}>
+                    <div className="flex items-center gap-3">
+                      <div className={`money-icon ${p.net > 0 ? 'green' : p.net < 0 ? 'red' : ''}`} style={p.net === 0 ? { background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' } : {}}>
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground text-sm">{p.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {p.lent > 0 && <span>Lent: ৳{p.lent.toLocaleString()}</span>}
+                          {p.lent > 0 && p.borrowed > 0 && <span> · </span>}
+                          {p.borrowed > 0 && <span>Borrowed: ৳{p.borrowed.toLocaleString()}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`font-bold text-sm ${p.net > 0 ? 'text-primary' : p.net < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        {p.net > 0 ? `+৳${p.net.toLocaleString()}` : p.net < 0 ? `-৳${Math.abs(p.net).toLocaleString()}` : 'Settled'}
+                      </div>
+                      <div className="text-[0.6rem] text-muted-foreground">
+                        {p.net > 0 ? 'They owe you' : p.net < 0 ? 'You owe them' : 'Even'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="glass-card mb-6">
             <div className="grid grid-cols-2 gap-0 mb-5 rounded-[var(--radius-sm)] overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
               <button className={debtType === 'lend' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setDebtType('lend')}>Lend</button>
@@ -240,26 +288,38 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             <input type="date" id="debt-date" className="input-simple mb-5 max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
             <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addDebt}>Save Debt</button></div>
           </div>
+
+          {/* Grouped by person */}
           <div className="glass-card mb-6 min-h-[100px]">
             <h2 className="text-base font-semibold text-foreground mb-5">Active Debts</h2>
-            {activeDebts.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>No active debts.</p></div> :
-            activeDebts.slice().reverse().map((d: any) => (
-              <div key={d.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                <div className="flex items-center gap-3">
-                  <div className={`money-icon ${d.debtType === 'lend' ? 'green' : 'red'}`}>{d.debtType === 'lend' ? '↑' : '↓'}</div>
-                  <div>
-                    <div className="font-medium text-foreground text-sm">{d.person}</div>
-                    <div className="text-xs text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
+            {people.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>No active debts.</p></div> :
+            people.map(p => (
+              <div key={p.name} className="mb-4 last:mb-0">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{p.name}</span>
+                  <span className={`text-xs font-bold ${p.net > 0 ? 'text-primary' : p.net < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    Net: {p.net > 0 ? '+' : p.net < 0 ? '-' : ''}৳{Math.abs(p.net).toLocaleString()}
+                  </span>
+                </div>
+                {p.debts.slice().reverse().map((d: any) => (
+                  <div key={d.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                    <div className="flex items-center gap-3">
+                      <div className={`money-icon ${d.debtType === 'lend' ? 'green' : 'red'}`}>{d.debtType === 'lend' ? '↑' : '↓'}</div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-semibold ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount}</span>
+                      <span className="text-[0.6rem] uppercase text-muted-foreground tracking-wider">{d.debtType}</span>
+                      <button className="btn-outline !py-1 !px-2 !text-xs !text-primary" onClick={() => settleDebt(d.id)}>Settle</button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`font-semibold ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount}</span>
-                  <span className="text-[0.6rem] uppercase text-muted-foreground tracking-wider">{d.debtType}</span>
-                  <button className="btn-outline !py-1 !px-2 !text-xs !text-primary" onClick={() => settleDebt(d.id)}>Settle</button>
-                </div>
+                ))}
               </div>
             ))}
           </div>
+
           {historyDebts.length > 0 && (
             <div className="glass-card min-h-[100px] opacity-80">
               <h2 className="text-base font-semibold text-foreground mb-5">Settled History</h2>
@@ -281,7 +341,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             </div>
           )}
         </>
-      )}
+        );
+      })()}
 
       {moneyTab === 'savings' && (
         <>
