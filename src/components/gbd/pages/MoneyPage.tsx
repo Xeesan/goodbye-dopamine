@@ -69,6 +69,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
+    addDebtToDB({ debtType, person, amount, description, date }).then(dbId => {
+      if (dbId) {
+        const current = Storage.getDebts();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setDebts(current); }
+      }
+    });
     addXP(5);
     (document.getElementById('debt-person') as HTMLInputElement).value = '';
     (document.getElementById('debt-amount') as HTMLInputElement).value = '';
