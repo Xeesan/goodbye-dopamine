@@ -64,6 +64,17 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     toast({ title: 'Routine imported', description: `${items.length} period(s) added` });
   };
 
+  const clearAllRoutine = async () => {
+    const totalPeriods = Object.values(routine).reduce((s, arr) => s + arr.length, 0);
+    if (totalPeriods === 0) return;
+    const confirmed = await showDialog({ title: 'Clear Entire Routine', message: `Are you sure you want to delete ALL ${totalPeriods} periods across all days? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
+    if (confirmed) {
+      Storage.clearRoutine();
+      refresh();
+      toast({ title: 'Routine cleared', description: `${totalPeriods} period(s) removed` });
+    }
+  };
+
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
