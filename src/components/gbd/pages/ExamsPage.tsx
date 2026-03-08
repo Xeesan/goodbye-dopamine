@@ -7,6 +7,7 @@ import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
@@ -35,9 +36,9 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
-  // Hydrate from DB on mount
   useEffect(() => {
     syncExamsFromDB().then(() => refresh());
   }, []);
@@ -76,7 +77,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     } else {
       Storage.addExam(examData);
       addExamToDB(examData).then(dbId => {
-        // Update local ID with DB ID for future syncs
         if (dbId) {
           const current = Storage.getExams();
           const last = current[current.length - 1];
@@ -86,13 +86,13 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       addXP(15);
       (document.getElementById('exam-subject') as HTMLInputElement).value = '';
       refresh();
-      toast({ title: `${examTab === 'exams' ? 'Exam' : 'Assignment'} added`, description: subject });
+      toast({ title: `${examTab === 'exams' ? t('exams.exam') : t('exams.assignment')} added`, description: subject });
     }
   };
 
   const deleteExam = async (id: string) => {
     const exam = exams.find(e => e.id === id);
-    const confirmed = await showDialog({ title: 'Delete Exam', message: 'Are you sure you want to delete this exam?', type: 'confirm', confirmText: 'Delete' });
+    const confirmed = await showDialog({ title: t('common.delete'), message: 'Are you sure you want to delete this exam?', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deleteExam(id);
       deleteExamFromDB(id);
@@ -103,7 +103,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   };
 
   const clearAllExams = async () => {
-    const label = examTab === 'exams' ? 'exams' : 'assignments';
+    const label = examTab === 'exams' ? t('exams.exams').toLowerCase() : t('exams.assignments').toLowerCase();
     const confirmed = await showDialog({ title: `Clear All ${label}`, message: `Are you sure you want to delete ALL ${filtered.length} ${label}? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
     if (confirmed) {
       const remaining = exams.filter(e => (e.type || 'exams') !== examTab);
@@ -141,15 +141,15 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Exam Tracker</h1>
-            <p className="text-muted-foreground text-sm">Stay ahead of your academic schedule.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('exams.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('exams.subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
           <div className="tab-group">
-            <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
-            <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>
+            <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>{t('exams.exams')}</button>
+            <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>{t('exams.assignments')}</button>
           </div>
         </div>
       </div>
@@ -157,42 +157,42 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
         <div className="glass-card !p-3 sm:!p-4 text-center">
           <div className="text-xl sm:text-2xl font-bold text-primary">{upcoming.length}</div>
-          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">UPCOMING</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('exams.upcoming')}</div>
         </div>
         <div className="glass-card !p-3 sm:!p-4 text-center">
           <div className="text-xl sm:text-2xl font-bold" style={{ color: thisWeek.length > 0 ? 'hsl(var(--warning))' : undefined }}>{thisWeek.length}</div>
-          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">THIS WEEK</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('exams.this_week')}</div>
         </div>
         <div className="glass-card !p-3 sm:!p-4 text-center">
           <div className="text-xl sm:text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{totalCredits}</div>
-          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">CREDITS</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">{t('exams.credits')}</div>
         </div>
       </div>
 
       <div className="glass-card mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-          <div><label className="form-label">SUBJECT</label><input type="text" id="exam-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
-          <div><label className="form-label">DATE</label><input type="date" id="exam-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
-          <div><label className="form-label">TIME</label><input type="time" id="exam-time" className="input-simple" defaultValue="09:00" /></div>
-          <div><label className="form-label">TARGET GRADE</label><input type="text" id="exam-grade" className="input-simple" placeholder="A+" defaultValue="A+" /></div>
+          <div><label className="form-label">{t('exams.subject')}</label><input type="text" id="exam-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
+          <div><label className="form-label">{t('exams.date')}</label><input type="date" id="exam-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
+          <div><label className="form-label">{t('exams.time')}</label><input type="time" id="exam-time" className="input-simple" defaultValue="09:00" /></div>
+          <div><label className="form-label">{t('exams.target_grade')}</label><input type="text" id="exam-grade" className="input-simple" placeholder="A+" defaultValue="A+" /></div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div><label className="form-label">CREDITS</label><input type="number" id="exam-credits" className="input-simple" defaultValue={3} min={1} max={10} /></div>
-          <div><label className="form-label">TEACHER</label><input type="text" id="exam-teacher" className="input-simple" placeholder="e.g. Dr. Smith" /></div>
-          <div><label className="form-label">ROOM</label><input type="text" id="exam-room" className="input-simple" placeholder="e.g. Room 301" /></div>
+          <div><label className="form-label">{t('exams.credits')}</label><input type="number" id="exam-credits" className="input-simple" defaultValue={3} min={1} max={10} /></div>
+          <div><label className="form-label">{t('exams.teacher')}</label><input type="text" id="exam-teacher" className="input-simple" placeholder="e.g. Dr. Smith" /></div>
+          <div><label className="form-label">{t('exams.room')}</label><input type="text" id="exam-room" className="input-simple" placeholder="e.g. Room 301" /></div>
         </div>
         <div className="flex gap-3">
           <button className="btn-green flex-1" onClick={addExam}>
-            {editingId ? '✓ UPDATE' : '+'} {examTab === 'exams' ? 'EXAM' : 'ASSIGNMENT'}
+            {editingId ? `✓ ${t('common.update')}` : '+'} {examTab === 'exams' ? t('exams.exam') : t('exams.assignment')}
           </button>
-          {editingId && <button className="btn-outline" onClick={() => setEditingId(null)}>CANCEL</button>}
+          {editingId && <button className="btn-outline" onClick={() => setEditingId(null)}>{t('common.cancel')}</button>}
         </div>
       </div>
 
       <div className="space-y-3 min-h-[100px]">
         {filtered.length === 0 ? (
           <div className="glass-card empty-state !py-16">
-            <p className="text-muted-foreground">No {examTab} tracked yet. Add your first one above!</p>
+            <p className="text-muted-foreground">{examTab === 'exams' ? t('exams.exams') : t('exams.assignments')} {t('exams.no_items')}</p>
           </div>
         ) : filtered.map(e => {
           const cd = getExamCountdown(e.date, e.time);
@@ -224,7 +224,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       {filtered.length > 0 && (
         <div className="mt-4 flex justify-center">
           <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllExams}>
-            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All {examTab === 'exams' ? 'Exams' : 'Assignments'}
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />{examTab === 'exams' ? t('exams.clear_all_exams') : t('exams.clear_all_assignments')}
           </button>
         </div>
       )}

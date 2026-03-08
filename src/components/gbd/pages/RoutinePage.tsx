@@ -7,6 +7,8 @@ import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
+import { useI18n } from '@/hooks/useI18n';
+import type { TranslationKey } from '@/lib/i18n';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
@@ -14,7 +16,7 @@ interface RoutinePageProps {
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-const DAY_LABELS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+const DAY_KEYS: TranslationKey[] = ['day.monday', 'day.tuesday', 'day.wednesday', 'day.thursday', 'day.friday', 'day.saturday', 'day.sunday'];
 
 const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
@@ -22,9 +24,9 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
-  // Hydrate from DB on mount
   useEffect(() => {
     syncRoutineFromDB().then(() => refresh());
   }, []);
@@ -54,12 +56,12 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     addXP(5);
     setShowModal(false);
     refresh();
-    toast({ title: 'Period added', description: `${subject} on ${selectedDay}` });
+    toast({ title: t('routine.add_period'), description: `${subject}` });
   };
 
   const deletePeriod = async (id: string) => {
     const period = periods.find((p: any) => p.id === id);
-    const confirmed = await showDialog({ title: 'Delete Period', message: 'Are you sure you want to delete this period?', type: 'confirm', confirmText: 'Delete' });
+    const confirmed = await showDialog({ title: t('common.delete'), message: 'Are you sure you want to delete this period?', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deletePeriod(selectedDay, id);
       deletePeriodFromDB(id);
@@ -85,12 +87,12 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const clearAllRoutine = async () => {
     const totalPeriods = Object.values(routine).reduce((s, arr) => s + arr.length, 0);
     if (totalPeriods === 0) return;
-    const confirmed = await showDialog({ title: 'Clear Entire Routine', message: `Are you sure you want to delete ALL ${totalPeriods} periods across all days? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
+    const confirmed = await showDialog({ title: t('routine.clear_all'), message: `Are you sure you want to delete ALL ${totalPeriods} periods across all days? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
     if (confirmed) {
       Storage.clearRoutine();
       clearRoutineInDB();
       refresh();
-      toast({ title: 'Routine cleared', description: `${totalPeriods} period(s) removed` });
+      toast({ title: t('routine.clear_all'), description: `${totalPeriods} period(s) removed` });
     }
   };
 
@@ -100,27 +102,27 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Class Routine</h1>
-            <p className="text-muted-foreground text-sm">Your weekly academic schedule at a glance.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('routine.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('routine.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <ImageOCRImport mode="routine" onImport={handleOCRImport} />
-          <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> Add Period</button>
+          <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
         </div>
       </div>
 
       <div className="day-tabs mb-6">
         {DAYS.map((d, i) => (
-          <button key={d} className={`day-tab ${d === selectedDay ? 'active' : ''}`} onClick={() => setSelectedDay(d)}>{DAY_LABELS[i]}</button>
+          <button key={d} className={`day-tab ${d === selectedDay ? 'active' : ''}`} onClick={() => setSelectedDay(d)}>{t(DAY_KEYS[i])}</button>
         ))}
       </div>
 
       <div className="glass-card min-h-[200px]">
         {periods.length === 0 ? (
           <div className="empty-state">
-            <p>No classes scheduled for {selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</p>
-            <button className="btn-outline mt-3" onClick={() => setShowModal(true)}>+ ADD PERIOD</button>
+            <p>{t('routine.no_classes')} {selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</p>
+            <button className="btn-outline mt-3" onClick={() => setShowModal(true)}>{t('routine.add_period_btn')}</button>
           </div>
         ) : (
           <div className="space-y-3">
@@ -143,7 +145,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
       {Object.values(routine).some(arr => arr.length > 0) && (
         <div className="mt-4 flex justify-center">
           <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllRoutine}>
-            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All Routine
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />{t('routine.clear_all')}
           </button>
         </div>
       )}
@@ -151,16 +153,16 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-4">Add Period</h2>
+            <h2 className="text-lg font-bold text-foreground mb-4">{t('routine.add_period')}</h2>
             <div className="space-y-3">
-              <div><label className="form-label">Subject</label><input type="text" id="period-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
-              <div><label className="form-label">Start Time</label><input type="time" id="period-start" className="input-simple" defaultValue="09:00" /></div>
-              <div><label className="form-label">End Time</label><input type="time" id="period-end" className="input-simple" defaultValue="10:00" /></div>
-              <div><label className="form-label">Room (Optional)</label><input type="text" id="period-room" className="input-simple" placeholder="e.g. Room 302" /></div>
+              <div><label className="form-label">{t('routine.subject')}</label><input type="text" id="period-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
+              <div><label className="form-label">{t('routine.start_time')}</label><input type="time" id="period-start" className="input-simple" defaultValue="09:00" /></div>
+              <div><label className="form-label">{t('routine.end_time')}</label><input type="time" id="period-end" className="input-simple" defaultValue="10:00" /></div>
+              <div><label className="form-label">{t('routine.room')}</label><input type="text" id="period-room" className="input-simple" placeholder="e.g. Room 302" /></div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button className="btn-outline flex-1" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn-green flex-1" onClick={addPeriod}>Add Period</button>
+              <button className="btn-outline flex-1" onClick={() => setShowModal(false)}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={addPeriod}>{t('routine.add_period')}</button>
             </div>
           </div>
         </div>

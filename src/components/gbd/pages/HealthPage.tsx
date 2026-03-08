@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import HealthRemindersCard from '../HealthRemindersCard';
+import { useI18n } from '@/hooks/useI18n';
 
 interface HealthPageProps {
   navigateTo: (page: string) => void;
@@ -29,14 +30,15 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
   const [breathingPhase, setBreathingPhase] = useState('START');
   const [, setRefreshCounter] = useState(0);
   const refresh = () => setRefreshCounter(c => c + 1);
+  const { t } = useI18n();
 
   const h = getHealthData();
-  const t = h.today;
+  const td = h.today;
 
-  const waterScore = Math.min(t.water / 8, 1) * 25;
-  const sleepScore = Math.min(t.sleepHours / 8, 1) * 25;
-  const stepsScore = Math.min(t.steps / 10000, 1) * 25;
-  const moodScore = t.mood ? 25 : 0;
+  const waterScore = Math.min(td.water / 8, 1) * 25;
+  const sleepScore = Math.min(td.sleepHours / 8, 1) * 25;
+  const stepsScore = Math.min(td.steps / 10000, 1) * 25;
+  const moodScore = td.mood ? 25 : 0;
   const score = Math.round(waterScore + sleepScore + stepsScore + moodScore);
   const level = score >= 80 ? 'Champion' : score >= 60 ? 'Warrior' : score >= 40 ? 'Apprentice' : 'Beginner';
 
@@ -126,12 +128,12 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
   const dashoffset = circumference - (score / 100) * circumference;
 
   const moods = [
-    { emoji: '😊', label: 'HAPPY', value: 'happy' },
-    { emoji: '⚡', label: 'ENERGETIC', value: 'energetic' },
-    { emoji: '😌', label: 'CALM', value: 'calm' },
-    { emoji: '😐', label: 'NEUTRAL', value: 'neutral' },
-    { emoji: '😴', label: 'TIRED', value: 'tired' },
-    { emoji: '😰', label: 'STRESSED', value: 'stressed' },
+    { emoji: '😊', label: t('health.happy'), value: 'happy' },
+    { emoji: '⚡', label: t('health.energetic'), value: 'energetic' },
+    { emoji: '😌', label: t('health.calm'), value: 'calm' },
+    { emoji: '😐', label: t('health.neutral'), value: 'neutral' },
+    { emoji: '😴', label: t('health.tired'), value: 'tired' },
+    { emoji: '😰', label: t('health.stressed'), value: 'stressed' },
   ];
 
   return (
@@ -140,13 +142,17 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Wellness</h1>
-            <p className="text-muted-foreground text-sm">Holistic health tracking for peak academic performance.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('health.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('health.subtitle')}</p>
           </div>
         </div>
         <div className="health-tabs">
-          {['overview', 'physical', 'mental'].map(t => (
-            <button key={t} className={`health-tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>{t.toUpperCase()}</button>
+          {[
+            { key: 'overview', label: t('health.overview') },
+            { key: 'physical', label: t('health.physical') },
+            { key: 'mental', label: t('health.mental') },
+          ].map(item => (
+            <button key={item.key} className={`health-tab ${tab === item.key ? 'active' : ''}`} onClick={() => setTab(item.key)}>{item.label}</button>
           ))}
         </div>
       </div>
@@ -156,7 +162,7 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="glass-card text-center">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-foreground">Daily Wellness</h3>
+                <h3 className="font-semibold text-foreground">{t('health.daily_wellness')}</h3>
                 <span className="text-xs font-bold px-2 py-1 rounded" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>{level.toUpperCase()}</span>
               </div>
               <svg width="120" height="120" viewBox="0 0 120 120" className="mx-auto mb-4">
@@ -165,19 +171,19 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
                   strokeDasharray={circumference} strokeDashoffset={dashoffset} strokeLinecap="round"
                   transform="rotate(-90 60 60)" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
                 <text x="60" y="55" textAnchor="middle" fill="hsl(var(--primary))" fontSize="24" fontWeight="bold">{score}</text>
-                <text x="60" y="72" textAnchor="middle" fill="hsl(var(--text-muted))" fontSize="10">SCORE</text>
+                <text x="60" y="72" textAnchor="middle" fill="hsl(var(--text-muted))" fontSize="10">{t('health.score')}</text>
               </svg>
               <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-                <span>💧 {t.water} GLASSES</span>
-                <span>👟 {t.steps.toLocaleString()} STEPS</span>
-                <span>🌙 {t.sleepHours}H SLEEP</span>
+                <span>💧 {td.water} {t('health.glasses')}</span>
+                <span>👟 {td.steps.toLocaleString()} {t('health.steps')}</span>
+                <span>🌙 {td.sleepHours}H {t('health.sleep')}</span>
               </div>
             </div>
             <div className="glass-card text-center flex flex-col items-center justify-center">
               <div className="text-5xl mb-3">{score >= 60 ? '🌟' : score >= 30 ? '🌱' : '💤'}</div>
-              <h3 className="font-semibold text-foreground mb-2">Your Wellness Spirit</h3>
+              <h3 className="font-semibold text-foreground mb-2">{t('health.wellness_spirit')}</h3>
               <p className="text-sm text-muted-foreground">
-                {score >= 60 ? 'Thriving! Keep it up!' : score >= 30 ? 'Growing... needs more care.' : 'Needs care & water.'}
+                {score >= 60 ? t('health.thriving') : score >= 30 ? t('health.growing') : t('health.needs_care')}
               </p>
             </div>
           </div>
@@ -185,23 +191,22 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => adjustWater(1)}>
               <span className="text-2xl">💧</span>
-              <span className="block text-xs font-medium text-foreground mt-1">+ Water</span>
+              <span className="block text-xs font-medium text-foreground mt-1">{t('health.add_water')}</span>
             </button>
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => setTab('physical')}>
               <span className="text-2xl">😴</span>
-              <span className="block text-xs font-medium text-foreground mt-1">Log Sleep</span>
+              <span className="block text-xs font-medium text-foreground mt-1">{t('health.log_sleep')}</span>
             </button>
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => setTab('mental')}>
               <span className="text-2xl">😊</span>
-              <span className="block text-xs font-medium text-foreground mt-1">Log Mood</span>
+              <span className="block text-xs font-medium text-foreground mt-1">{t('health.log_mood')}</span>
             </button>
             <button className="glass-card !p-4 text-center cursor-pointer hover:scale-105 transition-transform" onClick={() => setTab('physical')}>
               <span className="text-2xl">👟</span>
-              <span className="block text-xs font-medium text-foreground mt-1">Log Steps</span>
+              <span className="block text-xs font-medium text-foreground mt-1">{t('health.log_steps')}</span>
             </button>
           </div>
 
-          {/* Health Reminders */}
           <HealthRemindersCard onRestartReminders={onRestartReminders || (() => {})} />
         </>
       )}
@@ -210,47 +215,47 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
         <>
           <div className="glass-card mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground">💧 Hydration</h3>
-              <span className="text-sm text-muted-foreground">{t.water}/8 glasses</span>
+              <h3 className="font-semibold text-foreground">💧 {t('health.hydration')}</h3>
+              <span className="text-sm text-muted-foreground">{td.water}/8 {t('health.glasses').toLowerCase()}</span>
             </div>
             <div className="xp-bar !h-3 mb-3">
-              <div className="xp-bar-fill" style={{ width: `${Math.min(t.water / 8 * 100, 100)}%` }} />
+              <div className="xp-bar-fill" style={{ width: `${Math.min(td.water / 8 * 100, 100)}%` }} />
             </div>
             <div className="flex items-center justify-center gap-6">
               <button className="icon-btn !w-10 !h-10 text-lg" onClick={() => adjustWater(-1)}>−</button>
-              <span className="text-2xl font-bold text-foreground">{t.water}</span>
+              <span className="text-2xl font-bold text-foreground">{td.water}</span>
               <button className="icon-btn !w-10 !h-10 text-lg" onClick={() => adjustWater(1)}>+</button>
             </div>
           </div>
 
           <div className="glass-card mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground">😴 Sleep Tracker</h3>
-              <span className="text-sm text-muted-foreground">{t.sleepHours}h / 8h goal</span>
+              <h3 className="font-semibold text-foreground">😴 {t('health.sleep_tracker')}</h3>
+              <span className="text-sm text-muted-foreground">{td.sleepHours}h / 8h</span>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-3">
-              <div><label className="form-label">BEDTIME</label><input type="time" className="input-simple" defaultValue={t.bedtime} onChange={e => updateSleep('bedtime', e.target.value)} /></div>
-              <div><label className="form-label">WAKEUP</label><input type="time" className="input-simple" defaultValue={t.wakeup} onChange={e => updateSleep('wakeup', e.target.value)} /></div>
+              <div><label className="form-label">{t('health.bedtime')}</label><input type="time" className="input-simple" defaultValue={td.bedtime} onChange={e => updateSleep('bedtime', e.target.value)} /></div>
+              <div><label className="form-label">{t('health.wakeup')}</label><input type="time" className="input-simple" defaultValue={td.wakeup} onChange={e => updateSleep('wakeup', e.target.value)} /></div>
             </div>
-            <label className="form-label">SLEEP QUALITY</label>
+            <label className="form-label">{t('health.sleep_quality')}</label>
             <div className="star-rating">
               {[1, 2, 3, 4, 5].map(i => (
-                <span key={i} className={`star ${t.sleepRating >= i ? 'active' : ''}`} onClick={() => rateSleep(i)}>★</span>
+                <span key={i} className={`star ${td.sleepRating >= i ? 'active' : ''}`} onClick={() => rateSleep(i)}>★</span>
               ))}
             </div>
           </div>
 
           <div className="glass-card">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground">👟 Activity</h3>
-              <span className="text-sm text-muted-foreground">{t.steps.toLocaleString()} / 10,000 steps</span>
+              <h3 className="font-semibold text-foreground">👟 {t('health.activity')}</h3>
+              <span className="text-sm text-muted-foreground">{td.steps.toLocaleString()} / 10,000 {t('health.steps').toLowerCase()}</span>
             </div>
             <div className="xp-bar !h-3 mb-3">
-              <div className="xp-bar-fill" style={{ width: `${Math.min(t.steps / 10000 * 100, 100)}%`, background: 'hsl(var(--purple))' }} />
+              <div className="xp-bar-fill" style={{ width: `${Math.min(td.steps / 10000 * 100, 100)}%`, background: 'hsl(var(--purple))' }} />
             </div>
             <div className="flex gap-2">
-              <input type="number" className="input-simple flex-1" id="steps-input" placeholder="Enter steps" defaultValue={t.steps > 0 ? t.steps : ''} />
-              <button className="btn-green" onClick={updateSteps}>UPDATE</button>
+              <input type="number" className="input-simple flex-1" id="steps-input" placeholder={t('health.enter_steps')} defaultValue={td.steps > 0 ? td.steps : ''} />
+              <button className="btn-green" onClick={updateSteps}>{t('common.update').toUpperCase()}</button>
             </div>
           </div>
         </>
@@ -260,32 +265,32 @@ const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
         <>
           <div className="glass-card mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground">😊 Mood Journal</h3>
-              <span className="text-xs text-muted-foreground tracking-wider">REFLECT ON YOUR DAY</span>
+              <h3 className="font-semibold text-foreground">😊 {t('health.mood_journal')}</h3>
+              <span className="text-xs text-muted-foreground tracking-wider">{t('health.reflect')}</span>
             </div>
             <div className="mood-grid mb-4">
               {moods.map(m => (
-                <button key={m.value} className={`mood-btn ${t.mood === m.value ? 'active' : ''}`} onClick={() => setMood(m.value)}>
+                <button key={m.value} className={`mood-btn ${td.mood === m.value ? 'active' : ''}`} onClick={() => setMood(m.value)}>
                   <span className="mood-emoji">{m.emoji}</span>
                   <span className="mood-label">{m.label}</span>
                 </button>
               ))}
             </div>
-            <textarea className="input-simple min-h-[80px] resize-y" placeholder="What's on your mind?"
-              defaultValue={t.moodNote || ''} onChange={e => saveMoodNote(e.target.value)} />
-            {t.mood && <p className="text-sm text-primary mt-2">You're feeling <strong>{t.mood}</strong> today ✨</p>}
+            <textarea className="input-simple min-h-[80px] resize-y" placeholder={t('health.whats_on_mind')}
+              defaultValue={td.moodNote || ''} onChange={e => saveMoodNote(e.target.value)} />
+            {td.mood && <p className="text-sm text-primary mt-2">{t('health.feeling')} <strong>{td.mood}</strong> {t('health.today')} ✨</p>}
           </div>
 
           <div className="glass-card">
-            <h3 className="font-semibold text-foreground mb-4">🧘 Mindfulness</h3>
+            <h3 className="font-semibold text-foreground mb-4">🧘 {t('health.mindfulness')}</h3>
             <div className="text-center">
               <div className="breathing-circle mx-auto mb-4" style={{ transform: breathingPhase === 'INHALE' || breathingPhase === 'HOLD' ? 'scale(1.3)' : 'scale(1)' }}>
                 {breathingPhase}
               </div>
-              <p className="text-sm text-muted-foreground mb-1">4-7-8 Breathing Technique</p>
-              <p className="text-xs text-muted-foreground mb-4">Inhale 4s → Hold 7s → Exhale 8s</p>
+              <p className="text-sm text-muted-foreground mb-1">{t('health.breathing_tech')}</p>
+              <p className="text-xs text-muted-foreground mb-4">{t('health.breathing_desc')}</p>
               <button className="btn-outline" onClick={startBreathing}>
-                {breathingActive ? 'STOP' : 'BEGIN EXERCISE'}
+                {breathingActive ? t('health.stop') : t('health.begin_exercise')}
               </button>
             </div>
           </div>
