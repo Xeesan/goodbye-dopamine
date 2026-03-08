@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { getCurrentDayName } from '@/lib/helpers';
 import { Trash2 } from 'lucide-react';
+import ImageOCRImport from '../ImageOCRImport';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
@@ -36,6 +37,22 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     }
   };
 
+  const handleOCRImport = (items: any[]) => {
+    items.forEach((item: any) => {
+      const day = (item.day || '').toLowerCase();
+      if (DAYS.includes(day)) {
+        Storage.addPeriod(day, {
+          subject: item.subject || 'Unknown',
+          startTime: item.startTime || '09:00',
+          endTime: item.endTime || '10:00',
+          room: item.room || '',
+        });
+      }
+    });
+    Storage.addXP(items.length * 5);
+    navigateTo('routine');
+  };
+
   return (
     <div className="page-enter max-w-[1200px] mx-auto">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
@@ -43,9 +60,12 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
           <h1 className="text-2xl font-bold text-foreground">Class Routine</h1>
           <p className="text-muted-foreground text-sm">Your weekly academic schedule at a glance.</p>
         </div>
-        <button className="btn-green" onClick={() => setShowModal(true)}>
-          <span>+</span> Add Period
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <ImageOCRImport mode="routine" onImport={handleOCRImport} />
+          <button className="btn-green" onClick={() => setShowModal(true)}>
+            <span>+</span> Add Period
+          </button>
+        </div>
       </div>
 
       <div className="day-tabs mb-6">
@@ -80,7 +100,6 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         )}
       </div>
 
-      {/* Add Period Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
