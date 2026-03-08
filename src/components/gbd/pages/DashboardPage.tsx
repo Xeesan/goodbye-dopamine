@@ -115,8 +115,8 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
             return (
               <button key={tile.id} onClick={() => navigateTo(tile.id)}
                 className="glass-card !p-4 flex flex-col items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
-                style={{ borderColor: `${tile.color}22` }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${tile.color}15`, color: tile.color }}>
+                style={{ borderColor: `hsl(${tile.tokenColor} / 0.15)` }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `hsl(${tile.tokenColor} / 0.1)`, color: `hsl(${tile.tokenColor})` }}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-medium text-foreground">{tile.name}</span>
