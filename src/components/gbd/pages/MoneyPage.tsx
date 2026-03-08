@@ -844,17 +844,25 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {showBudgetSetup && (
         <div className="modal-overlay" onClick={() => setShowBudgetSetup(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-1">Semester Budget</h2>
-            <p className="text-xs text-muted-foreground mb-5">Set your total allowance and semester dates to get a weekly spending guide.</p>
-            <label className="form-label">Total Budget (৳)</label>
-            <input type="number" id="budget-total" className="input-simple mb-4" placeholder="e.g. 50000" min={1} defaultValue={semesterBudget?.totalAmount || ''} />
+            <h2 className="text-lg font-bold text-foreground mb-1">Semester Fee Setup</h2>
+            <p className="text-xs text-muted-foreground mb-5">Enter your tuition fee details and monthly living budget.</p>
+            
+            <label className="form-label">Total Semester Fee (৳)</label>
+            <input type="number" id="budget-total-fee" className="input-simple mb-4" placeholder="e.g. 120000" min={1} defaultValue={semesterBudget?.totalFee || ''} />
+            
+            <label className="form-label">Monthly Installment (৳)</label>
+            <input type="number" id="budget-installment" className="input-simple mb-4" placeholder="e.g. 20000" min={0} defaultValue={semesterBudget?.monthlyInstallment || ''} />
+            
+            <label className="form-label">Monthly Living/Spending Budget (৳)</label>
+            <input type="number" id="budget-living" className="input-simple mb-4" placeholder="e.g. 8000" min={0} defaultValue={semesterBudget?.livingBudget || ''} />
+            
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="form-label">Start Date</label>
+                <label className="form-label">Semester Start</label>
                 <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
               </div>
               <div>
-                <label className="form-label">End Date</label>
+                <label className="form-label">Semester End</label>
                 <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
               </div>
             </div>
@@ -864,31 +872,36 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   Storage.setSemesterBudget(null);
                   setSemesterBudgetState(null);
                   setShowBudgetSetup(false);
-                  toast({ title: 'Budget removed' });
+                  toast({ title: 'Fee tracker removed' });
                 }}>Remove</button>
               )}
               <button className="btn-outline flex-1" onClick={() => setShowBudgetSetup(false)}>{t('common.cancel')}</button>
               <button className="btn-green flex-1" onClick={() => {
-                const total = parseFloat((document.getElementById('budget-total') as HTMLInputElement)?.value);
+                const totalFee = parseFloat((document.getElementById('budget-total-fee') as HTMLInputElement)?.value);
+                const monthlyInstallment = parseFloat((document.getElementById('budget-installment') as HTMLInputElement)?.value) || 0;
+                const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
                 const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
-                if (!total || total <= 0 || !startDate || !endDate) {
-                  toast({ title: 'Missing info', description: 'Please fill in all fields.', variant: 'destructive' });
+                if (!totalFee || totalFee <= 0 || !startDate || !endDate) {
+                  toast({ title: 'Missing info', description: 'Please fill total fee and semester dates.', variant: 'destructive' });
                   return;
                 }
                 if (new Date(endDate) <= new Date(startDate)) {
                   toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
                   return;
                 }
-                if (total > 10000000) {
-                  toast({ title: 'Invalid amount', description: 'Budget seems too high.', variant: 'destructive' });
-                  return;
-                }
-                const budget: SemesterBudget = { totalAmount: total, startDate, endDate };
+                const budget: SemesterBudget = {
+                  totalFee,
+                  monthlyInstallment,
+                  livingBudget,
+                  startDate,
+                  endDate,
+                  installments: semesterBudget?.installments || [],
+                };
                 Storage.setSemesterBudget(budget);
                 setSemesterBudgetState(budget);
                 setShowBudgetSetup(false);
-                toast({ title: 'Budget saved ✓', description: `৳${total.toLocaleString()} for ${startDate} to ${endDate}` });
+                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} total fee` });
               }}>Save</button>
             </div>
           </div>
