@@ -643,7 +643,7 @@ body {
   border-radius: var(--radius-sm);
   color: hsl(var(--text-secondary));
   font-family: inherit;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   cursor: pointer;
