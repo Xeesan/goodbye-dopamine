@@ -552,6 +552,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         </button>
       )}
 
+      {/* Backdrop */}
+      {open && (
+        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+      )}
+
       {/* Chat Panel */}
       {open && (
         <div className="fixed bottom-5 right-5 z-50 w-[340px] sm:w-[380px] max-h-[70vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
