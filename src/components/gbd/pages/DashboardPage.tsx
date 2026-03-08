@@ -35,15 +35,18 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [showXpBadge, setShowXpBadge] = useState(false);
   const [refreshSpinning, setRefreshSpinning] = useState(false);
   const [focusDuration, setFocusDuration] = useState<number | null>(null);
-  const [focusTask, setFocusTask] = useState<ReturnType<typeof pickMostUrgentTask>>(null);
+  const [focusTask, setFocusTask] = useState<FocusTask | null>(null);
+  const [skipIndex, setSkipIndex] = useState(0);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
   useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
 
-  // Compute urgent task
-  const urgentTask = pickMostUrgentTask();
+  // Compute ranked tasks for Focus Now
+  const rankedTasks = getRankedTasks();
+  const safeIndex = rankedTasks.length > 0 ? skipIndex % rankedTasks.length : 0;
+  const urgentTask = rankedTasks.length > 0 ? rankedTasks[safeIndex] : null;
 
 
   const refreshQuote = useCallback(() => {
