@@ -160,7 +160,18 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
             <p className="text-muted-foreground text-sm">{t('exams.subtitle')}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button
+            className="btn-outline text-sm flex items-center gap-1.5"
+            onClick={() => {
+              const success = exportExamsToICS(upcoming, examTab === 'exams' ? 'Exams' : 'Assignments');
+              if (success) toast({ title: 'Calendar exported', description: 'Open the .ics file to add to your calendar' });
+              else toast({ title: 'Nothing to export', description: 'No upcoming items found' });
+            }}
+            title="Export to calendar"
+          >
+            <CalendarDown className="w-4 h-4" /> .ics
+          </button>
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
           <div className="tab-group">
             <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>{t('exams.exams')}</button>
