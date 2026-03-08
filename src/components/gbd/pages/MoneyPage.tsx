@@ -402,8 +402,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="form-label">PERSON</label>
-                  <input type="text" id="debt-person" className="input-simple" placeholder="Who?" />
+                  <label className="form-label">{t('money.person')}</label>
+                  <input type="text" id="debt-person" className="input-simple" placeholder={t('money.who')} />
                 </div>
                 <div>
                   <label className="form-label">AMOUNT (৳)</label>
