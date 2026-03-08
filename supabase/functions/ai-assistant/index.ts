@@ -41,14 +41,14 @@ const TOOLS = [
     type: "function",
     function: {
       name: "add_entry",
-      description: "Add a new task, exam, routine period, money transaction, or note.",
+      description: "Add a new task, exam, routine period, money transaction, lend/borrow entry, or note.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["task", "exam", "routine", "transaction", "note"],
-            description: "Which section to add to",
+            enum: ["task", "exam", "routine", "transaction", "debt", "note"],
+            description: "Which section to add to. Use 'debt' for lend/borrow entries.",
           },
           title: { type: "string", description: "Title (for tasks/notes)" },
           subject: { type: "string", description: "Subject name (for exams/routine)" },
@@ -62,10 +62,12 @@ const TOOLS = [
           teacher: { type: "string", description: "Teacher name (exams)" },
           credits: { type: "number", description: "Credits (exams)" },
           examType: { type: "string", description: "Exam type e.g. midterm, final" },
-          amount: { type: "number", description: "Amount for transaction" },
-          description: { type: "string", description: "Description for transaction" },
+          amount: { type: "number", description: "Amount for transaction or debt" },
+          description: { type: "string", description: "Description for transaction or debt" },
           transactionType: { type: "string", enum: ["income", "expense"], description: "Transaction type" },
           content: { type: "string", description: "Content/body text for notes (supports markdown)" },
+          person: { type: "string", description: "Person name for lend/borrow" },
+          debtType: { type: "string", enum: ["lend", "borrow"], description: "Whether user lent or borrowed money" },
         },
         required: ["section"],
         additionalProperties: false,
@@ -76,16 +78,16 @@ const TOOLS = [
     type: "function",
     function: {
       name: "query_data",
-      description: "Query existing tasks, exams, routine, transactions, or notes to answer user questions.",
+      description: "Query existing tasks, exams, routine, transactions, debts (lend/borrow), or notes.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["tasks", "exams", "routine", "transactions", "notes", "all"],
-            description: "Which section to query",
+            enum: ["tasks", "exams", "routine", "transactions", "debts", "notes", "all"],
+            description: "Which section to query. Use 'debts' for lend/borrow entries.",
           },
-          filter: { type: "string", description: "Optional filter like 'today', 'this week', 'high priority', subject name, note title, etc." },
+          filter: { type: "string", description: "Optional filter like 'today', 'this week', 'high priority', person name, subject name, etc." },
         },
         required: ["section"],
         additionalProperties: false,
