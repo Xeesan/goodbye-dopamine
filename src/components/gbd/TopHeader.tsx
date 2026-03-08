@@ -1,6 +1,6 @@
 import { Menu, Bell, User, Calendar, WifiOff, Sun, Moon } from 'lucide-react';
 import { formatDateShort } from '@/lib/helpers';
-import { useState } from 'react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface TopHeaderProps {
