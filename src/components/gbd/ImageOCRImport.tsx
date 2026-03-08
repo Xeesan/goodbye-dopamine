@@ -282,12 +282,7 @@ If you cannot read anything, return an empty array: []`;
         }
         setLoadingMsg('Sending to AI...');
         const base64 = preview.split(',')[1];
-        let items: any[];
-        if (apiConfig.provider === 'gemini') {
-          items = await processOnlineGemini(base64);
-        } else {
-          items = await processOnlineOpenAI(base64);
-        }
+        const items = await processOnlineViaEdge(base64);
         const arr = Array.isArray(items) ? items : [];
         if (arr.length === 0) {
           setError('No data could be extracted. Try a clearer photo.');
