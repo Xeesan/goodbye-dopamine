@@ -10,6 +10,7 @@ interface TopHeaderProps {
 
 const TopHeader = ({ onToggleSidebar, onNavigate }: TopHeaderProps) => {
   const [showNotif, setShowNotif] = useState(false);
+  const isOnline = useOnlineStatus();
 
   return (
     <header className="grid grid-cols-3 items-center px-6 h-[60px] min-h-[60px] relative" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
