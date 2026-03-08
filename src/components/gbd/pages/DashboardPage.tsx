@@ -13,15 +13,15 @@ interface DashboardPageProps {
 }
 
 const ALL_TILES = [
-  { id: 'planner', name: 'Planner', icon: Calendar, color: '#00FF88' },
-  { id: 'routine', name: 'Routine', icon: Clock, color: '#3B82F6' },
-  { id: 'exams', name: 'Exams', icon: FileText, color: '#F59E0B' },
-  { id: 'academic-hub', name: 'Academic', icon: Monitor, color: '#8B5CF6' },
-  { id: 'money', name: 'Money', icon: Wallet, color: '#10B981' },
-  { id: 'notes', name: 'Notes', icon: StickyNote, color: '#EC4899' },
-  { id: 'booklist', name: 'Booklist', icon: BookOpen, color: '#A78BFA' },
-  { id: 'detox', name: 'Detox', icon: Timer, color: '#06B6D4' },
-  { id: 'reports', name: 'Reports', icon: BarChart3, color: '#F97316' },
+  { id: 'planner', name: 'Planner', icon: Calendar, tokenColor: 'var(--green)' },
+  { id: 'routine', name: 'Routine', icon: Clock, tokenColor: 'var(--info)' },
+  { id: 'exams', name: 'Exams', icon: FileText, tokenColor: 'var(--warning)' },
+  { id: 'academic-hub', name: 'Academic', icon: Monitor, tokenColor: 'var(--purple)' },
+  { id: 'money', name: 'Money', icon: Wallet, tokenColor: 'var(--primary)' },
+  { id: 'notes', name: 'Notes', icon: StickyNote, tokenColor: 'var(--pink)' },
+  { id: 'booklist', name: 'Booklist', icon: BookOpen, tokenColor: 'var(--purple)' },
+  { id: 'detox', name: 'Detox', icon: Timer, tokenColor: 'var(--info)' },
+  { id: 'reports', name: 'Reports', icon: BarChart3, tokenColor: 'var(--orange)' },
 ];
 
 const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
