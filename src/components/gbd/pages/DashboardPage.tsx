@@ -81,15 +81,25 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
 
         {/* Daily Inspiration */}
         <div className="glass-card-accent relative overflow-hidden !p-6">
-          <div className="flex items-center gap-2 text-primary text-[0.7rem] font-bold tracking-widest uppercase mb-2">
-            <span className="text-lg">❝</span> DAILY INSPIRATION
-            <button className="ml-2 p-1 hover:bg-muted rounded" onClick={() => setQuote(getRandomQuote())}>
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
+          {/* Silk spinning gradient border */}
+          <div
+            className="absolute inset-0 rounded-[inherit] animate-silk-spin opacity-20 pointer-events-none"
+            style={{
+              background: 'linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary) / 0.4), hsl(var(--primary)))',
+              backgroundSize: '300% 300%',
+            }}
+          />
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 text-primary text-[0.7rem] font-bold tracking-widest uppercase mb-2">
+              <span className="text-lg">❝</span> DAILY INSPIRATION
+              <button className="ml-2 p-1 hover:bg-muted rounded" onClick={() => setQuote(getRandomQuote())}>
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="text-lg font-semibold leading-relaxed text-foreground">"{quote.text}"</div>
+            <div className="text-muted-foreground text-sm mt-2">— {quote.author}</div>
           </div>
-          <div className="text-lg font-semibold leading-relaxed text-foreground">"{quote.text}"</div>
-          <div className="text-muted-foreground text-sm mt-2">— {quote.author}</div>
-          <div className="absolute right-6 top-3 text-5xl opacity-10 text-primary">❞</div>
+          <div className="absolute right-6 top-3 text-5xl opacity-10 text-primary z-10">❞</div>
         </div>
       </div>
 
