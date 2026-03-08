@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
+import { useDialog } from '../DialogProvider';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
 import UnifiedCalendarWidget from '../UnifiedCalendarWidget';
 
@@ -29,6 +30,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const { xp } = useGamification();
+  const { showPrompt } = useDialog();
 
   const refreshQuote = useCallback(() => {
     setSpinning(true);
@@ -118,8 +120,13 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <div className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <BarChart3 className="w-4 h-4" /> QUICK TILES
           </div>
-          <button className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1" onClick={() => {
-            const newTiles = prompt('Enter tile IDs (comma-separated):\nAvailable: planner, routine, exams, academic-hub, money, notes, detox, reports');
+          <button className="btn-outline !py-1.5 !px-3 !text-xs flex items-center gap-1" onClick={async () => {
+            const newTiles = await showPrompt({
+              title: 'Customize Tiles',
+              message: 'Enter tile IDs (comma-separated).\nAvailable: planner, routine, exams, academic-hub, money, notes, detox, reports',
+              placeholder: 'planner, routine, exams, money, notes',
+              defaultValue: Storage.getDashboardTiles().join(', '),
+            });
             if (newTiles) {
               Storage.setDashboardTiles(newTiles.split(',').map(s => s.trim()));
               navigateTo('dashboard');
@@ -151,10 +158,10 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <div className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <Link className="w-4 h-4" /> QUICK ACCESS
           </div>
-          <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={() => {
-            const name = prompt('Link name:');
+          <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={async () => {
+            const name = await showPrompt({ title: 'Add Quick Link', message: 'Enter the link name:', placeholder: 'e.g. Google Classroom' });
             if (!name) return;
-            const url = prompt('URL (include https://):');
+            const url = await showPrompt({ title: 'Link URL', message: 'Enter the URL (include https://):', placeholder: 'https://example.com' });
             if (!url) return;
             Storage.addQuickLink({ name, url });
             navigateTo('dashboard');
