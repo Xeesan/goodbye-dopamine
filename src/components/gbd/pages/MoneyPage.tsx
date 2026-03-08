@@ -380,7 +380,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {/* Also show non-favorited past contacts as subtle chips */}
             {allContactNames.filter(n => !favoriteContacts.includes(n)).length > 0 && (
               <div className="mb-4">
-                <label className="form-label">RECENT CONTACTS</label>
+                <label className="form-label">{t('money.recent_contacts')}</label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {allContactNames.filter(n => !favoriteContacts.includes(n)).map(name => (
                     <button
