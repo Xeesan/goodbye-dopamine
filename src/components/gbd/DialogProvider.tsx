@@ -215,10 +215,10 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
 
       {/* Tile Customizer Dialog */}
       {tileDialog && (
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4" onClick={() => handleTileClose(false)}>
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => handleTileClose(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
           <div
-            className="relative w-full max-w-[420px] rounded-xl overflow-hidden animate-[slideUp_0.2s_ease]"
+            className="relative w-full sm:max-w-[420px] max-h-[85vh] sm:max-h-[90vh] rounded-t-xl sm:rounded-xl overflow-hidden animate-[slideUp_0.2s_ease] flex flex-col"
             style={{
               background: 'hsl(var(--bg-card))',
               border: '1px solid hsl(var(--border))',
@@ -226,10 +226,10 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="h-1" style={{ background: 'hsl(var(--primary))' }} />
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-foreground mb-1">Customize Quick Tiles</h3>
-              <p className="text-sm text-muted-foreground mb-5">Toggle which tiles appear on your dashboard</p>
+            <div className="h-1 shrink-0" style={{ background: 'hsl(var(--primary))' }} />
+            <div className="p-5 sm:p-6 flex flex-col min-h-0">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Customize Quick Tiles</h3>
+              <p className="text-sm text-muted-foreground mb-4">Toggle which tiles appear on your dashboard</p>
 
               <div className="flex flex-col gap-1">
                 {tileDialog.tiles.map(tile => {
