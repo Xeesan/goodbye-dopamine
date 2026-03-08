@@ -69,7 +69,7 @@ const translations = {
   'money.title': { en: 'Money', bn: 'টাকা-পয়সা' },
   'money.subtitle': { en: 'Manage transactions, debts, and savings', bn: 'লেনদেন, ঋণ এবং সঞ্চয় পরিচালনা করুন' },
   'money.transactions': { en: 'TRANSACTIONS', bn: 'লেনদেন' },
-  'money.lend_borrow': { en: 'LEND/BORROW', bn: 'ধার দেওয়া/নেওয়া' },
+  'money.lend_borrow': { en: 'LEND/BORROW', bn: 'দেনা/পাওনা' },
   'money.savings': { en: 'SAVINGS GOALS', bn: 'সঞ্চয় লক্ষ্য' },
   'money.add_transaction': { en: 'Add Transaction', bn: 'লেনদেন যোগ করুন' },
   'money.add_debt': { en: 'Add Debt', bn: 'ধার যোগ করুন' },
