@@ -98,6 +98,7 @@ const Storage = {
     const idx = exams.findIndex(e => String(e.id) === String(exam.id));
     if (idx !== -1) { exams[idx] = exam; this.setExams(exams); }
   },
+  clearExams() { this.setExams([]); },
 
   // Semesters
   getSemesters(): any[] {
