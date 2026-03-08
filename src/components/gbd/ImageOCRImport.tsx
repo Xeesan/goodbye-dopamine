@@ -513,8 +513,8 @@ If you cannot read anything, return an empty array: []`;
                 )}
 
                 {apiConfig.apiKey && (
-                  <div className="flex items-center gap-1.5 text-xs text-green-500">
-                    <Check className="w-3 h-3" /> API key saved locally
+                  <div className="flex items-center gap-1.5 text-xs text-primary">
+                    <Check className="w-3 h-3" /> API key set for this session
                   </div>
                 )}
               </div>
