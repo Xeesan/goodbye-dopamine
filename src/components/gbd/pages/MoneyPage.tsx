@@ -185,8 +185,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Money</h1>
-            <p className="text-muted-foreground text-sm">Manage transactions, debts, and savings</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('money.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('money.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -195,7 +195,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             else if (moneyTab === 'lend') document.getElementById('debt-person')?.focus();
             else document.getElementById('goal-title')?.focus();
           }}>
-            + {moneyTab === 'transactions' ? 'Add Transaction' : moneyTab === 'lend' ? 'Add Debt' : 'Add Goal'}
+            + {moneyTab === 'transactions' ? t('money.add_transaction') : moneyTab === 'lend' ? t('money.add_debt') : t('money.add_goal')}
           </button>
         </div>
       </div>
