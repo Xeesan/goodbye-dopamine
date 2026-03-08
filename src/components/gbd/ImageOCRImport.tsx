@@ -130,12 +130,20 @@ If you cannot read anything, return an empty array: []`;
         systemPrompt: getSystemPrompt(),
       },
     });
-    if (error) {
-      throw new Error(error.message || 'Edge function error');
-    }
-    if (data?.error) {
-      throw new Error(data.error);
-    }
+    if (error) throw new Error(error.message || 'Edge function error');
+    if (data?.error) throw new Error(data.error);
+    return data?.items || [];
+  };
+
+  const processViaLovableAI = async (base64: string): Promise<any[]> => {
+    const { data, error } = await supabase.functions.invoke('ocr-lovable', {
+      body: {
+        base64,
+        systemPrompt: getSystemPrompt(),
+      },
+    });
+    if (error) throw new Error(error.message || 'AI processing error');
+    if (data?.error) throw new Error(data.error);
     return data?.items || [];
   };
 
