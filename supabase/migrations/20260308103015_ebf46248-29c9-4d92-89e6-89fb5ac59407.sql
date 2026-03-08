@@ -1,0 +1,1 @@
+UPDATE public.profiles SET avatar_url = regexp_replace(avatar_url, '^https?://[^/]+/storage/v1/object/public/avatars/', '') WHERE avatar_url LIKE 'https://%/storage/v1/object/public/avatars/%';
