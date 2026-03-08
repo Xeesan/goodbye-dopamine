@@ -146,6 +146,7 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -159,14 +160,12 @@ serve(async (req) => {
       });
     }
 
-    // ── Rate limiting disabled — client-side throttle is sufficient ──
-
     // ── Parse and validate request ──
     const { messages, context, geminiApiKey } = await req.json();
 
     const useCustomGemini = !!geminiApiKey;
 
-    if (!useCustomGemini && !LOVABLE_API_KEY) {
+    if (!useCustomGemini && !LOVABLE_API_KEY && !OPENROUTER_API_KEY) {
       throw new Error("No AI API key configured");
     }
 
@@ -177,7 +176,6 @@ serve(async (req) => {
       });
     }
 
-    // Validate message content length to prevent abuse
     for (const msg of messages) {
       if (typeof msg.content === 'string' && msg.content.length > 5000) {
         return new Response(JSON.stringify({ error: "Message too long (max 5000 chars)" }), {
@@ -187,49 +185,79 @@ serve(async (req) => {
       }
     }
 
-    // Limit message history to last 20 messages
     const trimmedMessages = messages.slice(-20);
 
-    // Inject context about existing data if provided
     let systemContent = SYSTEM_PROMPT;
     if (context) {
       systemContent += `\n\nUser's current data summary:\n${JSON.stringify(context).slice(0, 2000)}`;
     }
 
-    const apiUrl = useCustomGemini
-      ? `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`
-      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const requestBody = JSON.stringify({
+      model: "placeholder",
+      messages: [
+        { role: "system", content: systemContent },
+        ...trimmedMessages,
+      ],
+      tools: TOOLS,
+      stream: true,
+    });
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (useCustomGemini) {
-      headers["Authorization"] = `Bearer ${geminiApiKey}`;
-    } else {
-      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+    // Helper to make an AI call with a specific provider
+    async function callProvider(provider: "custom" | "lovable" | "openrouter") {
+      let apiUrl: string;
+      let authToken: string;
+      let model: string;
+
+      if (provider === "custom") {
+        apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        authToken = geminiApiKey;
+        model = "gemini-2.5-flash";
+      } else if (provider === "lovable") {
+        apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+        authToken = LOVABLE_API_KEY!;
+        model = "google/gemini-3-flash-preview";
+      } else {
+        apiUrl = "https://openrouter.ai/api/v1/chat/completions";
+        authToken = OPENROUTER_API_KEY!;
+        model = "google/gemini-2.5-flash";
+      }
+
+      const body = JSON.parse(requestBody);
+      body.model = model;
+
+      return await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`,
+          ...(provider === "openrouter" ? { "HTTP-Referer": "https://goodbye-dopamine.lovable.app" } : {}),
+        },
+        body: JSON.stringify(body),
+      });
     }
 
-    const model = useCustomGemini ? "gemini-2.5-flash" : "google/gemini-3-flash-preview";
+    // ── Try providers with fallback ──
+    let response: Response;
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemContent },
-          ...trimmedMessages,
-        ],
-        tools: TOOLS,
-        stream: true,
-      }),
-    });
+    if (useCustomGemini) {
+      response = await callProvider("custom");
+    } else if (LOVABLE_API_KEY) {
+      response = await callProvider("lovable");
+      // Fallback to OpenRouter on rate limit
+      if (response.status === 429 && OPENROUTER_API_KEY) {
+        console.log("Lovable AI rate limited, falling back to OpenRouter");
+        response = await callProvider("openrouter");
+      }
+    } else if (OPENROUTER_API_KEY) {
+      response = await callProvider("openrouter");
+    } else {
+      throw new Error("No AI API key configured");
+    }
 
     if (!response.ok) {
       const status = response.status;
       if (status === 429) {
-        const retryMsg = useCustomGemini
-          ? "Google API rate limit reached. Wait a few seconds and try again."
-          : "AI rate limit reached. Please wait a moment and try again.";
-        return new Response(JSON.stringify({ error: retryMsg }), {
+        return new Response(JSON.stringify({ error: "All AI providers are rate limited. Please wait a moment and try again." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "10" },
         });
@@ -241,7 +269,7 @@ serve(async (req) => {
         });
       }
       const t = await response.text();
-      console.error("AI gateway error:", status, t);
+      console.error("AI error:", status, t);
       return new Response(JSON.stringify({ error: "AI service unavailable" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
