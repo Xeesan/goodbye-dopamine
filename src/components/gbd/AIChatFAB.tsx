@@ -48,7 +48,7 @@ function buildContext() {
   }
 }
 
-function executeToolCall(toolCall: ToolCall): string {
+async function executeToolCall(toolCall: ToolCall): Promise<string> {
   try {
     const args = JSON.parse(toolCall.function.arguments);
 
