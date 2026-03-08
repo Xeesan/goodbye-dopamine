@@ -591,8 +591,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
         updateAssistant(toolResultText);
 
-        // Notify parent that data changed (delay to allow DB writes to complete)
-        if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in') || r.includes('Settled'))) {
+        // Notify parent that data changed — always trigger after any tool execution
+        if (onDataChanged) {
           setTimeout(() => onDataChanged(), 800);
         }
       } else if (!assistantContent) {
