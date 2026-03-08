@@ -2,11 +2,18 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 import { useI18n } from '@/hooks/useI18n';
+import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
+
+interface SemesterBudget {
+  totalAmount: number;
+  startDate: string;
+  endDate: string;
+}
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;
@@ -21,6 +28,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [debtSearch, setDebtSearch] = useState('');
   const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
+  const [semesterBudget, setSemesterBudgetState] = useState<SemesterBudget | null>(() => Storage.getSemesterBudget());
+  const [showBudgetSetup, setShowBudgetSetup] = useState(false);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
   const { t } = useI18n();
@@ -226,6 +235,132 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               <div className="text-xl font-bold text-foreground">৳ {balance.toLocaleString()}</div>
             </div>
           </div>
+
+          {/* Semester Budget Widget */}
+          {(() => {
+            if (!semesterBudget) {
+              return (
+                <div className="glass-card mb-6 !p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(var(--primary) / 0.12)' }}>
+                        <Wallet className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">Semester Budget</h3>
+                        <p className="text-xs text-muted-foreground">Set your allowance to track weekly spending</p>
+                      </div>
+                    </div>
+                    <button className="btn-green !text-xs !px-4 !py-2" onClick={() => setShowBudgetSetup(true)}>Set Up</button>
+                  </div>
+                </div>
+              );
+            }
+
+            const now = new Date();
+            const start = parseISO(semesterBudget.startDate);
+            const end = parseISO(semesterBudget.endDate);
+            const totalWeeks = Math.max(1, differenceInWeeks(end, start, { roundingMethod: 'ceil' }));
+            const remainingDays = Math.max(0, differenceInDays(end, now));
+            const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
+            const isActive = now >= start && now <= end;
+
+            // Calculate expenses this week
+            const weekStart = startOfWeek(now, { weekStartsOn: 6 }); // Saturday start (common in BD)
+            const weekEnd = endOfWeek(now, { weekStartsOn: 6 });
+            const thisWeekExpenses = txns
+              .filter((tx: any) => tx.type === 'expense' && (() => {
+                try {
+                  const d = new Date(tx.date);
+                  return isWithinInterval(d, { start: weekStart, end: weekEnd });
+                } catch { return false; }
+              })())
+              .reduce((sum: number, tx: any) => sum + tx.amount, 0);
+
+            // Total spent so far in semester
+            const semesterExpenses = txns
+              .filter((tx: any) => tx.type === 'expense' && (() => {
+                try {
+                  const d = new Date(tx.date);
+                  return d >= start && d <= end;
+                } catch { return false; }
+              })())
+              .reduce((sum: number, tx: any) => sum + tx.amount, 0);
+
+            const remaining = Math.max(0, semesterBudget.totalAmount - semesterExpenses);
+            const weeklyAllowance = isActive ? Math.round(remaining / remainingWeeks) : Math.round(semesterBudget.totalAmount / totalWeeks);
+            const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
+            const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
+            const semesterProgress = semesterBudget.totalAmount > 0 ? Math.min(100, Math.round((semesterExpenses / semesterBudget.totalAmount) * 100)) : 0;
+            const isOverBudget = thisWeekExpenses > weeklyAllowance;
+
+            return (
+              <div className="glass-card mb-6 !p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <Wallet className="w-4.5 h-4.5 text-primary" />
+                    <h3 className="text-sm font-semibold text-foreground">Semester Budget</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowBudgetSetup(true)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <Settings2 className="w-3.5 h-3.5" /> Edit
+                  </button>
+                </div>
+
+                {/* Safe to spend this week */}
+                <div className="rounded-xl p-4 mb-4" style={{ background: isOverBudget ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--primary) / 0.08)' }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Safe to spend this week</span>
+                    <span className="text-[0.65rem] text-muted-foreground">{remainingWeeks}w left</span>
+                  </div>
+                  <div className={`text-2xl font-bold mb-3 ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
+                    ৳{safeToSpend.toLocaleString()}
+                  </div>
+                  <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${weekProgress}%`,
+                        background: isOverBudget
+                          ? 'hsl(var(--destructive))'
+                          : weekProgress > 75
+                            ? 'hsl(38 92% 50%)'
+                            : 'hsl(var(--primary))',
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1.5 text-[0.6rem] text-muted-foreground">
+                    <span>৳{thisWeekExpenses.toLocaleString()} spent</span>
+                    <span>৳{weeklyAllowance.toLocaleString()} / week</span>
+                  </div>
+                </div>
+
+                {/* Semester overview */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                  <span>Semester total</span>
+                  <span>৳{semesterExpenses.toLocaleString()} / ৳{semesterBudget.totalAmount.toLocaleString()}</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border))' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${semesterProgress}%`,
+                      background: semesterProgress > 90 ? 'hsl(var(--destructive))' : 'hsl(var(--primary) / 0.6)',
+                    }}
+                  />
+                </div>
+
+                {!isActive && (
+                  <div className="mt-3 text-[0.65rem] text-muted-foreground flex items-center gap-1.5">
+                    <CalendarDays className="w-3 h-3" />
+                    {now < start ? 'Semester starts ' + semesterBudget.startDate : 'Semester ended'}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           <div className="glass-card min-h-[200px]">
             <h2 className="text-base font-semibold text-foreground mb-5">{t('money.recent_txns')}</h2>
             {txns.length === 0 ? (
@@ -597,6 +732,60 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             <div className="flex gap-3">
               <button className="btn-outline flex-1" onClick={() => setShowTxnModal(false)}>{t('common.cancel')}</button>
               <button className="btn-green flex-1" onClick={addTransaction}>{t('common.add')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBudgetSetup && (
+        <div className="modal-overlay" onClick={() => setShowBudgetSetup(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-foreground mb-1">Semester Budget</h2>
+            <p className="text-xs text-muted-foreground mb-5">Set your total allowance and semester dates to get a weekly spending guide.</p>
+            <label className="form-label">Total Budget (৳)</label>
+            <input type="number" id="budget-total" className="input-simple mb-4" placeholder="e.g. 50000" min={1} defaultValue={semesterBudget?.totalAmount || ''} />
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div>
+                <label className="form-label">Start Date</label>
+                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
+              </div>
+              <div>
+                <label className="form-label">End Date</label>
+                <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              {semesterBudget && (
+                <button className="btn-outline flex-1 !text-destructive" onClick={() => {
+                  Storage.setSemesterBudget(null);
+                  setSemesterBudgetState(null);
+                  setShowBudgetSetup(false);
+                  toast({ title: 'Budget removed' });
+                }}>Remove</button>
+              )}
+              <button className="btn-outline flex-1" onClick={() => setShowBudgetSetup(false)}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={() => {
+                const total = parseFloat((document.getElementById('budget-total') as HTMLInputElement)?.value);
+                const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
+                const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
+                if (!total || total <= 0 || !startDate || !endDate) {
+                  toast({ title: 'Missing info', description: 'Please fill in all fields.', variant: 'destructive' });
+                  return;
+                }
+                if (new Date(endDate) <= new Date(startDate)) {
+                  toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
+                  return;
+                }
+                if (total > 10000000) {
+                  toast({ title: 'Invalid amount', description: 'Budget seems too high.', variant: 'destructive' });
+                  return;
+                }
+                const budget: SemesterBudget = { totalAmount: total, startDate, endDate };
+                Storage.setSemesterBudget(budget);
+                setSemesterBudgetState(budget);
+                setShowBudgetSetup(false);
+                toast({ title: 'Budget saved ✓', description: `৳${total.toLocaleString()} for ${startDate} to ${endDate}` });
+              }}>Save</button>
             </div>
           </div>
         </div>
