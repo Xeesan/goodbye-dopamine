@@ -88,7 +88,35 @@ function executeToolCall(toolCall: ToolCall): string {
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
-      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, or **routine**!';
+      if (section === 'transaction') {
+        if (!args.description || !args.amount) {
+          return '😅 I need at least a **description** and **amount** for the transaction!';
+        }
+        Storage.addTransaction({
+          description: args.description,
+          amount: Math.abs(args.amount),
+          type: args.transactionType || 'expense',
+        });
+        const type = args.transactionType || 'expense';
+        const quips = type === 'income'
+          ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
+          : ['RIP wallet 💸', 'And it\'s gone... 🫠', 'Your wallet felt that 😬'][Math.floor(Math.random() * 3)];
+        return `${quips} **${type === 'income' ? '+' : '-'}${args.amount}** for **${args.description}** recorded!`;
+      }
+
+      if (section === 'note') {
+        if (!args.title && !args.content) {
+          return '😅 I need at least a **title** or some **content** for the note!';
+        }
+        Storage.addNote({
+          title: args.title || 'Untitled Note',
+          content: args.content || '',
+        });
+        const quips = ['Noted! 📝', 'Written down before you forget! 🧠', 'Saved for future you! 📌'][Math.floor(Math.random() * 3)];
+        return `${quips} Note **"${args.title || 'Untitled'}"** saved.`;
+      }
+
+      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, or **note**!';
     }
 
     if (toolCall.function.name === 'query_data') {
