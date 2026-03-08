@@ -51,6 +51,13 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    // Limit payload to ~10MB base64 (prevents abuse)
+    if (base64.length > 10 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max 10MB)" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     if (!systemPrompt || typeof systemPrompt !== "string" || systemPrompt.length > 2000) {
       return new Response(
         JSON.stringify({ error: "Invalid prompt" }),
