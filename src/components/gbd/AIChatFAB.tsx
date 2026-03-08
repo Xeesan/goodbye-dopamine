@@ -466,8 +466,8 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
                 <X className="w-4 h-4" />
               </button>
             </div>
+          </div>
 
-          {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[50vh]">
             {messages.length === 0 && (
               <div className="text-center py-8">
