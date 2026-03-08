@@ -144,7 +144,7 @@ function executeToolCall(toolCall: ToolCall): string {
         if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
         return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
 
-      return '❌ Unknown section to query.';
+      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, or **routine**!';
     }
 
     return '❌ Unknown tool.';
