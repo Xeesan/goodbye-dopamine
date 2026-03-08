@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
-import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2 } from 'lucide-react';
+import { LogOut, ArrowLeft, Save, User, AtSign, Camera, Loader2, Download, Upload, Trash2, CloudDownload } from 'lucide-react';
+import { restoreFromLatestBackup } from '@/lib/autoBackup';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import NotificationToggle from '../NotificationToggle';
