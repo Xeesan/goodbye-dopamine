@@ -433,7 +433,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <div className="rounded-xl p-4" style={{ background: isOverBudget ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--primary) / 0.06)' }}>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-xs font-medium text-muted-foreground">💰 Safe to spend this week</span>
-                      <span className="text-[0.65rem] text-muted-foreground">{remainingWeeks}w left</span>
+                      <span className="text-[0.65rem] text-muted-foreground">{remainingMonths}mo left</span>
                     </div>
                     <div className={`text-2xl font-bold mb-3 ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
                       ৳{safeToSpend.toLocaleString()}
