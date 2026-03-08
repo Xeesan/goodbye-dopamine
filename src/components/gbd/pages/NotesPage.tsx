@@ -144,7 +144,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
 
           {allTags.length > 0 && (
             <div className="mb-4">
-              <div className="flex items-center gap-1.5 text-[0.6rem] font-semibold tracking-widest text-muted-foreground uppercase mb-2">
+              <div className="flex items-center gap-1.5 text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase mb-2">
                 <Hash className="w-3 h-3" /> TAGS
               </div>
               <div className="flex flex-wrap gap-1.5">

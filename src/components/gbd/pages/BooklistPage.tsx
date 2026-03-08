@@ -238,12 +238,12 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                     <h3 className="text-sm font-semibold text-foreground truncate">{book.title}</h3>
                     {book.author && <p className="text-xs text-muted-foreground truncate mt-0.5">by {book.author}</p>}
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <span className="text-[0.6rem] font-semibold px-2 py-0.5 rounded" style={{
+                      <span className="text-[0.65rem] font-semibold px-2 py-0.5 rounded" style={{
                         background: 'hsl(var(--purple) / 0.1)',
                         color: 'hsl(var(--purple))',
                       }}>{book.genre || 'General'}</span>
                       {book.rating > 0 && <StarRating rating={book.rating} onChange={() => {}} />}
-                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
+                      {book.pages > 0 && <span className="text-[0.65rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
                     </div>
                     {book.pages > 0 && book.status === 'reading' && (
                       <div className="mt-2">
