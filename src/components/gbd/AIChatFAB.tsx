@@ -29,6 +29,7 @@ function buildContext() {
     const routine = Storage.getRoutine();
     const transactions = Storage.getTransactions().slice(-10);
     const notes = Storage.getNotes().slice(0, 10);
+    const debts = Storage.getDebts().filter((d: any) => !d.settled);
     const routineSummary: Record<string, number> = {};
     for (const [day, periods] of Object.entries(routine)) {
       routineSummary[day] = (periods as any[]).length;
@@ -43,6 +44,8 @@ function buildContext() {
       recentTransactions: transactions.map((t: any) => ({ id: t.id, description: t.description, amount: t.amount, type: t.type })),
       noteCount: notes.length,
       notes: notes.map((n: any) => ({ id: n.id, title: n.title, preview: n.content?.slice(0, 50) })),
+      debtCount: debts.length,
+      debts: debts.map((d: any) => ({ id: d.id, person: d.person, amount: d.amount, debtType: d.debtType || d.debt_type, description: d.description })),
     };
   } catch {
     return {};
