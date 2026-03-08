@@ -1,4 +1,4 @@
-import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, Timer, Heart, BarChart3, Settings, LogOut, User } from 'lucide-react';
+import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: string;

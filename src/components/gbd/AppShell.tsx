@@ -41,6 +41,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'academic-hub': return <AcademicHubPage {...props} />;
       case 'money': return <MoneyPage {...props} />;
       case 'notes': return <NotesPage {...props} />;
+      case 'booklist': return <BooklistPage {...props} />;
       case 'detox': return <DetoxPage {...props} />;
       case 'health': return <HealthPage {...props} />;
       case 'reports': return <ReportsPage {...props} />;

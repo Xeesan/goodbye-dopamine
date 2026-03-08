@@ -16,6 +16,7 @@ const ALL_TILES = [
   { id: 'academic-hub', name: 'Academic', icon: Monitor, color: '#8B5CF6' },
   { id: 'money', name: 'Money', icon: Wallet, color: '#10B981' },
   { id: 'notes', name: 'Notes', icon: StickyNote, color: '#EC4899' },
+  { id: 'booklist', name: 'Booklist', icon: BookOpen, color: '#A78BFA' },
   { id: 'detox', name: 'Detox', icon: Timer, color: '#06B6D4' },
   { id: 'reports', name: 'Reports', icon: BarChart3, color: '#F97316' },
 ];
