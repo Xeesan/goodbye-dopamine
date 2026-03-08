@@ -324,7 +324,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                         {p.net > 0 ? `+৳${p.net.toLocaleString()}` : p.net < 0 ? `-৳${Math.abs(p.net).toLocaleString()}` : '৳0'}
                       </div>
                       <div className="text-[0.6rem] text-muted-foreground">
-                        {p.net > 0 ? 'They owe you' : p.net < 0 ? 'You owe them' : 'Even ✓'}
+                        {p.net > 0 ? t('money.they_owe_you') : p.net < 0 ? t('money.you_owe_them') : t('money.even')}
                       </div>
                     </div>
                   </div>
