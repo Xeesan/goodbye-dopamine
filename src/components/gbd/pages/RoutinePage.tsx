@@ -19,7 +19,7 @@ interface RoutinePageProps {
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const DAY_KEYS: TranslationKey[] = ['day.monday', 'day.tuesday', 'day.wednesday', 'day.thursday', 'day.friday', 'day.saturday', 'day.sunday'];
 
-const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
+const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -30,7 +30,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
 
   useEffect(() => {
     syncRoutineFromDB().then(() => refresh());
-  }, []);
+  }, [refreshKey]);
 
   // Pre-fill day from calendar quick-add
   useEffect(() => {

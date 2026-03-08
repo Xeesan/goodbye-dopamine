@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft, Hash, Eye, Pencil } from 'lucide-react';
@@ -30,7 +30,7 @@ const getAllTags = (notes: any[]): string[] => {
   return Array.from(tagSet).sort();
 };
 
-const NotesPage = ({ navigateTo }: NotesPageProps) => {
+const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
   const [category, setCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,6 +42,9 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
   const { t } = useI18n();
+
+  // Re-read localStorage when AI adds entries
+  useEffect(() => { setNotes(Storage.getNotes()); }, [refreshKey]);
 
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
