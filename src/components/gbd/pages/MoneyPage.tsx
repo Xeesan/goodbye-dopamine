@@ -129,6 +129,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Delete Debt', message: 'Are you sure you want to delete this debt record?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteDebt(id);
+      deleteDebtFromDB(id);
       refresh();
       toast({ title: 'Debt deleted', description: debt?.person || '' });
     }
