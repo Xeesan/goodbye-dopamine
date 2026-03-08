@@ -389,8 +389,15 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       )}
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const amt = Math.min(monthlyInstallment, feeRemaining);
+                        const confirmed = await showDialog({
+                          title: 'Confirm Payment',
+                          message: `Record installment #${nextInstallmentNumber} of ৳${amt.toLocaleString()} as paid?`,
+                          type: 'confirm',
+                          confirmText: 'Yes, Paid'
+                        });
+                        if (!confirmed) return;
                         const newInst: Installment = {
                           id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
                           amount: amt,
