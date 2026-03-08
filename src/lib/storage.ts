@@ -320,7 +320,15 @@ const Storage = {
 
   // Import data from JSON string, merges/overwrites
   importAllData(jsonString: string) {
-    const data = JSON.parse(jsonString);
+    let data: Record<string, any>;
+    try {
+      data = JSON.parse(jsonString);
+    } catch {
+      throw new Error('Invalid JSON format');
+    }
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+      throw new Error('Invalid backup format');
+    }
     for (const [key, value] of Object.entries(data)) {
       if (key.startsWith('gbd_')) {
         localStorage.setItem(key, JSON.stringify(value));
