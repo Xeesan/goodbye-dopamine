@@ -70,6 +70,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
           </div>
         </main>
       </div>
+      <InstallPrompt />
     </DialogProvider>
   );
 };
