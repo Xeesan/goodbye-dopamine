@@ -118,6 +118,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
     if (confirmed) {
       Storage.settleDebt(id);
+      settleDebtInDB(id);
       refresh();
       toast({ title: 'Debt settled ✓', description: `${debt?.person} — ৳${debt?.amount}` });
     }
