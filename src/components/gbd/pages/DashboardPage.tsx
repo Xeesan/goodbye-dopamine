@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
+import { supabase } from '@/integrations/supabase/client';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
 import { levelProgress, levelTitle } from '@/lib/leveling';
@@ -8,6 +9,7 @@ import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target, SkipForward } from 'lucide-react';
 import FocusNowOverlay, { getRankedTasks, type FocusTask } from '../FocusNowOverlay';
+import { syncExamsFromDB } from '@/lib/dbSync';
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
