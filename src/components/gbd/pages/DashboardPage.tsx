@@ -29,7 +29,7 @@ const ALL_TILES = [
   { id: 'reports', nameKey: 'tile.reports', icon: BarChart3, tokenColor: 'var(--orange)' },
 ];
 
-const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
+const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => {
   const { t, lang } = useI18n();
   const [quote, setQuote] = useState(() => getDailyQuote());
   const [quoteKey, setQuoteKey] = useState(0);
@@ -39,14 +39,33 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [focusDuration, setFocusDuration] = useState<number | null>(null);
   const [focusTask, setFocusTask] = useState<FocusTask | null>(null);
   const [skipIndex, setSkipIndex] = useState(0);
+  const [realtimeTick, setRealtimeTick] = useState(0);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
   useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
 
-  // Compute ranked tasks for Focus Now
-  const rankedTasks = getRankedTasks();
+  // Sync exams from DB on mount and when refreshKey changes
+  useEffect(() => {
+    syncExamsFromDB().then(() => setRealtimeTick(t => t + 1)).catch(() => {});
+  }, [refreshKey]);
+
+  // Subscribe to realtime changes on user_exams
+  useEffect(() => {
+    const channel = supabase
+      .channel('focus-exams-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_exams' }, (payload) => {
+        // Re-sync from DB when any exam changes
+        syncExamsFromDB().then(() => setRealtimeTick(t => t + 1)).catch(() => {});
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Compute ranked tasks for Focus Now (reactive to refreshKey + realtime)
+  const rankedTasks = useMemo(() => getRankedTasks(), [refreshKey, realtimeTick]);
   const safeIndex = rankedTasks.length > 0 ? skipIndex % rankedTasks.length : 0;
   const urgentTask = rankedTasks.length > 0 ? rankedTasks[safeIndex] : null;
 
