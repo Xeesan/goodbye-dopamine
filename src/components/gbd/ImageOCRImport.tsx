@@ -357,14 +357,9 @@ If you cannot read anything, return an empty array: []`;
           setResults(arr);
         }
       } else {
-        setLoadingMsg('Loading OCR engine...');
-        const { data: { text } } = await Tesseract.recognize(preview, 'eng', {
-          logger: (m) => {
-            if (m.status === 'recognizing text') {
-              setLoadingMsg(`Recognizing... ${Math.round((m.progress || 0) * 100)}%`);
-            }
-          },
-        });
+        setLoadingMsg('Preprocessing image...');
+        const text = await recognizeImage(preview);
+        setLoadingMsg('Parsing results...');
         if (!text.trim()) {
           setError('No text could be extracted. Try a clearer, well-lit photo.');
           return;
