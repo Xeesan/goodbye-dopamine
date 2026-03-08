@@ -111,12 +111,9 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       <div className="w-full max-w-[440px] animate-[slideUp_0.5s_ease]" onKeyDown={handleKeyDown}>
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
+          <img src={appIcon} alt="GBD" className="w-16 h-16 rounded-2xl mx-auto mb-4" style={{
             boxShadow: '0 8px 32px hsl(var(--primary) / 0.3)',
-          }}>
-            <Sparkles className="w-8 h-8 text-black" />
-          </div>
+          }} />
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">GBD</h1>
           <p className="text-muted-foreground text-sm mt-1">Good Bye Dopamine</p>
         </div>
