@@ -88,12 +88,13 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
       return;
     }
     const pages = parseInt((document.getElementById('book-pages') as HTMLInputElement)?.value) || 0;
+    const currentPage = parseInt((document.getElementById('book-current-page') as HTMLInputElement)?.value) || 0;
     const notes = (document.getElementById('book-notes') as HTMLTextAreaElement)?.value.trim();
 
     if (editingId) {
-      Storage.updateBook(editingId, { title, author, genre: newGenre, pages, rating: newRating, notes, status: newStatus });
+      Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
     } else {
-      Storage.addBook({ title, author, genre: newGenre, pages, rating: newRating, notes, status: newStatus });
+      Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
       Storage.addXP(10);
     }
     setShowModal(false);
