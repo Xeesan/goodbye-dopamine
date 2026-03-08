@@ -5,13 +5,12 @@ import { useGamification } from '@/hooks/useGamification';
 import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
-import UnifiedCalendarWidget from '../UnifiedCalendarWidget';
+
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
   user: any;
   refreshKey: number;
-  calendarOpen?: boolean;
 }
 
 const ALL_TILES = [
@@ -26,7 +25,7 @@ const ALL_TILES = [
   { id: 'reports', name: 'Reports', icon: BarChart3, tokenColor: 'var(--orange)' },
 ];
 
-const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
+const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -67,12 +66,6 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         </button>
       </div>
 
-      {/* Calendar — hidden by default, toggled from header date */}
-      {calendarOpen && (
-        <div className="mb-5 animate-[slideUp_0.2s_ease]">
-          <UnifiedCalendarWidget navigateTo={navigateTo} />
-        </div>
-      )}
 
       {/* Level Progress (togglable) + Daily Inspiration side by side */}
       <div className={`grid grid-cols-1 ${showXpBadge ? 'lg:grid-cols-2' : ''} gap-4 mb-5`}>

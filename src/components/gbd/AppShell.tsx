@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
+import UnifiedCalendarWidget from './UnifiedCalendarWidget';
 import TopHeader from './TopHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
@@ -46,7 +47,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const renderPage = () => {
     const props = { navigateTo, refreshKey };
     switch (currentPage) {
-      case 'dashboard': return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
+      case 'dashboard': return <DashboardPage {...props} user={user} />;
       case 'planner': return <PlannerPage {...props} />;
       case 'routine': return <RoutinePage {...props} />;
       case 'exams': return <ExamsPage {...props} />;
@@ -59,7 +60,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'reports': return <ReportsPage {...props} />;
       case 'notifications': return <NotificationsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
-      default: return <DashboardPage {...props} user={user} calendarOpen={calendarOpen} />;
+      default: return <DashboardPage {...props} user={user} />;
     }
   };
 
@@ -88,6 +89,11 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
             />
             <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8" key={refreshKey}>
               <div className="max-w-[1200px] mx-auto w-full">
+                {calendarOpen && (
+                  <div className="mb-5 animate-[slideUp_0.2s_ease]">
+                    <UnifiedCalendarWidget navigateTo={navigateTo} />
+                  </div>
+                )}
                 {renderPage()}
               </div>
             </div>
