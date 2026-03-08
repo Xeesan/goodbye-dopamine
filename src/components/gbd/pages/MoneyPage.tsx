@@ -415,7 +415,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 <input type="text" id="debt-description" className="input-simple" placeholder={t('money.what_for')} />
               </div>
               <div>
-                <label className="form-label">DATE</label>
+                <label className="form-label">{t('money.date')}</label>
                 <input type="date" id="debt-date" className="input-simple max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
               </div>
             </div>
