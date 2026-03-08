@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;
@@ -15,6 +16,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
@@ -35,7 +37,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
-    Storage.addXP(5);
+    addXP(5);
     setShowTxnModal(false);
     navigateTo('money');
   };
@@ -50,7 +52,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
-    Storage.addXP(5);
+    addXP(5);
     navigateTo('money');
   };
 
@@ -64,7 +66,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const initialAmount = parseFloat((document.getElementById('goal-initial') as HTMLInputElement)?.value) || 0;
     const targetDate = (document.getElementById('goal-date') as HTMLInputElement)?.value;
     Storage.addSavingsGoal({ title, targetAmount, initialAmount, targetDate });
-    Storage.addXP(10);
+    addXP(10);
     navigateTo('money');
   };
 

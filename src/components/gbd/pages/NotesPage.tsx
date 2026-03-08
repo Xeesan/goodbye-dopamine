@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface NotesPageProps {
   navigateTo: (page: string) => void;
@@ -19,6 +20,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [notes, setNotes] = useState(Storage.getNotes());
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const refresh = () => setNotes(Storage.getNotes());
 
@@ -45,7 +47,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
       Storage.updateNote(editingId, { title, content, category: cat });
     } else {
       Storage.addNote({ title, content, category: cat });
-      Storage.addXP(10);
+      addXP(10);
     }
     setShowModal(false);
     setEditingId(null);

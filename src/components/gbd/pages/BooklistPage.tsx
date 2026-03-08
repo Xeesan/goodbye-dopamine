@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Book, BookOpen, Bookmark, CheckCircle, Search, X, Trash2, Edit, Star, Plus, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface BooklistPageProps {
   navigateTo: (page: string) => void;
@@ -41,6 +42,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   const [newGenre, setNewGenre] = useState('Fiction');
   const [newStatus, setNewStatus] = useState('reading');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const refresh = () => setBooks(Storage.getBooks());
 
@@ -95,7 +97,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
       Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
     } else {
       Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
-      Storage.addXP(10);
+      addXP(10);
     }
     setShowModal(false);
     setEditingId(null);
@@ -116,7 +118,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     const updates: any = { status };
     if (status === 'finished' && book?.pages) updates.currentPage = book.pages;
     Storage.updateBook(id, updates);
-    if (status === 'finished') Storage.addXP(25);
+    if (status === 'finished') addXP(25);
     refresh();
   };
 

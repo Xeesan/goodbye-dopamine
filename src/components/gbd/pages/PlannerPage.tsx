@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { Search, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface PlannerPageProps {
   navigateTo: (page: string) => void;
@@ -11,6 +12,7 @@ interface PlannerPageProps {
 const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const [priority, setPriority] = useState('medium');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const tasks = Storage.getTasks();
   const todoTasks = tasks.filter(t => t.status === 'todo');
   const inProgressTasks = tasks.filter(t => t.status === 'in-progress');
@@ -26,13 +28,13 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
     const time = (document.getElementById('task-time') as HTMLInputElement)?.value;
     const reminder = (document.getElementById('task-reminder') as HTMLSelectElement)?.value;
     Storage.addTask({ title, date, time, priority, reminder });
-    Storage.addXP(10);
+    addXP(10);
     navigateTo('planner');
   };
 
   const moveTask = (id: string, status: string) => {
     Storage.updateTask(id, { status });
-    if (status === 'done') Storage.addXP(20);
+    if (status === 'done') addXP(20);
     navigateTo('planner');
   };
 

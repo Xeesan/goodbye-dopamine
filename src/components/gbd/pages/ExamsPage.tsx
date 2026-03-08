@@ -4,6 +4,7 @@ import { formatDate, formatTime12h } from '@/lib/helpers';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
@@ -30,6 +31,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const [examTab, setExamTab] = useState('exams');
   const [editingId, setEditingId] = useState<string | null>(null);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))
@@ -60,7 +62,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
       setEditingId(null);
     } else {
       Storage.addExam(examData);
-      Storage.addXP(15);
+      addXP(15);
     }
     navigateTo('exams');
   };
@@ -87,7 +89,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         type: examTab,
       });
     });
-    Storage.addXP(items.length * 15);
+    addXP(items.length * 15);
     navigateTo('exams');
   };
 

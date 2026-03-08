@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface AcademicHubPageProps {
   navigateTo: (page: string) => void;
@@ -32,7 +33,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
   const [showAddCourse, setShowAddCourse] = useState<string | null>(null);
   const [showAddSemester, setShowAddSemester] = useState(false);
   const { showDialog } = useDialog();
-
+  const { addXP } = useGamification();
   const [calcCourses, setCalcCourses] = useState<{ name: string; grade: string; credits: number }[]>([
     { name: '', grade: 'A', credits: 3 },
   ]);
@@ -84,7 +85,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     }
     const gpa = GRADE_MAP[grade] ?? 0;
     Storage.addCourse(semId, { name, grade, gpa, credits });
-    Storage.addXP(10);
+    addXP(10);
     refresh();
     setShowAddCourse(null);
   };

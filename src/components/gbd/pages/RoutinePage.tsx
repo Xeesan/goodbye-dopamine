@@ -4,6 +4,7 @@ import { getCurrentDayName } from '@/lib/helpers';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
@@ -17,6 +18,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
@@ -30,7 +32,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
     const endTime = (document.getElementById('period-end') as HTMLInputElement)?.value;
     const room = (document.getElementById('period-room') as HTMLInputElement)?.value.trim();
     Storage.addPeriod(selectedDay, { subject, startTime, endTime, room });
-    Storage.addXP(5);
+    addXP(5);
     setShowModal(false);
     navigateTo('routine');
   };
@@ -50,7 +52,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         Storage.addPeriod(day, { subject: item.subject || 'Unknown', startTime: item.startTime || '09:00', endTime: item.endTime || '10:00', room: item.room || '' });
       }
     });
-    Storage.addXP(items.length * 5);
+    addXP(items.length * 5);
     navigateTo('routine');
   };
 

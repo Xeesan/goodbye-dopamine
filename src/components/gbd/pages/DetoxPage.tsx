@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Play, Square, Shield, Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
 
 interface DetoxPageProps {
   navigateTo: (page: string) => void;
@@ -45,6 +46,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const audioNodesRef = useRef<any[]>([]);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const sessions = Storage.getFocusSessions();
   const totalMin = sessions.reduce((sum: number, s: any) => sum + (s.duration || 0), 0);
@@ -113,7 +115,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
           const durMin = Math.floor((Date.now() - startTimeRef.current) / 60000);
           if (durMin > 0) {
             Storage.addFocusSession({ date: new Date().toISOString(), duration: durMin });
-            Storage.addXP(Math.max(5, durMin));
+            addXP(Math.max(5, durMin));
           }
           stopSound();
           setFocusActive(false);
@@ -132,7 +134,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
       const durMin = Math.floor((Date.now() - startTimeRef.current) / 60000);
       if (durMin > 0) {
         Storage.addFocusSession({ date: new Date().toISOString(), duration: durMin });
-        Storage.addXP(Math.max(5, durMin));
+        addXP(Math.max(5, durMin));
       }
     }
     setFocusActive(false);

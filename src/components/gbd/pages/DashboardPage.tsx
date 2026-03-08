@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
+import { useGamification } from '@/hooks/useGamification';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -23,7 +24,7 @@ const ALL_TILES = [
 
 const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [quote, setQuote] = useState(getDailyQuote());
-  const xp = Storage.getXP();
+  const { xp } = useGamification();
   const tasks = Storage.getTasks();
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const sessions = Storage.getFocusSessions();
