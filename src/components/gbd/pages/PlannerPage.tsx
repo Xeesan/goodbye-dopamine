@@ -12,6 +12,7 @@ interface PlannerPageProps {
 const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const [priority, setPriority] = useState('medium');
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const tasks = Storage.getTasks();
   const todoTasks = tasks.filter(t => t.status === 'todo');
   const inProgressTasks = tasks.filter(t => t.status === 'in-progress');
