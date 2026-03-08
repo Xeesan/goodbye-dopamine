@@ -122,7 +122,24 @@ function executeToolCall(toolCall: ToolCall): string {
         return `${quips} Note **"${args.title || 'Untitled'}"** saved.`;
       }
 
-      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, or **note**!';
+      if (section === 'debt') {
+        if (!args.person || !args.amount) {
+          return '😅 I need at least a **person** name and **amount** for the lend/borrow entry!';
+        }
+        const debtType = args.debtType || 'lend';
+        Storage.addDebt({
+          person: args.person,
+          amount: Math.abs(args.amount),
+          debt_type: debtType,
+          description: args.description || '',
+        });
+        const quips = debtType === 'lend'
+          ? ['Money out the door! 🚪', 'Generous king/queen! 👑', 'Hope they pay you back fr 🤞'][Math.floor(Math.random() * 3)]
+          : ['IOU noted! 📋', 'Debt recorded, no escaping this one 😤', 'Borrowed and tracked! 🔍'][Math.floor(Math.random() * 3)];
+        return `${quips} **${debtType === 'lend' ? 'Lent' : 'Borrowed'} ${args.amount}** ${debtType === 'lend' ? 'to' : 'from'} **${args.person}**${args.description ? ` — ${args.description}` : ''}`;
+      }
+
+      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
     }
 
     if (toolCall.function.name === 'query_data') {
