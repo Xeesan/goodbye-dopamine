@@ -18,10 +18,10 @@ interface Installment {
 interface SemesterBudget {
   totalFee: number;
   monthlyInstallment: number;
+  semesterMonths: number; // e.g. 4, 6
   startDate: string;
-  endDate: string;
   installments: Installment[];
-  livingBudget: number; // monthly living/spending budget
+  livingBudget: number;
 }
 
 interface MoneyPageProps {
