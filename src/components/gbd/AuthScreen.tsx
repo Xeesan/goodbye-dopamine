@@ -16,8 +16,9 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval>>();
 
+  const cooldownActive = resendCooldown > 0;
   useEffect(() => {
-    if (resendCooldown <= 0) {
+    if (!cooldownActive) {
       clearInterval(cooldownRef.current);
       return;
     }
@@ -28,7 +29,7 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
       });
     }, 1000);
     return () => clearInterval(cooldownRef.current);
-  }, [resendCooldown > 0]);
+  }, [cooldownActive]);
 
   const showToast = (msg: string, type: 'error' | 'success' = 'error') => {
     setToast({ msg, type });
