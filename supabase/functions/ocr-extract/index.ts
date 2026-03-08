@@ -51,6 +51,13 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    // Limit payload to ~10MB base64 (prevents abuse)
+    if (base64.length > 10 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max 10MB)" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     if (!systemPrompt || typeof systemPrompt !== "string" || systemPrompt.length > 2000) {
       return new Response(
         JSON.stringify({ error: "Invalid prompt" }),
@@ -61,6 +68,13 @@ Deno.serve(async (req) => {
     let result: string;
 
     if (provider === "gemini") {
+      // Validate model name to prevent path injection
+      if (!model || typeof model !== "string" || !/^[a-zA-Z0-9._-]+$/.test(model)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid model name" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const allowedEndpoint = "https://generativelanguage.googleapis.com/v1beta";
       const url = `${allowedEndpoint}/models/${encodeURIComponent(model)}:generateContent`;
       const res = await fetch(url, {
