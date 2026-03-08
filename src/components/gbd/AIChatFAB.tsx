@@ -161,10 +161,10 @@ function executeToolCall(toolCall: ToolCall): string {
           tasks = tasks.filter((t: any) => t.status !== 'done');
         }
         const summary = tasks.slice(0, 10).map((t: any) =>
-          `• **${t.title}**${t.date ? ` (${t.date})` : ''} — ${t.priority || 'medium'} priority, ${t.status}`
+          `- **${t.title}**${t.date ? ` · ${t.date}` : ''} · _${t.priority || 'medium'}_ · ${t.status}`
         ).join('\n');
         if (tasks.length === 0) return '✨ Your task list is squeaky clean! Either you\'re super productive or in denial 😄';
-        return `📋 You\'ve got **${tasks.length} task${tasks.length > 1 ? 's' : ''}** on deck:\n${summary}`;
+        return `📋 **${tasks.length} task${tasks.length > 1 ? 's' : ''}** on deck:\n\n${summary}`;
       }
 
       if (section === 'exams' || section === 'all') {
@@ -175,10 +175,10 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = exams.slice(0, 10).map((e: any) =>
-          `• **${e.subject}** — ${e.date} ${e.time || ''}`
+          `- **${e.subject}** · ${e.date} ${e.time || ''}`
         ).join('\n');
-        if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet... 👀';
-        return `📝 You\'ve got **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n${summary}\n\nTime to hit the books! 📖`;
+        if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet… 👀';
+        return `📝 **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n\n${summary}\n\nTime to hit the books! 📖`;
       }
 
       if (section === 'routine') {
@@ -189,11 +189,11 @@ function executeToolCall(toolCall: ToolCall): string {
         for (const day of days) {
           const periods = routine[day] || [];
           if (periods.length > 0) {
-            summary += `**${day}**: ${periods.map((p: any) => `${p.subject} (${p.startTime}-${p.endTime})`).join(', ')}\n`;
+            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${p.startTime}–${p.endTime}`).join('\n')}\n\n`;
           }
         }
         if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
-        return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
+        return `🗓️ **Your routine:**\n\n${summary}Stay consistent! 💯`;
       }
 
       if (section === 'transactions' || section === 'all') {
@@ -205,12 +205,12 @@ function executeToolCall(toolCall: ToolCall): string {
         }
         const recent = txns.slice(-10).reverse();
         const summary = recent.map((t: any) =>
-          `• ${t.type === 'income' ? '💚' : '🔴'} **${t.description}** — ${t.type === 'income' ? '+' : '-'}${t.amount}`
+          `- ${t.type === 'income' ? '💚' : '🔴'} **${t.description}** → ${t.type === 'income' ? '+' : '-'}${t.amount}`
         ).join('\n');
         if (txns.length === 0) return '💰 No transactions yet! Your wallet is a mystery to me 👀';
         const totalIncome = txns.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
         const totalExpense = txns.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + Number(t.amount), 0);
-        return `💰 **${txns.length} transaction${txns.length > 1 ? 's' : ''}** total (Income: **+${totalIncome}**, Expenses: **-${totalExpense}**, Net: **${totalIncome - totalExpense}**):\n${summary}`;
+        return `💰 **${txns.length} transaction${txns.length > 1 ? 's' : ''}**\n\n> Income: **+${totalIncome}** · Expenses: **-${totalExpense}** · Net: **${totalIncome - totalExpense}**\n\n${summary}`;
       }
 
       if (section === 'notes' || section === 'all') {
@@ -221,10 +221,10 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = notes.slice(0, 10).map((n: any) =>
-          `• **${n.title}**${n.content ? ` — ${n.content.slice(0, 50)}${n.content.length > 50 ? '...' : ''}` : ''}`
+          `- **${n.title}**${n.content ? ` — _${n.content.slice(0, 40)}${n.content.length > 40 ? '…' : ''}_` : ''}`
         ).join('\n');
         if (notes.length === 0) return '📝 No notes found! Your brain is either empty or you haven\'t written things down yet 😄';
-        return `📝 You\'ve got **${notes.length} note${notes.length > 1 ? 's' : ''}**:\n${summary}`;
+        return `📝 **${notes.length} note${notes.length > 1 ? 's' : ''}:**\n\n${summary}`;
       }
 
       if (section === 'debts' || section === 'all') {
@@ -235,12 +235,12 @@ function executeToolCall(toolCall: ToolCall): string {
           );
         }
         const summary = debts.slice(0, 10).map((d: any) =>
-          `• ${d.debt_type === 'lend' ? '🟢 Lent' : '🔴 Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — ${d.description}` : ''}`
+          `- ${d.debt_type === 'lend' ? '🟢' : '🔴'} ${d.debt_type === 'lend' ? 'Lent' : 'Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — _${d.description}_` : ''}`
         ).join('\n');
         if (debts.length === 0) return '✨ No outstanding debts! You\'re either debt-free or haven\'t tracked any yet 🎉';
         const totalLent = debts.filter((d: any) => d.debt_type === 'lend').reduce((s: number, d: any) => s + Number(d.amount), 0);
         const totalBorrowed = debts.filter((d: any) => d.debt_type === 'borrow').reduce((s: number, d: any) => s + Number(d.amount), 0);
-        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}** (Lent: **${totalLent}**, Borrowed: **${totalBorrowed}**, Net: **${totalLent - totalBorrowed}**):\n${summary}`;
+        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}**\n\n> Lent: **${totalLent}** · Borrowed: **${totalBorrowed}** · Net: **${totalLent - totalBorrowed}**\n\n${summary}`;
       }
 
       return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
@@ -468,7 +468,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
                     : { background: 'hsl(var(--muted))' }
                   }>
                   {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p+p]:mt-1.5 [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&_li]:my-0.5 [&_blockquote]:my-1.5 [&_blockquote]:px-2.5 [&_blockquote]:py-1 [&_blockquote]:rounded-lg [&_blockquote]:text-xs [&_blockquote]:not-italic [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
