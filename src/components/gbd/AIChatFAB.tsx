@@ -361,6 +361,28 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **transaction**, **debt**, or **note**!';
     }
 
+    if (toolCall.function.name === 'settle_debt') {
+      const { person } = args;
+      if (!person) return '😅 I need to know **whose** debt to settle!';
+
+      const personLower = person.toLowerCase();
+      const debts = Storage.getDebts();
+      const matches = personLower === 'all'
+        ? debts.filter((d: any) => !d.settled)
+        : debts.filter((d: any) => !d.settled && d.person?.toLowerCase().includes(personLower));
+
+      if (matches.length === 0) return `🤔 No unsettled debts found for **"${person}"**.`;
+
+      for (const m of matches) {
+        Storage.settleDebt(m.id);
+        await settleDebtInDB(m.id);
+      }
+
+      const totalAmount = matches.reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
+      const quips = ['Debt-free era! 🎉', 'Clean slate! ✨', 'That\'s what we like to see! 🤝', 'Money matters handled! 💯'][Math.floor(Math.random() * 4)];
+      return `${quips} Settled **${matches.length}** debt${matches.length > 1 ? 's' : ''} with **${matches[0]?.person || person}** (total: ৳${totalAmount}).`;
+    }
+
     return '🤔 Hmm, that one went over my head. Try again?';
   } catch (e) {
     console.error('Tool execution error:', e);
