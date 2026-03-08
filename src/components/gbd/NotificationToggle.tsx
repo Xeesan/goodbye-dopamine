@@ -54,7 +54,7 @@ const NotificationToggle = () => {
           {permission === 'denied'
             ? 'Blocked by browser — enable in site settings'
             : subscribed
-              ? 'You'll receive task reminders even when the app is closed'
+              ? "You'll receive task reminders even when the app is closed"
               : 'Get reminded about upcoming tasks'}
         </div>
       </div>
