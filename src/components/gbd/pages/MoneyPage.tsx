@@ -453,43 +453,56 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               </div>
             ) : people.map(p => (
               <div key={p.name} className="mb-5 last:mb-0">
-                <div className="flex items-center justify-between mb-2 px-1">
+                <div className="flex items-center justify-between mb-2.5 px-1">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-bold"
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[0.65rem] font-bold shrink-0"
                       style={{
                         background: p.net > 0 ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--destructive) / 0.15)',
                         color: p.net > 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'
                       }}>
                       {p.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-xs font-semibold text-foreground">{p.name}</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.net > 0 ? 'text-primary' : 'text-destructive'}`}
-                      style={{ background: p.net > 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)' }}>
+                    <span className="text-sm font-semibold text-foreground">{p.name}</span>
+                    <span className={`text-[0.65rem] font-bold px-2.5 py-1 rounded-full ${p.net > 0 ? 'text-primary' : 'text-destructive'}`}
+                      style={{ background: p.net > 0 ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--destructive) / 0.12)' }}>
                       {p.net > 0 ? '+' : '-'}৳{Math.abs(p.net).toLocaleString()}
                     </span>
                   </div>
                   {p.debts.length > 1 && (
                     <button
                       onClick={() => settleAllForPerson(p.name, p.debts)}
-                      className="btn-outline !py-1 !px-2.5 !text-[0.65rem] !font-semibold !text-primary !rounded-lg flex items-center gap-1">
-                      ✓ Settle All
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
+                      style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      Settle All
                     </button>
                   )}
                 </div>
                 <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
                   {p.debts.slice().reverse().map((d: any, i: number) => (
-                    <div key={d.id} className="flex items-center justify-between py-3 px-3"
-                      style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.15)' }}>
+                    <div key={d.id} className="flex items-center justify-between py-3.5 px-3.5"
+                      style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.12)' }}>
                       <div className="flex items-center gap-3">
-                        <span className="text-base">{d.debtType === 'lend' ? '🔼' : '🔽'}</span>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                          style={{
+                            background: d.debtType === 'lend' ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--destructive) / 0.15)',
+                          }}>
+                          {d.debtType === 'lend' ? '🔼' : '🔽'}
+                        </div>
                         <div>
                           <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? 'Lent' : 'Borrowed')}</div>
                           <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <span className={`font-bold text-sm ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount.toLocaleString()}</span>
-                        <button className="btn-outline !py-1 !px-2.5 !text-xs !font-semibold !text-primary !rounded-lg" onClick={() => settleDebt(d.id)}>✓</button>
+                        <button
+                          onClick={() => settleDebt(d.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
+                          style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
+                          <Check className="w-3.5 h-3.5" />
+                          Settle
+                        </button>
                       </div>
                     </div>
                   ))}
