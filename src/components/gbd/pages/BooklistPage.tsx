@@ -97,7 +97,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
       Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
     } else {
       Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
-      Storage.addXP(10);
+      addXP(10);
     }
     setShowModal(false);
     setEditingId(null);
