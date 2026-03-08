@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB } from '@/lib/dbSync';
 import { getCurrentDayName } from '@/lib/helpers';
-import { Trash2, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowLeft, Download } from 'lucide-react';
+import { exportRoutineToICS } from '@/lib/icsExport';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
@@ -122,6 +123,17 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <button
+            className="btn-outline text-sm flex items-center gap-1.5"
+            onClick={() => {
+              const success = exportRoutineToICS(routine);
+              if (success) toast({ title: 'Routine exported', description: 'Open the .ics file to add weekly classes to your calendar' });
+              else toast({ title: 'Nothing to export', description: 'No classes found in routine' });
+            }}
+            title="Export to calendar"
+          >
+            <Download className="w-4 h-4" /> .ics
+          </button>
           <ImageOCRImport mode="routine" onImport={handleOCRImport} />
           <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
         </div>
