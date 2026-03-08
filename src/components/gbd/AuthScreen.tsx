@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
+import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import appIcon from '@/assets/icon-192.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
