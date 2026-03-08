@@ -180,7 +180,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           const cd = getExamCountdown(e.date, e.time);
           const urgencyColor = cd.urgency === 'critical' ? '#ef4444' : cd.urgency === 'warning' ? '#f59e0b' : cd.urgency === 'passed' ? 'hsl(var(--text-muted))' : 'hsl(var(--primary))';
           return (
-            <div key={e.id} className="glass-card flex items-center justify-between flex-wrap gap-3">
+            <div key={e.id} className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="inline-block text-xs font-bold px-2 py-0.5 rounded mb-2" style={{ background: `${urgencyColor}15`, color: urgencyColor, border: `1px solid ${urgencyColor}33` }}>
                   {cd.urgency === 'passed' ? '✓' : cd.days <= 3 ? '⚠' : '📅'} {cd.text}
