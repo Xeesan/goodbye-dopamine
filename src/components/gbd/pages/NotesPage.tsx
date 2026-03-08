@@ -20,6 +20,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [notes, setNotes] = useState(Storage.getNotes());
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
 
   const refresh = () => setNotes(Storage.getNotes());
 
