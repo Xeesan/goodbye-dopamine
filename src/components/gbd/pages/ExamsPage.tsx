@@ -31,6 +31,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const [examTab, setExamTab] = useState('exams');
   const [editingId, setEditingId] = useState<string | null>(null);
   const { showDialog } = useDialog();
+  const { addXP } = useGamification();
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))
