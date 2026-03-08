@@ -49,7 +49,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
   const quickLinks = Storage.getQuickLinks();
 
   return (
-    <div className="page-enter max-w-[1200px] mx-auto">
+    <div className="page-enter">
       {/* Welcome + XP */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
         <div className="min-w-0">

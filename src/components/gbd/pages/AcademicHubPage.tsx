@@ -118,7 +118,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
   };
 
   return (
-    <div className="page-enter max-w-[1200px] mx-auto">
+    <div className="page-enter">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
@@ -195,23 +195,25 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
                   <div className="mt-4 border-t pt-4" style={{ borderColor: 'hsl(var(--border))' }}>
                     {s.courses.length > 0 && (
                       <div className="space-y-2 mb-3">
-                        <div className="grid grid-cols-[1fr_80px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE</span><span>GRADE</span><span>CREDITS</span><span></span></div>
+                        <div className="hidden sm:grid grid-cols-[1fr_80px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE</span><span>GRADE</span><span>CREDITS</span><span></span></div>
                         {s.courses.map((c: any) => (
-                          <div key={c.id} className="grid grid-cols-[1fr_80px_80px_40px] gap-2 items-center p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
+                          <div key={c.id} className="flex items-center justify-between gap-2 p-2 rounded-lg sm:grid sm:grid-cols-[1fr_80px_80px_40px]" style={{ background: 'hsl(var(--bg-input))' }}>
                             <span className="text-sm font-medium text-foreground truncate">{c.name}</span>
-                            <span className="text-sm font-semibold text-primary">{c.grade}</span>
-                            <span className="text-sm text-muted-foreground">{c.credits} cr</span>
-                            <button className="icon-btn !w-6 !h-6 !text-destructive" onClick={() => deleteCourse(s.id, c.id)}><Trash2 className="w-3 h-3" /></button>
+                            <div className="flex items-center gap-2 sm:contents shrink-0">
+                              <span className="text-sm font-semibold text-primary">{c.grade}</span>
+                              <span className="text-sm text-muted-foreground">{c.credits} cr</span>
+                              <button className="icon-btn !w-6 !h-6 !text-destructive" onClick={() => deleteCourse(s.id, c.id)}><Trash2 className="w-3 h-3" /></button>
+                            </div>
                           </div>
                         ))}
                       </div>
                     )}
                     {showAddCourse === s.id ? (
-                      <div className="grid grid-cols-[1fr_100px_80px] gap-2 items-end mt-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_80px] gap-2 items-end mt-2">
                         <div><label className="form-label">COURSE</label><input type="text" id={`course-name-${s.id}`} className="input-simple" placeholder="e.g. Calculus I" /></div>
                         <div><label className="form-label">GRADE</label><select id={`course-grade-${s.id}`} className="input-simple" defaultValue="A">{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g} ({GRADE_MAP[g].toFixed(2)})</option>)}</select></div>
                         <div><label className="form-label">CREDITS</label><input type="number" id={`course-credits-${s.id}`} className="input-simple" defaultValue={3} min={1} max={10} /></div>
-                        <div className="col-span-3 flex gap-2 mt-2">
+                        <div className="sm:col-span-3 flex gap-2 mt-2">
                           <button className="btn-green flex-1" onClick={() => addCourse(s.id)}>Add Course</button>
                           <button className="btn-outline" onClick={() => setShowAddCourse(null)}>Cancel</button>
                         </div>
@@ -233,13 +235,15 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
             <h2 className="text-lg font-semibold text-foreground mb-4">GPA Calculator</h2>
             <p className="text-sm text-muted-foreground mb-4">Enter your courses to calculate semester GPA instantly.</p>
             <div className="space-y-2 mb-4">
-              <div className="grid grid-cols-[1fr_120px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE NAME</span><span>GRADE</span><span>CREDITS</span><span></span></div>
+              <div className="hidden sm:grid grid-cols-[1fr_120px_80px_40px] gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground px-1"><span>COURSE NAME</span><span>GRADE</span><span>CREDITS</span><span></span></div>
               {calcCourses.map((row, i) => (
-                <div key={i} className="grid grid-cols-[1fr_120px_80px_40px] gap-2 items-center">
-                  <input type="text" className="input-simple" placeholder="Course name" value={row.name} onChange={e => updateCalcRow(i, 'name', e.target.value)} />
-                  <select className="input-simple" value={row.grade} onChange={e => updateCalcRow(i, 'grade', e.target.value)}>{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}</select>
-                  <input type="number" className="input-simple" min={1} max={10} value={row.credits} onChange={e => updateCalcRow(i, 'credits', parseInt(e.target.value) || 1)} />
-                  <button className="icon-btn !w-8 !h-8 !text-destructive" onClick={() => removeCalcRow(i)} disabled={calcCourses.length <= 1}><Trash2 className="w-3.5 h-3.5" /></button>
+                <div key={i} className="flex items-center justify-between gap-2 sm:grid sm:grid-cols-[1fr_120px_80px_40px]">
+                  <input type="text" className="input-simple flex-1 sm:flex-none" placeholder="Course name" value={row.name} onChange={e => updateCalcRow(i, 'name', e.target.value)} />
+                  <div className="flex items-center gap-2 sm:contents shrink-0">
+                    <select className="input-simple w-20 sm:w-auto" value={row.grade} onChange={e => updateCalcRow(i, 'grade', e.target.value)}>{GRADE_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}</select>
+                    <input type="number" className="input-simple w-16 sm:w-auto" min={1} max={10} value={row.credits} onChange={e => updateCalcRow(i, 'credits', parseInt(e.target.value) || 1)} />
+                    <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => removeCalcRow(i)} disabled={calcCourses.length <= 1}><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
                 </div>
               ))}
             </div>

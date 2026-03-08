@@ -118,7 +118,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   };
 
   return (
-    <div className="page-enter max-w-[1200px] mx-auto">
+    <div className="page-enter">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
@@ -136,29 +136,29 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{upcoming.length}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">UPCOMING</div>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold text-primary">{upcoming.length}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">UPCOMING</div>
         </div>
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold" style={{ color: thisWeek.length > 0 ? 'hsl(var(--warning))' : undefined }}>{thisWeek.length}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">THIS WEEK</div>
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold" style={{ color: thisWeek.length > 0 ? 'hsl(var(--warning))' : undefined }}>{thisWeek.length}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">THIS WEEK</div>
         </div>
-        <div className="glass-card !p-4 text-center">
-          <div className="text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{totalCredits}</div>
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground">TOTAL CREDITS</div>
+        <div className="glass-card !p-3 sm:!p-4 text-center">
+          <div className="text-xl sm:text-2xl font-bold" style={{ color: 'hsl(var(--purple))' }}>{totalCredits}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-semibold tracking-widest text-muted-foreground">CREDITS</div>
         </div>
       </div>
 
       <div className="glass-card mb-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <div><label className="form-label">SUBJECT</label><input type="text" id="exam-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
           <div><label className="form-label">DATE</label><input type="date" id="exam-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} /></div>
           <div><label className="form-label">TIME</label><input type="time" id="exam-time" className="input-simple" defaultValue="09:00" /></div>
           <div><label className="form-label">TARGET GRADE</label><input type="text" id="exam-grade" className="input-simple" placeholder="A+" defaultValue="A+" /></div>
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <div><label className="form-label">CREDITS</label><input type="number" id="exam-credits" className="input-simple" defaultValue={3} min={1} max={10} /></div>
           <div><label className="form-label">TEACHER</label><input type="text" id="exam-teacher" className="input-simple" placeholder="e.g. Dr. Smith" /></div>
           <div><label className="form-label">ROOM</label><input type="text" id="exam-room" className="input-simple" placeholder="e.g. Room 301" /></div>
@@ -180,7 +180,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           const cd = getExamCountdown(e.date, e.time);
           const urgencyColor = cd.urgency === 'critical' ? '#ef4444' : cd.urgency === 'warning' ? '#f59e0b' : cd.urgency === 'passed' ? 'hsl(var(--text-muted))' : 'hsl(var(--primary))';
           return (
-            <div key={e.id} className="glass-card flex items-center justify-between flex-wrap gap-3">
+            <div key={e.id} className="glass-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="inline-block text-xs font-bold px-2 py-0.5 rounded mb-2" style={{ background: `${urgencyColor}15`, color: urgencyColor, border: `1px solid ${urgencyColor}33` }}>
                   {cd.urgency === 'passed' ? '✓' : cd.days <= 3 ? '⚠' : '📅'} {cd.text}

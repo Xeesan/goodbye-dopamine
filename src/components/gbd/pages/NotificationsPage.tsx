@@ -86,7 +86,7 @@ const NotificationsPage = ({ navigateTo }: NotificationsPageProps) => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="page-enter max-w-[800px] mx-auto">
+    <div className="page-enter">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}>
