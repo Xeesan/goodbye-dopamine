@@ -170,7 +170,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
             }}
             title="Export to calendar"
           >
-            <CalendarDown className="w-4 h-4" /> .ics
+            <Download className="w-4 h-4" /> .ics
           </button>
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
           <div className="tab-group">

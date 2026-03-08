@@ -132,7 +132,7 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
             }}
             title="Export to calendar"
           >
-            <CalendarDown className="w-4 h-4" /> .ics
+            <Download className="w-4 h-4" /> .ics
           </button>
           <ImageOCRImport mode="routine" onImport={handleOCRImport} />
           <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
