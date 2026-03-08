@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, Loader2, X, Check, AlertCircle } from 'lucide-react';
+import { Camera, ImageIcon, Loader2, X, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ImageOCRImportProps {
