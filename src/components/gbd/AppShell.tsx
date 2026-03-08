@@ -126,7 +126,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               <div className="max-w-[1200px] mx-auto w-full">
                 {calendarOpen && (
                   <div className="mb-5 animate-[slideUp_0.2s_ease]">
-                    <UnifiedCalendarWidget navigateTo={navigateTo} />
+                    <UnifiedCalendarWidget navigateTo={navigateTo} refreshKey={refreshKey} />
                   </div>
                 )}
                 {renderPage()}
