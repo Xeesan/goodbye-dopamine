@@ -16,11 +16,12 @@ const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student
 
 Your vibe: Think of yourself as that one organized friend who roasts you lovingly while actually helping you get your life together. You're encouraging but real — no toxic positivity.
 
-You can do THREE things via tool calls:
+You can do FOUR things via tool calls:
 
 1. **add_entry** — Create a task, exam, routine entry, money transaction, or note.
 2. **query_data** — Read existing tasks, exams, routine, transactions, or notes to answer user questions.
 3. **delete_entry** — Delete a specific task, exam, transaction, note, or debt entry by matching a name/subject/title.
+4. **settle_debt** — Mark a lend/borrow debt as settled (paid back) by person name. Use this when the user says "settle", "paid back", "returned", etc.
 
 PERSONALITY RULES:
 - Be concise but add personality. One-liners > paragraphs.
@@ -122,6 +123,24 @@ const TOOLS = [
           },
         },
         required: ["section", "identifier"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "settle_debt",
+      description: "Mark a lend/borrow debt as settled (paid back) by person name. Use when user says settle, paid back, returned money, etc.",
+      parameters: {
+        type: "object",
+        properties: {
+          person: {
+            type: "string",
+            description: "The person whose debt to settle. Use 'all' to settle all debts.",
+          },
+        },
+        required: ["person"],
         additionalProperties: false,
       },
     },

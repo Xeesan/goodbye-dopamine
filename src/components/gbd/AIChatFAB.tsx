@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
-import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB } from '@/lib/dbSync';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB, settleDebtInDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
@@ -361,6 +361,28 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **transaction**, **debt**, or **note**!';
     }
 
+    if (toolCall.function.name === 'settle_debt') {
+      const { person } = args;
+      if (!person) return '😅 I need to know **whose** debt to settle!';
+
+      const personLower = person.toLowerCase();
+      const debts = Storage.getDebts();
+      const matches = personLower === 'all'
+        ? debts.filter((d: any) => !d.settled)
+        : debts.filter((d: any) => !d.settled && d.person?.toLowerCase().includes(personLower));
+
+      if (matches.length === 0) return `🤔 No unsettled debts found for **"${person}"**.`;
+
+      for (const m of matches) {
+        Storage.settleDebt(m.id);
+        await settleDebtInDB(m.id);
+      }
+
+      const totalAmount = matches.reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
+      const quips = ['Debt-free era! 🎉', 'Clean slate! ✨', 'That\'s what we like to see! 🤝', 'Money matters handled! 💯'][Math.floor(Math.random() * 4)];
+      return `${quips} Settled **${matches.length}** debt${matches.length > 1 ? 's' : ''} with **${matches[0]?.person || person}** (total: ৳${totalAmount}).`;
+    }
+
     return '🤔 Hmm, that one went over my head. Try again?';
   } catch (e) {
     console.error('Tool execution error:', e);
@@ -566,7 +588,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         updateAssistant(toolResultText);
 
         // Notify parent that data changed (delay to allow DB writes to complete)
-        if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in'))) {
+        if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in') || r.includes('Settled'))) {
           setTimeout(() => onDataChanged(), 800);
         }
       } else if (!assistantContent) {
