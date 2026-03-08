@@ -1,5 +1,6 @@
 import Storage from '@/lib/storage';
 import { Copy, LogOut } from 'lucide-react';
+import { useDialog } from '../DialogProvider';
 
 interface ProfilePageProps {
   navigateTo: (page: string) => void;
@@ -10,8 +11,9 @@ interface ProfilePageProps {
 
 const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
   const settings = Storage.getSettings();
+  const { showDialog } = useDialog();
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     const u = Storage.getUser();
     const s = Storage.getSettings();
     u.name = (document.getElementById('profile-name') as HTMLInputElement)?.value.trim() || u.name;
@@ -22,13 +24,17 @@ const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
     s.gender = (document.getElementById('profile-gender') as HTMLSelectElement)?.value;
     Storage.setUser(u);
     Storage.setSettings(s);
-    alert('Profile saved successfully!');
+    await showDialog({ title: 'Saved!', message: 'Your profile has been updated successfully.', type: 'success', confirmText: 'Great' });
   };
 
-  const copyId = () => {
+  const copyId = async () => {
     if (user) {
-      navigator.clipboard.writeText(user.uid).then(() => alert('Unique ID copied: ' + user.uid))
-        .catch(() => prompt('Copy your Unique ID:', user.uid));
+      try {
+        await navigator.clipboard.writeText(user.uid);
+        await showDialog({ title: 'Copied!', message: `Your Unique ID has been copied: ${user.uid}`, type: 'success', confirmText: 'OK' });
+      } catch {
+        await showDialog({ title: 'Your Unique ID', message: user.uid, type: 'info', confirmText: 'OK' });
+      }
     }
   };
 
@@ -38,7 +44,6 @@ const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
         <h1 className="text-2xl font-bold text-foreground">Profile</h1>
         <p className="text-muted-foreground text-sm">Manage your academic profile and settings</p>
       </div>
-
       <div className="space-y-6">
         <div className="glass-card-accent">
           <h3 className="font-semibold text-foreground mb-5">Academic Profile</h3>
@@ -65,12 +70,10 @@ const ProfilePage = ({ user, onLogout }: ProfilePageProps) => {
           <h3 className="font-semibold text-foreground mb-5">Management</h3>
           <div className="space-y-3">
             <button className="btn-outline w-full flex items-center gap-2 justify-center" onClick={copyId}>
-              <Copy className="w-4 h-4" />
-              Copy Unique ID: {user?.uid || '---'}
+              <Copy className="w-4 h-4" /> Copy Unique ID: {user?.uid || '---'}
             </button>
             <button className="w-full flex items-center gap-2 justify-center py-3 rounded-[var(--radius-sm)] text-destructive font-semibold transition-all hover:bg-destructive/10" style={{ border: '1px solid hsl(var(--destructive) / 0.3)' }} onClick={onLogout}>
-              <LogOut className="w-4 h-4" />
-              Logout
+              <LogOut className="w-4 h-4" /> Logout
             </button>
           </div>
         </div>

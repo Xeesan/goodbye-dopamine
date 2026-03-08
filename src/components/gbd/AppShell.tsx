@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
+import { DialogProvider } from './DialogProvider';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
 import RoutinePage from './pages/RoutinePage';
@@ -48,24 +49,26 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {sidebarOpen && (
-        <div className="sidebar-overlay active" onClick={() => setSidebarOpen(false)} />
-      )}
-      <Sidebar
-        currentPage={currentPage}
-        onNavigate={navigateTo}
-        user={user}
-        onLogout={onLogout}
-        isOpen={sidebarOpen}
-      />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} onNavigate={navigateTo} />
-        <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
-          {renderPage()}
-        </div>
-      </main>
-    </div>
+    <DialogProvider>
+      <div className="flex h-screen overflow-hidden">
+        {sidebarOpen && (
+          <div className="sidebar-overlay active" onClick={() => setSidebarOpen(false)} />
+        )}
+        <Sidebar
+          currentPage={currentPage}
+          onNavigate={navigateTo}
+          user={user}
+          onLogout={onLogout}
+          isOpen={sidebarOpen}
+        />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} onNavigate={navigateTo} />
+          <div className="flex-1 overflow-y-auto p-6" key={refreshKey}>
+            {renderPage()}
+          </div>
+        </main>
+      </div>
+    </DialogProvider>
   );
 };
 

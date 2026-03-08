@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
+import { useDialog } from '../DialogProvider';
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;
@@ -12,6 +13,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [debtType, setDebtType] = useState('lend');
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
+  const { showDialog } = useDialog();
 
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
@@ -24,20 +26,26 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const totalLent = activeDebts.filter((d: any) => d.debtType === 'lend').reduce((a: number, d: any) => a + d.amount, 0);
   const totalBorrowed = activeDebts.filter((d: any) => d.debtType === 'borrow').reduce((a: number, d: any) => a + d.amount, 0);
 
-  const addTransaction = () => {
+  const addTransaction = async () => {
     const description = (document.getElementById('txn-desc') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('txn-amount') as HTMLInputElement)?.value);
-    if (!description || !amount) { alert('Please fill all fields'); return; }
+    if (!description || !amount) {
+      await showDialog({ title: 'Missing Info', message: 'Please fill in all fields.', type: 'alert' });
+      return;
+    }
     Storage.addTransaction({ type: txnType, description, amount });
     Storage.addXP(5);
     setShowTxnModal(false);
     navigateTo('money');
   };
 
-  const addDebt = () => {
+  const addDebt = async () => {
     const person = (document.getElementById('debt-person') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('debt-amount') as HTMLInputElement)?.value);
-    if (!person || !amount) { alert('Please enter person name and amount'); return; }
+    if (!person || !amount) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a person name and amount.', type: 'alert' });
+      return;
+    }
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
@@ -45,15 +53,38 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     navigateTo('money');
   };
 
-  const addGoal = () => {
+  const addGoal = async () => {
     const title = (document.getElementById('goal-title') as HTMLInputElement)?.value.trim();
     const targetAmount = parseFloat((document.getElementById('goal-target') as HTMLInputElement)?.value);
-    if (!title || !targetAmount) { alert('Please enter a goal title and target amount'); return; }
+    if (!title || !targetAmount) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a goal title and target amount.', type: 'alert' });
+      return;
+    }
     const initialAmount = parseFloat((document.getElementById('goal-initial') as HTMLInputElement)?.value) || 0;
     const targetDate = (document.getElementById('goal-date') as HTMLInputElement)?.value;
     Storage.addSavingsGoal({ title, targetAmount, initialAmount, targetDate });
     Storage.addXP(10);
     navigateTo('money');
+  };
+
+  const deleteTxn = async (id: string) => {
+    const confirmed = await showDialog({ title: 'Delete Transaction', message: 'Are you sure you want to delete this transaction?', type: 'confirm', confirmText: 'Delete' });
+    if (confirmed) { Storage.deleteTransaction(id); navigateTo('money'); }
+  };
+
+  const settleDebt = async (id: string) => {
+    const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
+    if (confirmed) { Storage.settleDebt(id); navigateTo('money'); }
+  };
+
+  const deleteDebt = async (id: string) => {
+    const confirmed = await showDialog({ title: 'Delete Debt', message: 'Are you sure you want to delete this debt record?', type: 'confirm', confirmText: 'Delete' });
+    if (confirmed) { Storage.deleteDebt(id); navigateTo('money'); }
+  };
+
+  const deleteGoal = async (id: string) => {
+    const confirmed = await showDialog({ title: 'Delete Goal', message: 'Are you sure you want to delete this savings goal?', type: 'confirm', confirmText: 'Delete' });
+    if (confirmed) { Storage.deleteSavingsGoal(id); navigateTo('money'); }
   };
 
   return (
@@ -84,26 +115,19 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         ))}
       </div>
 
-      {/* Transactions Tab */}
       {moneyTab === 'transactions' && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2">
-                <div className="money-icon green">+</div> TOTAL INCOME
-              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">+</div> TOTAL INCOME</div>
               <div className="text-xl font-bold text-primary">৳ {income.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2">
-                <div className="money-icon red">-</div> TOTAL EXPENSE
-              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">-</div> TOTAL EXPENSE</div>
               <div className="text-xl font-bold text-destructive">৳ {expense.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2">
-                <div className="money-icon blue">$</div> BALANCE
-              </div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon blue">$</div> BALANCE</div>
               <div className="text-xl font-bold text-foreground">৳ {balance.toLocaleString()}</div>
             </div>
           </div>
@@ -121,10 +145,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`font-semibold ${t.type === 'income' ? 'text-primary' : 'text-destructive'}`}>
-                    {t.type === 'income' ? '+' : '-'}৳{t.amount}
-                  </span>
-                  <button className="text-destructive text-xs" onClick={() => { if (confirm('Delete?')) { Storage.deleteTransaction(t.id); navigateTo('money'); } }}>✕</button>
+                  <span className={`font-semibold ${t.type === 'income' ? 'text-primary' : 'text-destructive'}`}>{t.type === 'income' ? '+' : '-'}৳{t.amount}</span>
+                  <button className="text-destructive text-xs" onClick={() => deleteTxn(t.id)}>✕</button>
                 </div>
               </div>
             ))}
@@ -132,7 +154,6 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         </>
       )}
 
-      {/* Lend/Borrow Tab */}
       {moneyTab === 'lend' && (
         <>
           <div className="grid grid-cols-2 gap-4 mb-6">
@@ -156,9 +177,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             </div>
             <input type="text" id="debt-description" className="input-simple mb-4" placeholder="Description" />
             <input type="date" id="debt-date" className="input-simple mb-5 max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
-            <div className="flex gap-3 justify-end">
-              <button className="btn-green" onClick={addDebt}>Save Debt</button>
-            </div>
+            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addDebt}>Save Debt</button></div>
           </div>
           <div className="glass-card mb-6 min-h-[100px]">
             <h2 className="text-base font-semibold text-foreground mb-5">Active Debts</h2>
@@ -175,7 +194,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 <div className="flex items-center gap-3">
                   <span className={`font-semibold ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount}</span>
                   <span className="text-[0.6rem] uppercase text-muted-foreground tracking-wider">{d.debtType}</span>
-                  <button className="btn-outline !py-1 !px-2 !text-xs !text-primary" onClick={() => { if (confirm('Settle this debt?')) { Storage.settleDebt(d.id); navigateTo('money'); } }}>Settle</button>
+                  <button className="btn-outline !py-1 !px-2 !text-xs !text-primary" onClick={() => settleDebt(d.id)}>Settle</button>
                 </div>
               </div>
             ))}
@@ -194,7 +213,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-semibold text-muted-foreground line-through">৳{d.amount}</span>
-                    <button className="text-destructive text-xs" onClick={() => { if (confirm('Delete?')) { Storage.deleteDebt(d.id); navigateTo('money'); } }}>✕</button>
+                    <button className="text-destructive text-xs" onClick={() => deleteDebt(d.id)}>✕</button>
                   </div>
                 </div>
               ))}
@@ -203,7 +222,6 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         </>
       )}
 
-      {/* Savings Goals Tab */}
       {moneyTab === 'savings' && (
         <>
           <div className="glass-card mb-6">
@@ -213,9 +231,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               <input type="number" id="goal-initial" className="input-simple" placeholder="Initial Amount" min={0} defaultValue={0} />
             </div>
             <input type="date" id="goal-date" className="input-simple mb-5 max-w-[50%]" />
-            <div className="flex gap-3 justify-end">
-              <button className="btn-green" onClick={addGoal}>Create Goal</button>
-            </div>
+            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addGoal}>Create Goal</button></div>
           </div>
           <div className="glass-card min-h-[100px]">
             {goals.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p className="italic text-muted-foreground">No savings goals yet</p></div> :
@@ -230,12 +246,10 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold text-primary">৳{g.currentAmount} / ৳{g.targetAmount}</span>
-                      <button className="text-destructive text-xs" onClick={() => { if (confirm('Delete?')) { Storage.deleteSavingsGoal(g.id); navigateTo('money'); } }}>✕</button>
+                      <button className="text-destructive text-xs" onClick={() => deleteGoal(g.id)}>✕</button>
                     </div>
                   </div>
-                  <div className="xp-bar !h-2">
-                    <div className="xp-bar-fill" style={{ width: `${progress}%` }} />
-                  </div>
+                  <div className="xp-bar !h-2"><div className="xp-bar-fill" style={{ width: `${progress}%` }} /></div>
                   <div className="text-[0.6rem] text-muted-foreground mt-1 text-right">{progress}%</div>
                 </div>
               );
@@ -244,7 +258,6 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         </>
       )}
 
-      {/* Transaction Modal */}
       {showTxnModal && (
         <div className="modal-overlay" onClick={() => setShowTxnModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>

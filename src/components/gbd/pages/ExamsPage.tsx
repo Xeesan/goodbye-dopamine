@@ -3,6 +3,7 @@ import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
 import { Edit, Trash2 } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
+import { useDialog } from '../DialogProvider';
 
 interface ExamsPageProps {
   navigateTo: (page: string) => void;
@@ -28,6 +29,7 @@ function getExamCountdown(dateStr: string, timeStr?: string) {
 const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const [examTab, setExamTab] = useState('exams');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { showDialog } = useDialog();
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))
@@ -37,9 +39,12 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   const thisWeek = upcoming.filter(e => getExamCountdown(e.date, e.time).days <= 7);
   const totalCredits = upcoming.reduce((s, e) => s + (parseInt(e.credits) || 0), 0);
 
-  const addExam = () => {
+  const addExam = async () => {
     const subject = (document.getElementById('exam-subject') as HTMLInputElement)?.value.trim();
-    if (!subject) { alert('Please enter a subject'); return; }
+    if (!subject) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a subject name.', type: 'alert' });
+      return;
+    }
     const examData = {
       subject,
       date: (document.getElementById('exam-date') as HTMLInputElement)?.value,
@@ -60,8 +65,9 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     navigateTo('exams');
   };
 
-  const deleteExam = (id: string) => {
-    if (confirm('Delete this exam?')) {
+  const deleteExam = async (id: string) => {
+    const confirmed = await showDialog({ title: 'Delete Exam', message: 'Are you sure you want to delete this exam?', type: 'confirm', confirmText: 'Delete' });
+    if (confirmed) {
       Storage.deleteExam(id);
       if (editingId === id) setEditingId(null);
       navigateTo('exams');
@@ -101,7 +107,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="glass-card !p-4 text-center">
           <div className="text-2xl font-bold text-primary">{upcoming.length}</div>
@@ -117,7 +122,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
       </div>
 
-      {/* Add Form */}
       <div className="glass-card mb-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <div><label className="form-label">SUBJECT</label><input type="text" id="exam-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
@@ -138,7 +142,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
       </div>
 
-      {/* Exam List */}
       <div className="space-y-3 min-h-[100px]">
         {filtered.length === 0 ? (
           <div className="glass-card empty-state !py-16">
