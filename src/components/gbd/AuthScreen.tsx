@@ -13,6 +13,22 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
   const [otp, setOtp] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      clearInterval(cooldownRef.current);
+      return;
+    }
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(cooldownRef.current);
+  }, [resendCooldown > 0]);
 
   const showToast = (msg: string, type: 'error' | 'success' = 'error') => {
     setToast({ msg, type });
