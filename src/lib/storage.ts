@@ -62,7 +62,8 @@ const Storage = {
     if (!day || !period) return;
     const routine = this.getRoutine();
     if (!Array.isArray(routine[day])) routine[day] = [];
-    routine[day].push({ ...period, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
+    const now = new Date().toISOString();
+    routine[day].push({ ...period, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
     this.setRoutine(routine);
   },
   deletePeriod(day: string, id: string) {
