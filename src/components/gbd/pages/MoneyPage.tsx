@@ -18,10 +18,10 @@ interface Installment {
 interface SemesterBudget {
   totalFee: number;
   monthlyInstallment: number;
+  semesterMonths: number; // e.g. 4, 6
   startDate: string;
-  endDate: string;
   installments: Installment[];
-  livingBudget: number; // monthly living/spending budget
+  livingBudget: number;
 }
 
 interface MoneyPageProps {
@@ -268,11 +268,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
             const now = new Date();
             const start = parseISO(semesterBudget.startDate);
-            const end = parseISO(semesterBudget.endDate);
-            const totalMonths = Math.max(1, Math.ceil(differenceInDays(end, start) / 30));
+            const semMonths = semesterBudget.semesterMonths || 6;
+            const end = addMonths(start, semMonths);
             const remainingDays = Math.max(0, differenceInDays(end, now));
             const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
             const isActive = now >= start && now <= end;
+            const elapsedMonths = Math.max(0, Math.min(semMonths, Math.floor(differenceInDays(now, start) / 30)));
+            const remainingMonths = Math.max(0, semMonths - elapsedMonths);
 
             // Fee tracking
             const installments: Installment[] = semesterBudget.installments || [];
@@ -308,6 +310,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
             const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
             const isOverBudget = thisWeekExpenses > weeklyAllowance && weeklyAllowance > 0;
+            const semesterEndStr = format(end, 'dd MMM yyyy');
 
             return (
               <div className="glass-card mb-6 !p-5">
@@ -430,7 +433,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <div className="rounded-xl p-4" style={{ background: isOverBudget ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--primary) / 0.06)' }}>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-xs font-medium text-muted-foreground">💰 Safe to spend this week</span>
-                      <span className="text-[0.65rem] text-muted-foreground">{remainingWeeks}w left</span>
+                      <span className="text-[0.65rem] text-muted-foreground">{remainingMonths}mo left</span>
                     </div>
                     <div className={`text-2xl font-bold mb-3 ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
                       ৳{safeToSpend.toLocaleString()}
@@ -458,7 +461,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 {!isActive && (
                   <div className="mt-3 text-[0.65rem] text-muted-foreground flex items-center gap-1.5">
                     <CalendarDays className="w-3 h-3" />
-                    {now < start ? 'Semester starts ' + semesterBudget.startDate : 'Semester ended'}
+                    {now < start ? `Semester starts ${format(start, 'dd MMM yyyy')}` : `Semester ended ${semesterEndStr}`}
                   </div>
                 )}
               </div>
@@ -858,12 +861,12 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="form-label">Semester Start</label>
-                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
+                <label className="form-label">Semester Duration (months)</label>
+                <input type="number" id="budget-months" className="input-simple" placeholder="e.g. 6" min={1} max={24} defaultValue={semesterBudget?.semesterMonths || ''} />
               </div>
               <div>
-                <label className="form-label">Semester End</label>
-                <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
+                <label className="form-label">Start Date</label>
+                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
               </div>
             </div>
             <div className="flex gap-3">
@@ -880,28 +883,24 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 const totalFee = parseFloat((document.getElementById('budget-total-fee') as HTMLInputElement)?.value);
                 const monthlyInstallment = parseFloat((document.getElementById('budget-installment') as HTMLInputElement)?.value) || 0;
                 const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
+                const semesterMonths = parseInt((document.getElementById('budget-months') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
-                const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
-                if (!totalFee || totalFee <= 0 || !startDate || !endDate) {
-                  toast({ title: 'Missing info', description: 'Please fill total fee and semester dates.', variant: 'destructive' });
-                  return;
-                }
-                if (new Date(endDate) <= new Date(startDate)) {
-                  toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
+                if (!totalFee || totalFee <= 0 || !semesterMonths || semesterMonths <= 0 || !startDate) {
+                  toast({ title: 'Missing info', description: 'Please fill total fee, duration, and start date.', variant: 'destructive' });
                   return;
                 }
                 const budget: SemesterBudget = {
                   totalFee,
                   monthlyInstallment,
                   livingBudget,
+                  semesterMonths,
                   startDate,
-                  endDate,
                   installments: semesterBudget?.installments || [],
                 };
                 Storage.setSemesterBudget(budget);
                 setSemesterBudgetState(budget);
                 setShowBudgetSetup(false);
-                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} total fee` });
+                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} over ${semesterMonths} months` });
               }}>Save</button>
             </div>
           </div>
