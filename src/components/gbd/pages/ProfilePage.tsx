@@ -169,7 +169,7 @@ const ProfilePage = ({ user, onLogout, navigateTo }: ProfilePageProps) => {
   }
 
   return (
-    <div className="page-enter max-w-[800px] mx-auto">
+    <div className="page-enter max-w-[800px]">
       <div className="flex items-center gap-3 mb-6">
         <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
         <div>
