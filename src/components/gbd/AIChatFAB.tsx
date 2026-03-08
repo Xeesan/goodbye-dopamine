@@ -666,14 +666,26 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
                 disabled={loading}
                 maxLength={500}
               />
-              <button
-                type="submit"
-                disabled={!input.trim() || loading}
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
-                style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
-              >
-                <Send className="w-4 h-4" />
-              </button>
+              {loading ? (
+                <button
+                  type="button"
+                  onClick={cancelRequest}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all"
+                  style={{ background: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' }}
+                  title="Cancel"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                  style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              )}
             </form>
           </div>
         </div>
