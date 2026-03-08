@@ -234,13 +234,31 @@ function executeToolCall(toolCall: ToolCall): string {
             d.person?.toLowerCase().includes(filterLower) || d.description?.toLowerCase().includes(filterLower)
           );
         }
-        const summary = debts.slice(0, 10).map((d: any) =>
-          `- ${d.debt_type === 'lend' ? '🟢' : '🔴'} ${d.debt_type === 'lend' ? 'Lent' : 'Borrowed'} **${d.amount}** ${d.debt_type === 'lend' ? 'to' : 'from'} **${d.person}**${d.description ? ` — _${d.description}_` : ''}`
-        ).join('\n');
         if (debts.length === 0) return '✨ No outstanding debts! You\'re either debt-free or haven\'t tracked any yet 🎉';
-        const totalLent = debts.filter((d: any) => d.debt_type === 'lend').reduce((s: number, d: any) => s + Number(d.amount), 0);
-        const totalBorrowed = debts.filter((d: any) => d.debt_type === 'borrow').reduce((s: number, d: any) => s + Number(d.amount), 0);
-        return `🤝 **${debts.length} active debt${debts.length > 1 ? 's' : ''}**\n\n> Lent: **${totalLent}** · Borrowed: **${totalBorrowed}** · Net: **${totalLent - totalBorrowed}**\n\n${summary}`;
+
+        // Group by person and calculate net
+        const byPerson: Record<string, { lent: number; borrowed: number; count: number }> = {};
+        for (const d of debts) {
+          const name = d.person || 'Unknown';
+          if (!byPerson[name]) byPerson[name] = { lent: 0, borrowed: 0, count: 0 };
+          byPerson[name].count++;
+          if (d.debt_type === 'lend') byPerson[name].lent += Number(d.amount);
+          else byPerson[name].borrowed += Number(d.amount);
+        }
+
+        const summary = Object.entries(byPerson).map(([person, { lent, borrowed }]) => {
+          const net = lent - borrowed;
+          if (net > 0) return `- 🟢 **${person}** owes you **${net}**${lent && borrowed ? ` _(lent ${lent}, borrowed ${borrowed})_` : ''}`;
+          if (net < 0) return `- 🔴 You owe **${person}** **${Math.abs(net)}**${lent && borrowed ? ` _(lent ${lent}, borrowed ${borrowed})_` : ''}`;
+          return `- ⚪ **${person}** — settled up! _(lent ${lent}, borrowed ${borrowed})_`;
+        }).join('\n');
+
+        const totalLent = Object.values(byPerson).reduce((s, p) => s + p.lent, 0);
+        const totalBorrowed = Object.values(byPerson).reduce((s, p) => s + p.borrowed, 0);
+        const net = totalLent - totalBorrowed;
+        const netLabel = net > 0 ? `You're owed **${net}** overall 💪` : net < 0 ? `You owe **${Math.abs(net)}** overall 😬` : `All square! 🤝`;
+
+        return `🤝 **${Object.keys(byPerson).length} person${Object.keys(byPerson).length > 1 ? 's' : ''}** · ${debts.length} entries\n\n> Lent: **${totalLent}** · Borrowed: **${totalBorrowed}** · ${netLabel}\n\n${summary}`;
       }
 
       return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
