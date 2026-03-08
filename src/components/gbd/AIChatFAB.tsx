@@ -501,7 +501,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
         updateAssistant(toolResultText);
 
         // Notify parent that data changed
-        if (results.some(r => r.startsWith('✅')) && onDataChanged) {
+        if (onDataChanged && results.some(r => r.includes('added') || r.includes('recorded') || r.includes('saved') || r.includes('🗑️') || r.includes('locked in'))) {
           onDataChanged();
         }
       } else if (!assistantContent) {
