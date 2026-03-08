@@ -241,8 +241,17 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                         color: 'hsl(var(--purple))',
                       }}>{book.genre || 'General'}</span>
                       {book.rating > 0 && <StarRating rating={book.rating} onChange={() => {}} />}
-                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.pages}p</span>}
+                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
                     </div>
+                    {/* Progress bar on card */}
+                    {book.pages > 0 && book.status === 'reading' && (
+                      <div className="mt-2">
+                        <div className="xp-bar !h-1.5">
+                          <div className="xp-bar-fill" style={{ width: `${Math.min(100, Math.round(((book.currentPage || 0) / book.pages) * 100))}%` }} />
+                        </div>
+                        <div className="text-[0.55rem] text-muted-foreground mt-0.5 text-right">{Math.round(((book.currentPage || 0) / book.pages) * 100)}%</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
