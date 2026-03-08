@@ -89,12 +89,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (!args.day || !args.subject || !args.startTime || !args.endTime) {
           return '😅 I need the **day**, **subject**, **startTime**, and **endTime** to set up your routine!';
         }
-        Storage.addPeriod(args.day, {
+        const periodData = {
           subject: args.subject,
           startTime: args.startTime,
           endTime: args.endTime,
           room: args.room || '',
-        });
+        };
+        Storage.addPeriod(args.day, periodData);
+        addPeriodToDB(args.day, periodData).catch(() => {});
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
