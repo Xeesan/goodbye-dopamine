@@ -38,7 +38,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
         <button className="icon-btn" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
-        <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)}>
+        <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)} aria-label="Notifications">
           <Bell className="w-5 h-5" />
         </button>
         <button className="icon-btn" onClick={() => onNavigate('profile')}>
