@@ -133,7 +133,10 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
                 <span className="text-[0.75rem] text-muted-foreground">{col.tasks.length}</span>
               </div>
               {col.tasks.length === 0 ? (
-                <div className="empty-state !p-8"><p className="text-sm">Your agenda is clear.</p></div>
+                <div className="empty-state !p-8">
+                  <span className="text-3xl mb-1">{col.title === 'TO DO' ? '📋' : col.title === 'IN PROGRESS' ? '⚡' : '🎉'}</span>
+                  <p className="text-sm">{col.title === 'DONE' ? 'Complete tasks to see them here!' : 'Your agenda is clear.'}</p>
+                </div>
               ) : col.tasks.map(t => renderTaskCard(t))}
             </div>
           ))}

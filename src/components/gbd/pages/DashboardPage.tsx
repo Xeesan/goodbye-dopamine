@@ -13,15 +13,15 @@ interface DashboardPageProps {
 }
 
 const ALL_TILES = [
-  { id: 'planner', name: 'Planner', icon: Calendar, color: '#00FF88' },
-  { id: 'routine', name: 'Routine', icon: Clock, color: '#3B82F6' },
-  { id: 'exams', name: 'Exams', icon: FileText, color: '#F59E0B' },
-  { id: 'academic-hub', name: 'Academic', icon: Monitor, color: '#8B5CF6' },
-  { id: 'money', name: 'Money', icon: Wallet, color: '#10B981' },
-  { id: 'notes', name: 'Notes', icon: StickyNote, color: '#EC4899' },
-  { id: 'booklist', name: 'Booklist', icon: BookOpen, color: '#A78BFA' },
-  { id: 'detox', name: 'Detox', icon: Timer, color: '#06B6D4' },
-  { id: 'reports', name: 'Reports', icon: BarChart3, color: '#F97316' },
+  { id: 'planner', name: 'Planner', icon: Calendar, tokenColor: 'var(--green)' },
+  { id: 'routine', name: 'Routine', icon: Clock, tokenColor: 'var(--info)' },
+  { id: 'exams', name: 'Exams', icon: FileText, tokenColor: 'var(--warning)' },
+  { id: 'academic-hub', name: 'Academic', icon: Monitor, tokenColor: 'var(--purple)' },
+  { id: 'money', name: 'Money', icon: Wallet, tokenColor: 'var(--primary)' },
+  { id: 'notes', name: 'Notes', icon: StickyNote, tokenColor: 'var(--pink)' },
+  { id: 'booklist', name: 'Booklist', icon: BookOpen, tokenColor: 'var(--purple)' },
+  { id: 'detox', name: 'Detox', icon: Timer, tokenColor: 'var(--info)' },
+  { id: 'reports', name: 'Reports', icon: BarChart3, tokenColor: 'var(--orange)' },
 ];
 
 const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) => {
@@ -115,8 +115,8 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
             return (
               <button key={tile.id} onClick={() => navigateTo(tile.id)}
                 className="glass-card !p-4 flex flex-col items-center gap-2 hover:scale-105 transition-transform cursor-pointer"
-                style={{ borderColor: `${tile.color}22` }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${tile.color}15`, color: tile.color }}>
+                style={{ borderColor: `hsl(${tile.tokenColor} / 0.15)` }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `hsl(${tile.tokenColor} / 0.1)`, color: `hsl(${tile.tokenColor})` }}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-medium text-foreground">{tile.name}</span>
@@ -142,7 +142,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           }}>+ ADD LINK</button>
         </div>
         {quickLinks.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No quick links added yet.</p>
+          <div className="glass-card !p-6 text-center"><span className="text-2xl mb-2 block">🔗</span><p className="text-muted-foreground text-sm">No quick links yet. Add your favorite resources!</p></div>
         ) : (
           <div className="flex flex-wrap gap-2">
             {quickLinks.map((l: any) => (
@@ -162,7 +162,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         <h3 className="flex items-center gap-2 font-semibold text-foreground mb-3">
           <Star className="w-4 h-4" /> RECENT ACHIEVEMENTS
         </h3>
-        <p className="text-sm text-muted-foreground">No badges earned yet. Keep pushing!</p>
+        <p className="text-sm text-muted-foreground"><span className="text-xl mr-1">🏆</span> No badges earned yet. Keep pushing!</p>
       </div>
 
       {/* Stats Row */}
@@ -180,7 +180,7 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
                 <Icon className="w-4 h-4" />
               </div>
-              <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-1">{stat.label}</div>
+              <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground mb-1">{stat.label}</div>
               <div className="text-xl font-bold text-foreground">{stat.value}</div>
             </div>
           );

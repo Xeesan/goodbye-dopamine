@@ -21,7 +21,7 @@
     --popover: var(--bg-secondary);
     --popover-foreground: 210 40% 96%;
     
-    --primary: 187 82% 53%;
+    --primary: 162 72% 46%;
     --primary-foreground: 0 0% 0%;
     
     --secondary: var(--bg-secondary);
@@ -30,18 +30,18 @@
     --muted: 232 22% 17%;
     --muted-foreground: 215 20% 55%;
     
-    --accent: 187 82% 53%;
+    --accent: 162 72% 46%;
     --accent-foreground: 0 0% 0%;
-    --accent-dim: 187 82% 53% / 0.1;
-    --accent-glow: 187 82% 53% / 0.2;
+    --accent-dim: 162 72% 46% / 0.1;
+    --accent-glow: 162 72% 46% / 0.2;
     
     --destructive: 350 80% 55%;
     --destructive-foreground: 210 40% 98%;
     
     --border: 215 20% 35% / 0.15;
-    --border-accent: 187 82% 53% / 0.2;
+    --border-accent: 162 72% 46% / 0.2;
     --input: 215 20% 35% / 0.15;
-    --ring: 187 82% 53%;
+    --ring: 162 72% 46%;
     
     --radius: 14px;
     --radius-sm: 10px;
@@ -87,7 +87,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: hsl(var(--bg-primary));
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(187 82% 53% / 0.03), transparent),
+    radial-gradient(ellipse 80% 60% at 10% 90%, hsl(162 72% 46% / 0.04), transparent),
     radial-gradient(ellipse 60% 50% at 90% 10%, hsl(263 70% 76% / 0.03), transparent);
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
@@ -234,8 +234,8 @@ body {
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,7 +441,7 @@ body {
 
 /* Task priority badges */
 .task-priority {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   padding: 2px 8px;
@@ -593,7 +593,7 @@ body {
 }
 
 .mood-emoji { font-size: 1.5rem; }
-.mood-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; }
+.mood-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; }
 
 /* Star rating */
 .star-rating {
@@ -643,7 +643,7 @@ body {
   border-radius: var(--radius-sm);
   color: hsl(var(--text-secondary));
   font-family: inherit;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -658,7 +658,7 @@ body {
 
 /* Note category tag */
 .note-category-tag {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   padding: 2px 8px;
@@ -698,7 +698,7 @@ body {
   border: 1px solid hsl(var(--border-accent));
   border-radius: 12px;
   color: hsl(var(--primary));
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -720,12 +720,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   background: hsl(var(--destructive) / 0.1);
   border: 1px solid hsl(var(--destructive) / 0.2);
   border-radius: 20px;
   color: hsl(var(--destructive));
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
 }

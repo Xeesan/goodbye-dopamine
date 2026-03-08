@@ -144,7 +144,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
 
           {allTags.length > 0 && (
             <div className="mb-4">
-              <div className="flex items-center gap-1.5 text-[0.6rem] font-semibold tracking-widest text-muted-foreground uppercase mb-2">
+              <div className="flex items-center gap-1.5 text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase mb-2">
                 <Hash className="w-3 h-3" /> TAGS
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -158,11 +158,11 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
             </div>
           )}
 
-          <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-3">{filtered.length} NOTE{filtered.length !== 1 ? 'S' : ''}</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground mb-3">{filtered.length} NOTE{filtered.length !== 1 ? 'S' : ''}</div>
 
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {filtered.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-6">{searchQuery || activeTag ? 'No notes match your filter' : 'No notes yet'}</div>
+              <div className="text-center py-8"><span className="text-3xl block mb-2">{searchQuery || activeTag ? '🔍' : '📝'}</span><p className="text-sm text-muted-foreground">{searchQuery || activeTag ? 'No notes match your filter' : 'Start writing your first note!'}</p></div>
             ) : filtered.map(n => {
               const noteTags = extractTags(`${n.title || ''} ${n.content || ''}`);
               return (
@@ -181,9 +181,9 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className="note-category-tag">{n.category || 'General'}</span>
                     {noteTags.slice(0, 3).map(tag => (
-                      <span key={tag} className="tag-pill text-[0.55rem]">{tag}</span>
+                      <span key={tag} className="tag-pill text-[0.6rem]">{tag}</span>
                     ))}
-                    <span className="text-[0.6rem] text-muted-foreground ml-auto">{formatDate(n.updatedAt)}</span>
+                    <span className="text-[0.7rem] text-muted-foreground ml-auto">{formatDate(n.updatedAt)}</span>
                   </div>
                 </div>
               );

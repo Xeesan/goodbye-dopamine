@@ -160,28 +160,28 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
             <Book className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold text-foreground">{totalBooks}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">TOTAL BOOKS</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">TOTAL BOOKS</div>
         </div>
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--primary) / 0.12)', color: 'hsl(var(--primary))' }}>
             <BookOpen className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold text-primary">{readingCount}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">READING NOW</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">READING NOW</div>
         </div>
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--green) / 0.12)', color: 'hsl(var(--green))' }}>
             <CheckCircle className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold" style={{ color: 'hsl(var(--green))' }}>{finishedCount}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">FINISHED</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">FINISHED</div>
         </div>
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--warning) / 0.12)', color: 'hsl(var(--warning))' }}>
             <Star className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold" style={{ color: 'hsl(var(--warning))' }}>{totalPages}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">PAGES READ</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">PAGES READ</div>
         </div>
       </div>
 
@@ -238,12 +238,12 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
                     <h3 className="text-sm font-semibold text-foreground truncate">{book.title}</h3>
                     {book.author && <p className="text-xs text-muted-foreground truncate mt-0.5">by {book.author}</p>}
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <span className="text-[0.6rem] font-semibold px-2 py-0.5 rounded" style={{
+                      <span className="text-[0.65rem] font-semibold px-2 py-0.5 rounded" style={{
                         background: 'hsl(var(--purple) / 0.1)',
                         color: 'hsl(var(--purple))',
                       }}>{book.genre || 'General'}</span>
                       {book.rating > 0 && <StarRating rating={book.rating} onChange={() => {}} />}
-                      {book.pages > 0 && <span className="text-[0.6rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
+                      {book.pages > 0 && <span className="text-[0.65rem] text-muted-foreground">{book.currentPage || 0}/{book.pages}p</span>}
                     </div>
                     {book.pages > 0 && book.status === 'reading' && (
                       <div className="mt-2">
