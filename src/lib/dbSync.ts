@@ -265,3 +265,187 @@ export async function clearRoutineInDB() {
     console.error('Clear routine DB error:', e);
   }
 }
+
+// ── Transactions Sync ──
+
+export async function syncTransactionsFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getTransactions();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch transactions from DB:', error);
+      return Storage.getTransactions();
+    }
+
+    if (data && data.length > 0) {
+      const txns = data.map(t => ({
+        id: t.id,
+        type: t.type,
+        description: t.description,
+        amount: Number(t.amount),
+        date: t.date,
+      }));
+      Storage.setTransactions(txns);
+      return txns;
+    }
+
+    const localTxns = Storage.getTransactions();
+    if (localTxns.length > 0) {
+      for (const t of localTxns) {
+        await supabase.from('user_transactions').insert({
+          user_id: userId,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          date: t.date || new Date().toISOString(),
+        });
+      }
+    }
+    return localTxns;
+  } catch (e) {
+    console.error('Transaction sync error:', e);
+    return Storage.getTransactions();
+  }
+}
+
+export async function addTransactionToDB(txn: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const { data, error } = await supabase.from('user_transactions').insert({
+      user_id: userId,
+      type: txn.type,
+      description: txn.description,
+      amount: txn.amount,
+      date: txn.date || new Date().toISOString(),
+    }).select('id').single();
+
+    if (error) console.error('Failed to add transaction to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add transaction DB error:', e);
+    return null;
+  }
+}
+
+export async function deleteTransactionFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId) return;
+
+  try {
+    await supabase.from('user_transactions').delete().eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete transaction DB error:', e);
+  }
+}
+
+// ── Debts Sync ──
+
+export async function syncDebtsFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getDebts();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_debts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch debts from DB:', error);
+      return Storage.getDebts();
+    }
+
+    if (data && data.length > 0) {
+      const debts = data.map(d => ({
+        id: d.id,
+        debtType: d.debt_type,
+        person: d.person,
+        amount: Number(d.amount),
+        description: d.description,
+        date: d.date,
+        settled: d.settled,
+        settledDate: d.settled_date,
+      }));
+      Storage.setDebts(debts);
+      return debts;
+    }
+
+    const localDebts = Storage.getDebts();
+    if (localDebts.length > 0) {
+      for (const d of localDebts) {
+        await supabase.from('user_debts').insert({
+          user_id: userId,
+          debt_type: d.debtType || 'lend',
+          person: d.person,
+          amount: d.amount,
+          description: d.description || '',
+          date: d.date || '',
+          settled: d.settled || false,
+          settled_date: d.settledDate || null,
+        });
+      }
+    }
+    return localDebts;
+  } catch (e) {
+    console.error('Debts sync error:', e);
+    return Storage.getDebts();
+  }
+}
+
+export async function addDebtToDB(debt: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const { data, error } = await supabase.from('user_debts').insert({
+      user_id: userId,
+      debt_type: debt.debtType || 'lend',
+      person: debt.person,
+      amount: debt.amount,
+      description: debt.description || '',
+      date: debt.date || '',
+      settled: false,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add debt to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add debt DB error:', e);
+    return null;
+  }
+}
+
+export async function settleDebtInDB(id: string) {
+  const userId = await getUserId();
+  if (!userId) return;
+
+  try {
+    await supabase.from('user_debts').update({
+      settled: true,
+      settled_date: new Date().toISOString(),
+    }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Settle debt DB error:', e);
+  }
+}
+
+export async function deleteDebtFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId) return;
+
+  try {
+    await supabase.from('user_debts').delete().eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete debt DB error:', e);
+  }
+}
