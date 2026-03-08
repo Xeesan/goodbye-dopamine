@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Storage from '@/lib/storage';
+import { enqueue, flushQueue } from '@/lib/syncQueue';
 
 interface XPData {
   total: number;
@@ -24,9 +25,14 @@ const calcLevel = (total: number) => Math.floor(total / 100) + 1;
 export const GamificationProvider = ({ children }: { children: ReactNode }) => {
   const [xp, setXp] = useState<XPData>(() => Storage.getXP());
 
-  // Load from DB on mount
+  // Load from DB on mount & flush any queued writes
   useEffect(() => {
     const load = async () => {
+      if (!navigator.onLine) return;
+
+      // Flush any pending sync queue items first
+      await flushQueue();
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -37,18 +43,15 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (data) {
-        // Merge: take whichever is higher (DB or local)
         const localXp = Storage.getXP();
         const total = Math.max(data.total_xp, localXp.total);
         const level = calcLevel(total);
         setXp({ total, level });
         Storage.set('xp', { total, level });
-        // Sync back if local was higher
         if (localXp.total > data.total_xp) {
           await supabase.from('user_gamification').update({ total_xp: total, level, updated_at: new Date().toISOString() }).eq('user_id', user.id);
         }
       } else {
-        // First time: create row with local XP
         const localXp = Storage.getXP();
         await supabase.from('user_gamification').insert({
           user_id: user.id,
@@ -58,6 +61,11 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     load();
+
+    // Also flush queue whenever we come back online
+    const handleOnline = () => { flushQueue(); load(); };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
   }, []);
 
   const addXP = useCallback((amount: number) => {
@@ -68,22 +76,39 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       const level = calcLevel(total);
       const next = { total, level };
 
-      // Persist to localStorage
+      // Always persist to localStorage
       Storage.set('xp', next);
 
-      // Persist to DB (fire-and-forget)
+      // Try DB, queue if offline
       (async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+
+        if (!navigator.onLine) {
+          enqueue({
+            table: 'user_gamification',
+            operation: 'upsert',
+            data: { user_id: user.id, total_xp: total, level, updated_at: new Date().toISOString() },
+            matchColumn: 'user_id',
+          });
+          return;
+        }
+
         const { data } = await supabase
           .from('user_gamification')
           .select('id')
           .eq('user_id', user.id)
           .single();
         if (data) {
-          await supabase.from('user_gamification').update({ total_xp: total, level, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+          const res = await supabase.from('user_gamification').update({ total_xp: total, level, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+          if (res.error) {
+            enqueue({ table: 'user_gamification', operation: 'upsert', data: { user_id: user.id, total_xp: total, level, updated_at: new Date().toISOString() }, matchColumn: 'user_id' });
+          }
         } else {
-          await supabase.from('user_gamification').insert({ user_id: user.id, total_xp: total, level });
+          const res = await supabase.from('user_gamification').insert({ user_id: user.id, total_xp: total, level });
+          if (res.error) {
+            enqueue({ table: 'user_gamification', operation: 'upsert', data: { user_id: user.id, total_xp: total, level, updated_at: new Date().toISOString() }, matchColumn: 'user_id' });
+          }
         }
       })();
 
