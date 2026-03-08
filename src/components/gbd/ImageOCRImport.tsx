@@ -113,10 +113,13 @@ If you cannot read anything, return an empty array: []`;
   };
 
   const processOnlineGemini = async (base64: string): Promise<any[]> => {
-    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent?key=${apiConfig.apiKey}`;
+    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiConfig.apiKey,
+      },
       body: JSON.stringify({
         contents: [{
           parts: [
