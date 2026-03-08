@@ -1,4 +1,5 @@
 import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User } from 'lucide-react';
+import appLogo from '@/assets/icon.svg';
 
 interface SidebarProps {
   currentPage: string;
@@ -33,13 +34,11 @@ const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarPro
         borderColor: 'hsl(var(--border))',
       }}>
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 pt-5 pb-6">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm" style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
-          G
-        </div>
+      <div className="flex items-center gap-3 px-5 pt-5 pb-5" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+        <img src={appLogo} alt="GBD Logo" className="w-9 h-9 rounded-lg shrink-0" />
         <div>
-          <span className="text-xl font-extrabold tracking-tight text-foreground">GBD</span>
-          <span className="block text-[0.6rem] text-muted-foreground tracking-wider">Good Bye Dopamine</span>
+          <span className="text-lg font-extrabold tracking-tight text-foreground">GBD</span>
+          <span className="block text-[0.6rem] font-medium tracking-widest uppercase" style={{ color: 'hsl(var(--primary))' }}>Good Bye Dopamine</span>
         </div>
       </div>
 
