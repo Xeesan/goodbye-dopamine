@@ -27,13 +27,10 @@ const navItems = [
 
 const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarProps) => {
   return (
-    <aside className={`w-[240px] min-w-[240px] h-screen flex flex-col overflow-y-auto overflow-x-hidden border-r transition-transform duration-300 ${isOpen ? 'translate-x-0' : ''}`}
+    <aside className={`sidebar-container ${isOpen ? 'sidebar-open' : ''}`}
       style={{
         background: 'hsl(var(--bg-secondary))',
         borderColor: 'hsl(var(--border))',
-        zIndex: 100,
-        position: typeof window !== 'undefined' && window.innerWidth <= 768 ? 'fixed' : 'relative',
-        transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !isOpen ? 'translateX(-100%)' : 'translateX(0)',
       }}>
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 pt-5 pb-6">
