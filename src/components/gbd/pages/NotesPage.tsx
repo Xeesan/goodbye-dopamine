@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { formatDate } from '@/lib/helpers';
-import { FileText, Trash2, Edit, Search, X } from 'lucide-react';
+import { FileText, Trash2, Edit, Search, X, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 
 interface NotesPageProps {
