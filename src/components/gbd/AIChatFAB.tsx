@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, X, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
 import { useI18n } from '@/hooks/useI18n';
@@ -456,12 +456,18 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
               <Bot className="w-5 h-5" />
               <span className="font-bold text-sm">GBD Assistant</span>
             </div>
-            <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-white/20 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button onClick={() => setMessages([])} className="p-1 rounded-full hover:bg-white/20 transition-colors" title="Clear chat">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-white/20 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[50vh]">
             {messages.length === 0 && (
               <div className="text-center py-8">
