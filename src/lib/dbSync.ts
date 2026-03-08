@@ -105,17 +105,37 @@ export async function syncExamsFromDB(): Promise<any[]> {
 
     const localExams = Storage.getExams();
 
-    if (remoteExams.length === 0 && localExams.length === 0) return [];
+    if (remoteExams.length === 0 && localExams.length === 0) {
+      Storage.setExams([]);
+      return [];
+    }
 
     // First-time migration: local only → push all
     if (remoteExams.length === 0 && localExams.length > 0) {
+      // Check if ALL local exams have DB-style IDs (no underscore)
+      // If so, they were deleted from DB — clear local cache
+      const hasLocalOnly = localExams.some(e => String(e.id).includes('_'));
+      if (!hasLocalOnly) {
+        // All local exams have DB IDs but DB is empty → they were deleted
+        Storage.setExams([]);
+        return [];
+      }
       await pushExamsToDB(localExams, userId);
       return localExams;
     }
 
-    // LWW merge
+    const remoteIdSet = new Set(remoteExams.map(e => String(e.id)));
+
+    // LWW merge — only for exams that still exist in DB
+    const localWithDbIds = localExams.filter(e => {
+      const id = String(e.id);
+      // Keep local DB-id exams only if they still exist remotely
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false; // local-only items handled separately
+    });
+
     const { merged, toUpload } = lwwMerge(
-      localExams.filter(e => !String(e.id).includes('_')), // only DB-assigned IDs
+      localWithDbIds,
       remoteExams,
       (e) => e.updatedAt || e.updated_at || '1970-01-01'
     );
