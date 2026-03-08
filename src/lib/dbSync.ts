@@ -560,9 +560,10 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
   if (!userId) return null;
 
   try {
+    const debtTypeValue = debt.debtType === 'borrow' ? 'borrow' : 'lend';
     const { data, error } = await supabase.from('user_debts').insert({
       user_id: userId,
-      debt_type: debt.debtType || 'lend',
+      debt_type: debtTypeValue,
       person: debt.person,
       amount: debt.amount,
       description: debt.description || '',
