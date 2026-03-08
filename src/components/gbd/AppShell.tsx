@@ -50,7 +50,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
       case 'notes': return <NotesPage {...props} />;
       case 'booklist': return <BooklistPage {...props} />;
       case 'detox': return <DetoxPage {...props} />;
-      case 'health': return <HealthPage {...props} />;
+      case 'health': return <HealthPage {...props} onRestartReminders={restartHealthReminders} />;
       case 'reports': return <ReportsPage {...props} />;
       case 'notifications': return <NotificationsPage {...props} />;
       case 'profile': return <ProfilePage {...props} user={user} onLogout={onLogout} />;
