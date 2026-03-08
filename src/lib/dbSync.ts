@@ -459,7 +459,7 @@ export async function deleteTransactionFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_transactions').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_transactions').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete transaction DB error:', e);
   }
