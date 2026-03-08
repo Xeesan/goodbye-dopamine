@@ -11,7 +11,6 @@ interface DashboardPageProps {
   navigateTo: (page: string) => void;
   user: any;
   refreshKey: number;
-  calendarOpen?: boolean;
 }
 
 const ALL_TILES = [
