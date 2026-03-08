@@ -202,11 +202,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
       <div className="tab-group mb-6 inline-flex">
         {[
-          { id: 'transactions', label: 'TRANSACTIONS' },
-          { id: 'lend', label: 'LEND/BORROW' },
-          { id: 'savings', label: 'SAVINGS GOALS' },
-        ].map(t => (
-          <button key={t.id} className={`tab-item ${moneyTab === t.id ? 'active' : ''}`} onClick={() => setMoneyTab(t.id)}>{t.label}</button>
+          { id: 'transactions', label: t('money.transactions') },
+          { id: 'lend', label: t('money.lend_borrow') },
+          { id: 'savings', label: t('money.savings') },
+        ].map(tab => (
+          <button key={tab.id} className={`tab-item ${moneyTab === tab.id ? 'active' : ''}`} onClick={() => setMoneyTab(tab.id)}>{tab.label}</button>
         ))}
       </div>
 
