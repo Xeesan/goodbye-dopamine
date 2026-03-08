@@ -604,17 +604,25 @@ body {
 }
 
 .day-tab {
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: hsl(var(--bg-card));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
   color: hsl(var(--text-muted));
   font-family: inherit;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .day-tab {
+    padding: 10px 16px;
+    font-size: 0.7rem;
+  }
 }
 
 .day-tab.active {
