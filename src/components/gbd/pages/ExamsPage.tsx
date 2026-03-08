@@ -1,8 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncExamsFromDB, addExamToDB, updateExamInDB, deleteExamFromDB, clearExamsInDB } from '@/lib/dbSync';
 import { formatDate, formatTime12h } from '@/lib/helpers';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
+import { useDialog } from '../DialogProvider';
+import { useGamification } from '@/hooks/useGamification';
+import { toast } from '@/hooks/use-toast';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';

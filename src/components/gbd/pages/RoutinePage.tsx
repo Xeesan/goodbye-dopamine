@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB } from '@/lib/dbSync';
 import { getCurrentDayName } from '@/lib/helpers';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import ImageOCRImport from '../ImageOCRImport';
