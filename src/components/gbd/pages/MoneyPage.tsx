@@ -227,46 +227,60 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         const people = Object.entries(personMap).map(([name, data]) => ({
           name, ...data, net: data.lent - data.borrowed
         }));
+        const netTotal = totalLent - totalBorrowed;
 
         return (
         <>
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Summary cards */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">↑</div> TOTAL LENT</div>
-              <div className="text-xl font-bold text-primary">৳ {totalLent.toLocaleString()}</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↑ LENT</div>
+              <div className="text-lg font-bold text-primary">৳{totalLent.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">↓</div> TOTAL BORROWED</div>
-              <div className="text-xl font-bold text-destructive">৳ {totalBorrowed.toLocaleString()}</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↓ BORROWED</div>
+              <div className="text-lg font-bold text-destructive">৳{totalBorrowed.toLocaleString()}</div>
+            </div>
+            <div className="glass-card-accent !p-4">
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">⊘ NET</div>
+              <div className={`text-lg font-bold ${netTotal > 0 ? 'text-primary' : netTotal < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {netTotal > 0 ? '+' : netTotal < 0 ? '-' : ''}৳{Math.abs(netTotal).toLocaleString()}
+              </div>
+              <div className="text-[0.6rem] text-muted-foreground mt-0.5">
+                {netTotal > 0 ? 'You are owed' : netTotal < 0 ? 'You owe' : 'All even'}
+              </div>
             </div>
           </div>
 
-          {/* Per-person summary */}
+          {/* People Summary */}
           {people.length > 0 && (
             <div className="glass-card mb-6">
-              <h2 className="text-base font-semibold text-foreground mb-4">People Summary</h2>
-              <div className="space-y-3">
-                {people.map(p => (
-                  <div key={p.name} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: 'hsl(var(--muted) / 0.4)' }}>
+              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 People Summary</h2>
+              <div className="space-y-2">
+                {people.sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).map(p => (
+                  <div key={p.name} className="flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
                     <div className="flex items-center gap-3">
-                      <div className={`money-icon ${p.net > 0 ? 'green' : p.net < 0 ? 'red' : ''}`} style={p.net === 0 ? { background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' } : {}}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                        style={{
+                          background: p.net > 0 ? 'hsl(var(--primary) / 0.15)' : p.net < 0 ? 'hsl(var(--destructive) / 0.15)' : 'hsl(var(--border))',
+                          color: p.net > 0 ? 'hsl(var(--primary))' : p.net < 0 ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'
+                        }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="font-medium text-foreground text-sm">{p.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {p.lent > 0 && <span>Lent: ৳{p.lent.toLocaleString()}</span>}
-                          {p.lent > 0 && p.borrowed > 0 && <span> · </span>}
-                          {p.borrowed > 0 && <span>Borrowed: ৳{p.borrowed.toLocaleString()}</span>}
+                        <div className="text-[0.65rem] text-muted-foreground flex gap-2">
+                          {p.lent > 0 && <span className="text-primary">Lent ৳{p.lent.toLocaleString()}</span>}
+                          {p.borrowed > 0 && <span className="text-destructive">Borrowed ৳{p.borrowed.toLocaleString()}</span>}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className={`font-bold text-sm ${p.net > 0 ? 'text-primary' : p.net < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        {p.net > 0 ? `+৳${p.net.toLocaleString()}` : p.net < 0 ? `-৳${Math.abs(p.net).toLocaleString()}` : 'Settled'}
+                        {p.net > 0 ? `+৳${p.net.toLocaleString()}` : p.net < 0 ? `-৳${Math.abs(p.net).toLocaleString()}` : '৳0'}
                       </div>
                       <div className="text-[0.6rem] text-muted-foreground">
-                        {p.net > 0 ? 'They owe you' : p.net < 0 ? 'You owe them' : 'Even'}
+                        {p.net > 0 ? 'They owe you' : p.net < 0 ? 'You owe them' : 'Even ✓'}
                       </div>
                     </div>
                   </div>
@@ -275,66 +289,112 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             </div>
           )}
 
+          {/* Add new debt form */}
           <div className="glass-card mb-6">
-            <div className="grid grid-cols-2 gap-0 mb-5 rounded-[var(--radius-sm)] overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
-              <button className={debtType === 'lend' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setDebtType('lend')}>Lend</button>
-              <button className={debtType === 'borrow' ? 'btn-danger !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setDebtType('borrow')}>Borrow</button>
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📝 New Entry</h2>
+            <div className="grid grid-cols-2 gap-0 mb-5 rounded-xl overflow-hidden" style={{ border: '2px solid hsl(var(--border))' }}>
+              <button
+                className={`py-3 text-sm font-semibold transition-all ${debtType === 'lend' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setDebtType('lend')}>
+                ↑ I Lent Money
+              </button>
+              <button
+                className={`py-3 text-sm font-semibold transition-all ${debtType === 'borrow' ? 'bg-destructive text-destructive-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setDebtType('borrow')}>
+                ↓ I Borrowed Money
+              </button>
             </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <input type="text" id="debt-person" className="input-simple" placeholder="Person Name" />
-              <input type="number" id="debt-amount" className="input-simple" placeholder="Amount" min={1} />
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="form-label">PERSON</label>
+                  <input type="text" id="debt-person" className="input-simple" placeholder="Who?" />
+                </div>
+                <div>
+                  <label className="form-label">AMOUNT (৳)</label>
+                  <input type="number" id="debt-amount" className="input-simple" placeholder="0" min={1} />
+                </div>
+              </div>
+              <div>
+                <label className="form-label">REASON (OPTIONAL)</label>
+                <input type="text" id="debt-description" className="input-simple" placeholder="What for?" />
+              </div>
+              <div>
+                <label className="form-label">DATE</label>
+                <input type="date" id="debt-date" className="input-simple max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
+              </div>
             </div>
-            <input type="text" id="debt-description" className="input-simple mb-4" placeholder="Description" />
-            <input type="date" id="debt-date" className="input-simple mb-5 max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
-            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addDebt}>Save Debt</button></div>
+            <div className="flex gap-3 justify-end mt-5">
+              <button className={`${debtType === 'lend' ? 'btn-green' : 'btn-danger'} !min-w-[120px]`} onClick={addDebt}>
+                {debtType === 'lend' ? '↑ Save Lend' : '↓ Save Borrow'}
+              </button>
+            </div>
           </div>
 
-          {/* Grouped by person */}
+          {/* Active Debts grouped by person */}
           <div className="glass-card mb-6 min-h-[100px]">
-            <h2 className="text-base font-semibold text-foreground mb-5">Active Debts</h2>
-            {people.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>No active debts.</p></div> :
-            people.map(p => (
-              <div key={p.name} className="mb-4 last:mb-0">
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📋 Active Debts</h2>
+            {people.length === 0 ? (
+              <div className="empty-state border border-dashed border-border rounded-xl !p-10 text-center">
+                <div className="text-3xl mb-2">🤝</div>
+                <p className="text-muted-foreground text-sm">No active debts — all clear!</p>
+              </div>
+            ) : people.map(p => (
+              <div key={p.name} className="mb-5 last:mb-0">
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{p.name}</span>
-                  <span className={`text-xs font-bold ${p.net > 0 ? 'text-primary' : p.net < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    Net: {p.net > 0 ? '+' : p.net < 0 ? '-' : ''}৳{Math.abs(p.net).toLocaleString()}
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-bold"
+                      style={{
+                        background: p.net > 0 ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--destructive) / 0.15)',
+                        color: p.net > 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'
+                      }}>
+                      {p.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-xs font-semibold text-foreground">{p.name}</span>
+                  </div>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.net > 0 ? 'text-primary' : 'text-destructive'}`}
+                    style={{ background: p.net > 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--destructive) / 0.1)' }}>
+                    Net: {p.net > 0 ? '+' : '-'}৳{Math.abs(p.net).toLocaleString()}
                   </span>
                 </div>
-                {p.debts.slice().reverse().map((d: any) => (
-                  <div key={d.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                    <div className="flex items-center gap-3">
-                      <div className={`money-icon ${d.debtType === 'lend' ? 'green' : 'red'}`}>{d.debtType === 'lend' ? '↑' : '↓'}</div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
+                  {p.debts.slice().reverse().map((d: any, i: number) => (
+                    <div key={d.id} className="flex items-center justify-between py-3 px-3"
+                      style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.15)' }}>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-base ${d.debtType === 'lend' ? '' : ''}`}>{d.debtType === 'lend' ? '🔼' : '🔽'}</span>
+                        <div>
+                          <div className="text-sm text-foreground font-medium">{d.description || d.debtType === 'lend' ? d.description || 'Lent' : d.description || 'Borrowed'}</div>
+                          <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount.toLocaleString()}</span>
+                        <button className="btn-outline !py-1 !px-2.5 !text-xs !font-semibold !text-primary !rounded-lg" onClick={() => settleDebt(d.id)}>✓ Settle</button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`font-semibold ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount}</span>
-                      <span className="text-[0.6rem] uppercase text-muted-foreground tracking-wider">{d.debtType}</span>
-                      <button className="btn-outline !py-1 !px-2 !text-xs !text-primary" onClick={() => settleDebt(d.id)}>Settle</button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             ))}
           </div>
 
+          {/* Settled History */}
           {historyDebts.length > 0 && (
-            <div className="glass-card min-h-[100px] opacity-80">
-              <h2 className="text-base font-semibold text-foreground mb-5">Settled History</h2>
+            <div className="glass-card min-h-[100px]" style={{ opacity: 0.75 }}>
+              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ Settled History</h2>
               {historyDebts.slice().reverse().map((d: any) => (
                 <div key={d.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                   <div className="flex items-center gap-3">
-                    <div className="money-icon" style={{ background: 'hsl(var(--border))', color: 'hsl(var(--text-muted))' }}>✓</div>
+                    <span className="text-base">☑️</span>
                     <div>
-                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground">(Settled)</span></div>
-                      <div className="text-xs text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
+                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">Settled</span></div>
+                      <div className="text-[0.65rem] text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-muted-foreground line-through">৳{d.amount}</span>
-                    <button className="text-destructive text-xs" onClick={() => deleteDebt(d.id)}>✕</button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-muted-foreground line-through text-sm">৳{d.amount.toLocaleString()}</span>
+                    <button className="text-destructive text-xs opacity-60 hover:opacity-100 transition-opacity" onClick={() => deleteDebt(d.id)}>✕</button>
                   </div>
                 </div>
               ))}
