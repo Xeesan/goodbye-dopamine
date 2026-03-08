@@ -159,18 +159,24 @@ serve(async (req) => {
       });
     }
 
-    // ── Server-side rate limiting ──
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: allowed, error: rlError } = await adminClient.rpc("check_rate_limit", {
-      p_user_id: user.id,
-      p_function_name: "ai-assistant",
-      p_max_requests: RATE_LIMIT_MAX,
-      p_window_seconds: RATE_LIMIT_WINDOW,
-    });
+    // ── Server-side rate limiting (fail-open: if check errors, allow request) ──
+    let rateLimited = false;
+    try {
+      const adminClient = createClient(supabaseUrl, serviceRoleKey);
+      const { data: allowed } = await adminClient.rpc("check_rate_limit", {
+        p_user_id: user.id,
+        p_function_name: "ai-assistant",
+        p_max_requests: RATE_LIMIT_MAX,
+        p_window_seconds: RATE_LIMIT_WINDOW,
+      });
+      if (allowed === false) rateLimited = true;
+    } catch {
+      // Rate limit check failed — allow request through
+    }
 
-    if (rlError || allowed === false) {
+    if (rateLimited) {
       return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Please wait a moment before trying again." }),
+        JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
         {
           status: 429,
           headers: {
