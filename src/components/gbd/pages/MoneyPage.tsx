@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
 import { ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
@@ -21,6 +22,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const { addXP } = useGamification();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
+  // Hydrate from DB on mount
+  useEffect(() => {
+    Promise.all([syncTransactionsFromDB(), syncDebtsFromDB()]).then(() => refresh());
+  }, []);
+
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
   const goals = Storage.getSavingsGoals();
@@ -40,6 +46,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
+    addTransactionToDB({ type: txnType, description, amount }).then(dbId => {
+      if (dbId) {
+        const current = Storage.getTransactions();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setTransactions(current); }
+      }
+    });
     addXP(5);
     setShowTxnModal(false);
     refresh();
@@ -56,6 +69,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
+    addDebtToDB({ debtType, person, amount, description, date }).then(dbId => {
+      if (dbId) {
+        const current = Storage.getDebts();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setDebts(current); }
+      }
+    });
     addXP(5);
     (document.getElementById('debt-person') as HTMLInputElement).value = '';
     (document.getElementById('debt-amount') as HTMLInputElement).value = '';
@@ -87,6 +107,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Delete Transaction', message: 'Are you sure you want to delete this transaction?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteTransaction(id);
+      deleteTransactionFromDB(id);
       refresh();
       toast({ title: 'Transaction deleted', description: txn?.description || '' });
     }
@@ -97,6 +118,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
     if (confirmed) {
       Storage.settleDebt(id);
+      settleDebtInDB(id);
       refresh();
       toast({ title: 'Debt settled ✓', description: `${debt?.person} — ৳${debt?.amount}` });
     }
@@ -107,6 +129,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const confirmed = await showDialog({ title: 'Delete Debt', message: 'Are you sure you want to delete this debt record?', type: 'confirm', confirmText: 'Delete' });
     if (confirmed) {
       Storage.deleteDebt(id);
+      deleteDebtFromDB(id);
       refresh();
       toast({ title: 'Debt deleted', description: debt?.person || '' });
     }
