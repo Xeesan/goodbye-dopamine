@@ -57,6 +57,14 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 truncate">Welcome back, {user?.name?.split(' ')[0] || user?.username || 'User'}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">Here's your productivity overview for this week.</p>
         </div>
+        <button
+          className="glass-card !p-2 !px-4 flex items-center gap-2 text-xs font-semibold tracking-wider cursor-pointer hover:scale-105 transition-transform"
+          onClick={() => setShowXpBadge(prev => !prev)}
+          title="Toggle XP details"
+        >
+          <Star className="w-3.5 h-3.5 text-primary" />
+          <span className="text-primary font-bold">{xp.total} XP</span>
+        </button>
       </div>
 
       {/* Calendar — hidden by default, toggled from header date */}
