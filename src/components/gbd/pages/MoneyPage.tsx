@@ -52,7 +52,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
     Storage.addDebt({ debtType, person, amount, description, date });
-    Storage.addXP(5);
+    addXP(5);
     navigateTo('money');
   };
 
