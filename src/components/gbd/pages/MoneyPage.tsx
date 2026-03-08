@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2, CreditCard, Plus, CircleCheck } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 import { useI18n } from '@/hooks/useI18n';
-import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore, isAfter } from 'date-fns';
+import { differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore } from 'date-fns';
 
 interface Installment {
   id: string;
@@ -76,8 +76,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addTransaction = async () => {
     const description = (document.getElementById('txn-desc') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('txn-amount') as HTMLInputElement)?.value);
-    if (!description || !amount) {
-      await showDialog({ title: 'Missing Info', message: 'Please fill in all fields.', type: 'alert' });
+    if (!description || !amount || isNaN(amount) || amount <= 0 || amount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid description and amount (1 — 10,000,000).', type: 'alert' });
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
@@ -97,8 +97,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addDebt = async () => {
     const person = (document.getElementById('debt-person') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('debt-amount') as HTMLInputElement)?.value);
-    if (!person || !amount) {
-      await showDialog({ title: 'Missing Info', message: 'Please enter a person name and amount.', type: 'alert' });
+    if (!person || !amount || isNaN(amount) || amount <= 0 || amount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid person name and amount (1 — 10,000,000).', type: 'alert' });
       return;
     }
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
@@ -123,8 +123,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addGoal = async () => {
     const title = (document.getElementById('goal-title') as HTMLInputElement)?.value.trim();
     const targetAmount = parseFloat((document.getElementById('goal-target') as HTMLInputElement)?.value);
-    if (!title || !targetAmount) {
-      await showDialog({ title: 'Missing Info', message: 'Please enter a goal title and target amount.', type: 'alert' });
+    if (!title || !targetAmount || isNaN(targetAmount) || targetAmount <= 0 || targetAmount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid goal title and target amount.', type: 'alert' });
       return;
     }
     const initialAmount = parseFloat((document.getElementById('goal-initial') as HTMLInputElement)?.value) || 0;
@@ -247,7 +247,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
           {/* Semester Fee & Budget Widget */}
           {(() => {
-            if (!semesterBudget) {
+            if (!semesterBudget || !semesterBudget.startDate || !semesterBudget.totalFee) {
               return (
                 <div className="glass-card mb-6 !p-5">
                   <div className="flex items-center justify-between">
@@ -266,47 +266,59 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
               );
             }
 
+            let start: Date;
+            try {
+              start = parseISO(semesterBudget.startDate);
+              if (isNaN(start.getTime())) throw new Error('Invalid date');
+            } catch {
+              // Corrupted data — reset
+              Storage.setSemesterBudget(null);
+              setSemesterBudgetState(null);
+              return null;
+            }
+
             const now = new Date();
-            const start = parseISO(semesterBudget.startDate);
-            const semMonths = semesterBudget.semesterMonths || 6;
+            const semMonths = Math.max(1, Math.min(24, semesterBudget.semesterMonths || 6));
             const end = addMonths(start, semMonths);
             const remainingDays = Math.max(0, differenceInDays(end, now));
-            const remainingWeeks = Math.max(1, Math.ceil(remainingDays / 7));
             const isActive = now >= start && now <= end;
             const elapsedMonths = Math.max(0, Math.min(semMonths, Math.floor(differenceInDays(now, start) / 30)));
             const remainingMonths = Math.max(0, semMonths - elapsedMonths);
 
-            // Fee tracking
-            const installments: Installment[] = semesterBudget.installments || [];
-            const totalPaid = installments.reduce((sum: number, inst: Installment) => sum + inst.amount, 0);
-            const totalFee = semesterBudget.totalFee || 0;
+            // Fee tracking — guard against corrupt installment data
+            const installments: Installment[] = Array.isArray(semesterBudget.installments)
+              ? semesterBudget.installments.filter(inst => inst && typeof inst.amount === 'number' && inst.amount > 0 && inst.id && inst.paidDate)
+              : [];
+            const totalPaid = installments.reduce((sum, inst) => sum + inst.amount, 0);
+            const totalFee = Math.max(0, semesterBudget.totalFee);
             const feeRemaining = Math.max(0, totalFee - totalPaid);
             const feeProgress = totalFee > 0 ? Math.min(100, Math.round((totalPaid / totalFee) * 100)) : 0;
 
             // Next installment due calculation
-            const monthlyInstallment = semesterBudget.monthlyInstallment || 0;
+            const monthlyInstallment = Math.max(0, semesterBudget.monthlyInstallment || 0);
             const installmentsDueCount = monthlyInstallment > 0 ? Math.ceil(totalFee / monthlyInstallment) : 0;
             const installmentsPaidCount = installments.length;
             const nextInstallmentNumber = installmentsPaidCount + 1;
             const nextDueDate = installmentsDueCount > 0 && nextInstallmentNumber <= installmentsDueCount
               ? addMonths(start, installmentsPaidCount)
               : null;
-            const isOverdue = nextDueDate && isBefore(nextDueDate, now);
+            const isOverdue = nextDueDate ? isBefore(nextDueDate, now) : false;
 
             // Weekly spending from living budget
             const weekStart = startOfWeek(now, { weekStartsOn: 6 });
             const weekEnd = endOfWeek(now, { weekStartsOn: 6 });
             const thisWeekExpenses = txns
-              .filter((tx: any) => tx.type === 'expense' && (() => {
+              .filter((tx: any) => {
+                if (tx.type !== 'expense' || typeof tx.amount !== 'number') return false;
                 try {
                   const d = new Date(tx.date);
-                  return isWithinInterval(d, { start: weekStart, end: weekEnd });
+                  return !isNaN(d.getTime()) && isWithinInterval(d, { start: weekStart, end: weekEnd });
                 } catch { return false; }
-              })())
+              })
               .reduce((sum: number, tx: any) => sum + tx.amount, 0);
 
-            const livingBudget = semesterBudget.livingBudget || 0;
-            const weeklyAllowance = livingBudget > 0 ? Math.round((livingBudget * 12) / 52) : 0; // monthly to weekly
+            const livingBudget = Math.max(0, semesterBudget.livingBudget || 0);
+            const weeklyAllowance = livingBudget > 0 ? Math.round((livingBudget * 12) / 52) : 0;
             const safeToSpend = Math.max(0, weeklyAllowance - thisWeekExpenses);
             const weekProgress = weeklyAllowance > 0 ? Math.min(100, Math.round((thisWeekExpenses / weeklyAllowance) * 100)) : 0;
             const isOverBudget = thisWeekExpenses > weeklyAllowance && weeklyAllowance > 0;
@@ -377,8 +389,15 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       )}
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const amt = Math.min(monthlyInstallment, feeRemaining);
+                        const confirmed = await showDialog({
+                          title: 'Confirm Payment',
+                          message: `Record installment #${nextInstallmentNumber} of ৳${amt.toLocaleString()} as paid?`,
+                          type: 'confirm',
+                          confirmText: 'Yes, Paid'
+                        });
+                        if (!confirmed) return;
                         const newInst: Installment = {
                           id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
                           amount: amt,
@@ -885,8 +904,30 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
                 const semesterMonths = parseInt((document.getElementById('budget-months') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
-                if (!totalFee || totalFee <= 0 || !semesterMonths || semesterMonths <= 0 || !startDate) {
-                  toast({ title: 'Missing info', description: 'Please fill total fee, duration, and start date.', variant: 'destructive' });
+                if (!totalFee || isNaN(totalFee) || totalFee <= 0 || totalFee > 10000000) {
+                  toast({ title: 'Invalid fee', description: 'Total fee must be between ৳1 and ৳10,000,000.', variant: 'destructive' });
+                  return;
+                }
+                if (!semesterMonths || semesterMonths < 1 || semesterMonths > 24) {
+                  toast({ title: 'Invalid duration', description: 'Semester must be 1–24 months.', variant: 'destructive' });
+                  return;
+                }
+                if (!startDate) {
+                  toast({ title: 'Missing start date', description: 'Please select a start date.', variant: 'destructive' });
+                  return;
+                }
+                // Validate start date is parseable
+                const parsedStart = new Date(startDate);
+                if (isNaN(parsedStart.getTime())) {
+                  toast({ title: 'Invalid date', description: 'Start date is not valid.', variant: 'destructive' });
+                  return;
+                }
+                if (monthlyInstallment < 0 || monthlyInstallment > totalFee) {
+                  toast({ title: 'Invalid installment', description: 'Monthly installment cannot exceed total fee.', variant: 'destructive' });
+                  return;
+                }
+                if (livingBudget < 0 || livingBudget > 10000000) {
+                  toast({ title: 'Invalid budget', description: 'Living budget must be reasonable.', variant: 'destructive' });
                   return;
                 }
                 const budget: SemesterBudget = {
