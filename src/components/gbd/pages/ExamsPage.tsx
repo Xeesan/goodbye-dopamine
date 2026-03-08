@@ -204,6 +204,13 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           );
         })}
       </div>
+      {filtered.length > 0 && (
+        <div className="mt-4 flex justify-center">
+          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllExams}>
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All {examTab === 'exams' ? 'Exams' : 'Assignments'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
