@@ -129,11 +129,6 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
-          {filtered.length > 0 && (
-            <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10" onClick={clearAllExams}>
-              <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All
-            </button>
-          )}
           <div className="tab-group">
             <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
             <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>
@@ -208,6 +203,13 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           );
         })}
       </div>
+      {filtered.length > 0 && (
+        <div className="mt-4 flex justify-center">
+          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllExams}>
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All {examTab === 'exams' ? 'Exams' : 'Assignments'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

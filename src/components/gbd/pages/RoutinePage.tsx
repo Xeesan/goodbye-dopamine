@@ -87,11 +87,6 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         </div>
         <div className="flex gap-2 flex-wrap">
           <ImageOCRImport mode="routine" onImport={handleOCRImport} />
-          {Object.values(routine).some(arr => arr.length > 0) && (
-            <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10" onClick={clearAllRoutine}>
-              <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All
-            </button>
-          )}
           <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> Add Period</button>
         </div>
       </div>
@@ -125,6 +120,14 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
           </div>
         )}
       </div>
+
+      {Object.values(routine).some(arr => arr.length > 0) && (
+        <div className="mt-4 flex justify-center">
+          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllRoutine}>
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All Routine
+          </button>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
