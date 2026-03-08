@@ -28,6 +28,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [debtSearch, setDebtSearch] = useState('');
   const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
+  const [semesterBudget, setSemesterBudgetState] = useState<SemesterBudget | null>(() => Storage.getSemesterBudget());
+  const [showBudgetSetup, setShowBudgetSetup] = useState(false);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
   const { t } = useI18n();
