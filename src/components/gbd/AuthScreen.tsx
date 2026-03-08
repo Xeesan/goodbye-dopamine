@@ -44,14 +44,11 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
 
     setLoading(true);
 
-    // Check if username is taken
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', username.trim().toLowerCase())
-      .maybeSingle();
+    // Check if username is taken using secure function
+    const { data: isAvailable, error: checkError } = await supabase
+      .rpc('check_username_available', { desired_username: username.trim().toLowerCase() });
 
-    if (existing) {
+    if (checkError || isAvailable === false) {
       setLoading(false);
       showToast('Username is already taken');
       return;
