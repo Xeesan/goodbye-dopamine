@@ -191,7 +191,7 @@ export async function addExamToDB(exam: any): Promise<string | null> {
 
 export async function updateExamInDB(exam: any) {
   const userId = await getUserId();
-  if (!userId || !exam.id) return;
+  if (!userId || !exam.id || !isDbId(exam.id)) return;
 
   try {
     await supabase.from('user_exams').update({
