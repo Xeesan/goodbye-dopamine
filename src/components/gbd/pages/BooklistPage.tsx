@@ -174,7 +174,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
             <CheckCircle className="w-4.5 h-4.5" />
           </div>
           <div className="text-xl font-bold" style={{ color: 'hsl(var(--green))' }}>{finishedCount}</div>
-          <div className="text-[0.6rem] font-semibold tracking-widest text-muted-foreground">FINISHED</div>
+          <div className="text-[0.7rem] font-semibold tracking-widest text-muted-foreground">FINISHED</div>
         </div>
         <div className="glass-card !p-4 text-center">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: 'hsl(var(--warning) / 0.12)', color: 'hsl(var(--warning))' }}>
