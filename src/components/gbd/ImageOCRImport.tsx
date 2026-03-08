@@ -43,13 +43,19 @@ const STORAGE_KEY = 'gbd_ocr_config';
 const loadConfig = (): { ocrMode: OcrMode; api: ApiConfig } => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Never load apiKey from storage - user must re-enter each session
+      return { ...parsed, api: { ...parsed.api, apiKey: '' } };
+    }
   } catch {}
   return { ocrMode: 'offline', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
 };
 
 const saveConfig = (ocrMode: OcrMode, api: ApiConfig) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ocrMode, api }));
+  // Strip API key before persisting - never store secrets in localStorage
+  const { apiKey, ...safeApi } = api;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ocrMode, api: { ...safeApi, apiKey: '' } }));
 };
 
 const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: ImageOCRImportProps) => {
