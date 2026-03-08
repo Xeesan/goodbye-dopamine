@@ -295,6 +295,28 @@ const Storage = {
   setDashboardTiles(ids: string[]) {
     this.set('dashboard_tiles', ids);
   },
+
+  // Export all gbd_ data as JSON
+  exportAllData(): string {
+    const data: Record<string, any> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('gbd_')) {
+        try { data[key] = JSON.parse(localStorage.getItem(key)!); } catch { data[key] = localStorage.getItem(key); }
+      }
+    }
+    return JSON.stringify(data, null, 2);
+  },
+
+  // Import data from JSON string, merges/overwrites
+  importAllData(jsonString: string) {
+    const data = JSON.parse(jsonString);
+    for (const [key, value] of Object.entries(data)) {
+      if (key.startsWith('gbd_')) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+    }
+  },
 };
 
 export default Storage;
