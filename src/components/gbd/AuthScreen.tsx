@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import appIcon from '@/assets/icon.svg';
 import { supabase } from '@/integrations/supabase/client';
