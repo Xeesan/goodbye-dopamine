@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("authorization");
     const providedToken = authHeader?.replace("Bearer ", "");
 
-    if (cronSecret && providedToken !== cronSecret) {
+    if (!cronSecret || providedToken !== cronSecret) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
 
     if (remErr) {
       console.error("Error fetching reminders:", remErr);
-      return new Response(JSON.stringify({ error: remErr.message }), {
+      return new Response(JSON.stringify({ error: "Failed to fetch reminders" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -330,7 +330,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("Push reminder error:", e);
-    return new Response(JSON.stringify({ error: String(e) }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

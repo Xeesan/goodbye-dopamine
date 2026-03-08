@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("authorization");
     const providedToken = authHeader?.replace("Bearer ", "");
 
-    if (cronSecret && providedToken !== cronSecret) {
+    if (!cronSecret || providedToken !== cronSecret) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
 
     if (settingsErr) {
       console.error("Error fetching health reminder settings:", settingsErr);
-      return new Response(JSON.stringify({ error: settingsErr.message }), {
+      return new Response(JSON.stringify({ error: "Failed to fetch reminder settings" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("Health reminder error:", e);
-    return new Response(JSON.stringify({ error: String(e) }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
