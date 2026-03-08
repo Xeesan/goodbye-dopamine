@@ -50,7 +50,7 @@ const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarPro
           if (item.category === 'header') {
             return (
               <div key={item.id} className="flex items-center gap-2 px-3 pt-4 pb-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
-                {item.label} <span className="ml-auto">›</span>
+                {item.label}
               </div>
             );
           }
