@@ -3,6 +3,9 @@ project_id = "rgnisvzleszbemmtxafa"
 [functions.ocr-extract]
 verify_jwt = false
 
+[functions.ocr-lovable]
+verify_jwt = false
+
 [functions.push-reminders]
 verify_jwt = false
 
