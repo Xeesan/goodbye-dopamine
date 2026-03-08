@@ -429,7 +429,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Active Debts grouped by person */}
           <div className="glass-card mb-6 min-h-[100px]">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">📋 Active Debts</h2>
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">📋 {t('money.active_debts')}</h2>
               {allPeople.length > 0 && (
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
