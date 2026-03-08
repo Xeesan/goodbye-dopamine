@@ -18,20 +18,25 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchUnread = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
-      setUnreadCount(count || 0);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const { count, error } = await supabase
+          .from('notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('read', false);
+        if (!cancelled && !error) setUnreadCount(count || 0);
+      } catch {
+        // silently ignore network errors
+      }
     };
 
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
-    return () => clearInterval(interval);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   return (

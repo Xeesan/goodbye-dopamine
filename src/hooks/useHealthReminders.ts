@@ -160,6 +160,13 @@ async function showNotification(reminder: HealthReminder) {
 export function useHealthReminders() {
   const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
+  const stopReminders = useCallback(() => {
+    for (const [, id] of intervalsRef.current) {
+      clearInterval(id);
+    }
+    intervalsRef.current.clear();
+  }, []);
+
   const startReminders = useCallback(() => {
     stopReminders();
     const reminders = getHealthReminders();
@@ -175,14 +182,7 @@ export function useHealthReminders() {
 
       intervalsRef.current.set(reminder.id, id);
     }
-  }, []);
-
-  const stopReminders = useCallback(() => {
-    for (const [, id] of intervalsRef.current) {
-      clearInterval(id);
-    }
-    intervalsRef.current.clear();
-  }, []);
+  }, [stopReminders]);
 
   useEffect(() => {
     startReminders();
