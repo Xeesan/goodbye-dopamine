@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2 } from 'lucide-re
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
+import { useI18n } from '@/hooks/useI18n';
 
 interface MoneyPageProps {
   navigateTo: (page: string) => void;
@@ -22,6 +23,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
+  const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   const saveFavorites = (contacts: string[]) => {
@@ -183,8 +185,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Money</h1>
-            <p className="text-muted-foreground text-sm">Manage transactions, debts, and savings</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('money.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('money.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -193,18 +195,18 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             else if (moneyTab === 'lend') document.getElementById('debt-person')?.focus();
             else document.getElementById('goal-title')?.focus();
           }}>
-            + {moneyTab === 'transactions' ? 'Add Transaction' : moneyTab === 'lend' ? 'Add Debt' : 'Add Goal'}
+            + {moneyTab === 'transactions' ? t('money.add_transaction') : moneyTab === 'lend' ? t('money.add_debt') : t('money.add_goal')}
           </button>
         </div>
       </div>
 
       <div className="tab-group mb-6 inline-flex">
         {[
-          { id: 'transactions', label: 'TRANSACTIONS' },
-          { id: 'lend', label: 'LEND/BORROW' },
-          { id: 'savings', label: 'SAVINGS GOALS' },
-        ].map(t => (
-          <button key={t.id} className={`tab-item ${moneyTab === t.id ? 'active' : ''}`} onClick={() => setMoneyTab(t.id)}>{t.label}</button>
+          { id: 'transactions', label: t('money.transactions') },
+          { id: 'lend', label: t('money.lend_borrow') },
+          { id: 'savings', label: t('money.savings') },
+        ].map(tab => (
+          <button key={tab.id} className={`tab-item ${moneyTab === tab.id ? 'active' : ''}`} onClick={() => setMoneyTab(tab.id)}>{tab.label}</button>
         ))}
       </div>
 
@@ -212,22 +214,22 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">+</div> TOTAL INCOME</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon green">+</div> {t('money.total_income')}</div>
               <div className="text-xl font-bold text-primary">৳ {income.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">-</div> TOTAL EXPENSE</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon red">-</div> {t('money.total_expense')}</div>
               <div className="text-xl font-bold text-destructive">৳ {expense.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon blue">$</div> BALANCE</div>
+              <div className="flex items-center gap-2 text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-2"><div className="money-icon blue">$</div> {t('money.balance')}</div>
               <div className="text-xl font-bold text-foreground">৳ {balance.toLocaleString()}</div>
             </div>
           </div>
           <div className="glass-card min-h-[200px]">
-            <h2 className="text-base font-semibold text-foreground mb-5">Recent Transactions</h2>
+            <h2 className="text-base font-semibold text-foreground mb-5">{t('money.recent_txns')}</h2>
             {txns.length === 0 ? (
-              <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>No transactions yet.</p></div>
+              <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p>{t('money.no_txns')}</p></div>
             ) : txns.slice().reverse().map((t: any) => (
               <div key={t.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                 <div className="flex items-center gap-3">
@@ -271,20 +273,20 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↑ LENT</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↑ {t('money.lent')}</div>
               <div className="text-lg font-bold text-primary">৳{totalLent.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↓ BORROWED</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">↓ {t('money.borrowed')}</div>
               <div className="text-lg font-bold text-destructive">৳{totalBorrowed.toLocaleString()}</div>
             </div>
             <div className="glass-card-accent !p-4">
-              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">⊘ NET</div>
+              <div className="flex items-center gap-2 text-[0.6rem] font-semibold tracking-widest text-muted-foreground mb-1.5">⊘ {t('money.net')}</div>
               <div className={`text-lg font-bold ${netTotal > 0 ? 'text-primary' : netTotal < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {netTotal > 0 ? '+' : netTotal < 0 ? '-' : ''}৳{Math.abs(netTotal).toLocaleString()}
               </div>
               <div className="text-[0.6rem] text-muted-foreground mt-0.5">
-                {netTotal > 0 ? 'You are owed' : netTotal < 0 ? 'You owe' : 'All even'}
+                {netTotal > 0 ? t('money.you_are_owed') : netTotal < 0 ? t('money.you_owe') : t('money.all_even')}
               </div>
             </div>
           </div>
@@ -292,7 +294,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* People Summary */}
           {allPeople.length > 0 && (
             <div className="glass-card mb-6">
-              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 People Summary</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👥 {t('money.people_summary')}</h2>
               <div className="space-y-2">
                 {allPeople.sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).map(p => (
                   <div key={p.name} className="flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
@@ -312,8 +314,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           </button>
                         </div>
                         <div className="text-[0.65rem] text-muted-foreground flex gap-2">
-                          {p.lent > 0 && <span className="text-primary">Lent ৳{p.lent.toLocaleString()}</span>}
-                          {p.borrowed > 0 && <span className="text-destructive">Borrowed ৳{p.borrowed.toLocaleString()}</span>}
+                          {p.lent > 0 && <span className="text-primary">{t('money.lent_label')} ৳{p.lent.toLocaleString()}</span>}
+                          {p.borrowed > 0 && <span className="text-destructive">{t('money.borrowed_label')} ৳{p.borrowed.toLocaleString()}</span>}
                         </div>
                       </div>
                     </div>
@@ -322,7 +324,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                         {p.net > 0 ? `+৳${p.net.toLocaleString()}` : p.net < 0 ? `-৳${Math.abs(p.net).toLocaleString()}` : '৳0'}
                       </div>
                       <div className="text-[0.6rem] text-muted-foreground">
-                        {p.net > 0 ? 'They owe you' : p.net < 0 ? 'You owe them' : 'Even ✓'}
+                        {p.net > 0 ? t('money.they_owe_you') : p.net < 0 ? t('money.you_owe_them') : t('money.even')}
                       </div>
                     </div>
                   </div>
@@ -333,17 +335,17 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
 
           {/* Add new debt form */}
           <div className="glass-card mb-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📝 New Entry</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">📝 {t('money.new_entry')}</h2>
             <div className="grid grid-cols-2 gap-0 mb-5 rounded-xl overflow-hidden" style={{ border: '2px solid hsl(var(--border))' }}>
               <button
                 className={`py-3 text-sm font-semibold transition-all ${debtType === 'lend' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setDebtType('lend')}>
-                ↑ I Lent Money
+                {t('money.i_lent')}
               </button>
               <button
                 className={`py-3 text-sm font-semibold transition-all ${debtType === 'borrow' ? 'bg-destructive text-destructive-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setDebtType('borrow')}>
-                ↓ I Borrowed Money
+                {t('money.i_borrowed')}
               </button>
             </div>
 
@@ -351,7 +353,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {favoriteContacts.length > 0 && (
               <div className="mb-4">
                 <label className="form-label flex items-center gap-1.5">
-                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> QUICK SELECT
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {t('money.quick_select')}
                 </label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {favoriteContacts.map(name => (
@@ -378,7 +380,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {/* Also show non-favorited past contacts as subtle chips */}
             {allContactNames.filter(n => !favoriteContacts.includes(n)).length > 0 && (
               <div className="mb-4">
-                <label className="form-label">RECENT CONTACTS</label>
+                <label className="form-label">{t('money.recent_contacts')}</label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {allContactNames.filter(n => !favoriteContacts.includes(n)).map(name => (
                     <button
@@ -400,26 +402,26 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="form-label">PERSON</label>
-                  <input type="text" id="debt-person" className="input-simple" placeholder="Who?" />
+                  <label className="form-label">{t('money.person')}</label>
+                  <input type="text" id="debt-person" className="input-simple" placeholder={t('money.who')} />
                 </div>
                 <div>
-                  <label className="form-label">AMOUNT (৳)</label>
+                  <label className="form-label">{t('money.amount')} (৳)</label>
                   <input type="number" id="debt-amount" className="input-simple" placeholder="0" min={1} />
                 </div>
               </div>
               <div>
-                <label className="form-label">REASON (OPTIONAL)</label>
-                <input type="text" id="debt-description" className="input-simple" placeholder="What for?" />
+                <label className="form-label">{t('money.reason')}</label>
+                <input type="text" id="debt-description" className="input-simple" placeholder={t('money.what_for')} />
               </div>
               <div>
-                <label className="form-label">DATE</label>
+                <label className="form-label">{t('money.date')}</label>
                 <input type="date" id="debt-date" className="input-simple max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
               </div>
             </div>
             <div className="flex gap-3 justify-end mt-5">
               <button className={`${debtType === 'lend' ? 'btn-green' : 'btn-danger'} !min-w-[120px]`} onClick={addDebt}>
-                {debtType === 'lend' ? '↑ Save Lend' : '↓ Save Borrow'}
+                {debtType === 'lend' ? t('money.save_lend') : t('money.save_borrow')}
               </button>
             </div>
           </div>
@@ -427,13 +429,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Active Debts grouped by person */}
           <div className="glass-card mb-6 min-h-[100px]">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">📋 Active Debts</h2>
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">📋 {t('money.active_debts')}</h2>
               {allPeople.length > 0 && (
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Search person..."
+                    placeholder={t('money.search_person')}
                     value={debtSearch}
                     onChange={e => setDebtSearch(e.target.value)}
                     className="input-simple !py-1.5 !pl-8 !pr-3 !text-xs !w-[160px]"
@@ -449,7 +451,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             {people.length === 0 ? (
               <div className="empty-state border border-dashed border-border rounded-xl !p-10 text-center">
                 <div className="text-3xl mb-2">{debtSearch ? '🔍' : '🤝'}</div>
-                <p className="text-muted-foreground text-sm">{debtSearch ? `No debts matching "${debtSearch}"` : 'No active debts — all clear!'}</p>
+                <p className="text-muted-foreground text-sm">{debtSearch ? `${t('money.no_match')} "${debtSearch}"` : t('money.no_debts')}</p>
               </div>
             ) : people.map(p => (
               <div key={p.name} className="mb-5 last:mb-0">
@@ -474,7 +476,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
                       style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
                       <CheckCheck className="w-3.5 h-3.5" />
-                      Settle All
+                      {t('money.settle_all')}
                     </button>
                   )}
                 </div>
@@ -490,7 +492,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           {d.debtType === 'lend' ? '🔼' : '🔽'}
                         </div>
                         <div>
-                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? 'Lent' : 'Borrowed')}</div>
+                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? t('money.lent_label') : t('money.borrowed_label'))}</div>
                           <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
                         </div>
                       </div>
@@ -501,7 +503,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                           className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
                           style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
                           <Check className="w-3.5 h-3.5" />
-                          Settle
+                          {t('money.settle')}
                         </button>
                       </div>
                     </div>
@@ -514,7 +516,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           {/* Settled History */}
           {historyDebts.length > 0 && (
             <div className="glass-card min-h-[100px]" style={{ opacity: 0.75 }}>
-              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ Settled History</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ {t('money.settled_history')}</h2>
               {historyDebts.slice().reverse().map((d: any) => (
                 <div key={d.id} className="flex items-center justify-between py-3.5 px-1" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                   <div className="flex items-center gap-3">
@@ -522,7 +524,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                       ☑️
                     </div>
                     <div>
-                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">Settled</span></div>
+                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">{t('money.settled')}</span></div>
                       <div className="text-[0.65rem] text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
                     </div>
                   </div>
@@ -546,16 +548,16 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {moneyTab === 'savings' && (
         <>
           <div className="glass-card mb-6">
-            <input type="text" id="goal-title" className="input-simple mb-4" placeholder="Goal Title (e.g. New Laptop)" />
+            <input type="text" id="goal-title" className="input-simple mb-4" placeholder={t('money.goal_title')} />
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <input type="number" id="goal-target" className="input-simple" placeholder="Target Amount" min={1} />
-              <input type="number" id="goal-initial" className="input-simple" placeholder="Initial Amount" min={0} defaultValue={0} />
+              <input type="number" id="goal-target" className="input-simple" placeholder={t('money.target_amount')} min={1} />
+              <input type="number" id="goal-initial" className="input-simple" placeholder={t('money.initial_amount')} min={0} defaultValue={0} />
             </div>
             <input type="date" id="goal-date" className="input-simple mb-5 max-w-[50%]" />
-            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addGoal}>Create Goal</button></div>
+            <div className="flex gap-3 justify-end"><button className="btn-green" onClick={addGoal}>{t('money.create_goal')}</button></div>
           </div>
           <div className="glass-card min-h-[100px]">
-            {goals.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p className="italic text-muted-foreground">No savings goals yet</p></div> :
+            {goals.length === 0 ? <div className="empty-state border border-dashed border-border rounded-lg !p-10"><p className="italic text-muted-foreground">{t('money.no_goals')}</p></div> :
             goals.map((g: any) => {
               const progress = g.targetAmount > 0 ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
               return (
@@ -563,7 +565,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <div className="flex justify-between items-center mb-2">
                     <div>
                       <div className="font-semibold text-foreground">{g.title}</div>
-                      {g.targetDate && <div className="text-xs text-muted-foreground">Target: {formatDate(g.targetDate)}</div>}
+                      {g.targetDate && <div className="text-xs text-muted-foreground">{t('money.target')}: {formatDate(g.targetDate)}</div>}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold text-primary">৳{g.currentAmount} / ৳{g.targetAmount}</span>
@@ -582,19 +584,19 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       {showTxnModal && (
         <div className="modal-overlay" onClick={() => setShowTxnModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-4">Add Transaction</h2>
-            <label className="form-label">TYPE</label>
+            <h2 className="text-lg font-bold text-foreground mb-4">{t('money.add_transaction')}</h2>
+            <label className="form-label">{t('money.type')}</label>
             <div className="grid grid-cols-2 gap-0 mb-4 rounded-[var(--radius-sm)] overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
-              <button className={txnType === 'income' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('income')}>Income</button>
-              <button className={txnType === 'expense' ? 'btn-danger !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('expense')}>Expense</button>
+              <button className={txnType === 'income' ? 'btn-green !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('income')}>{t('money.income')}</button>
+              <button className={txnType === 'expense' ? 'btn-danger !rounded-none !border-none' : 'btn-outline !rounded-none !border-none'} onClick={() => setTxnType('expense')}>{t('money.expense')}</button>
             </div>
-            <label className="form-label">DESCRIPTION</label>
+            <label className="form-label">{t('money.description')}</label>
             <input type="text" id="txn-desc" className="input-simple mb-4" placeholder="e.g. Lunch, Salary" />
-            <label className="form-label">AMOUNT (৳)</label>
+            <label className="form-label">{t('money.amount')} (৳)</label>
             <input type="number" id="txn-amount" className="input-simple mb-5" placeholder="0" min={1} />
             <div className="flex gap-3">
-              <button className="btn-outline flex-1" onClick={() => setShowTxnModal(false)}>Cancel</button>
-              <button className="btn-green flex-1" onClick={addTransaction}>Add</button>
+              <button className="btn-outline flex-1" onClick={() => setShowTxnModal(false)}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={addTransaction}>{t('common.add')}</button>
             </div>
           </div>
         </div>
