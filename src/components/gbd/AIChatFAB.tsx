@@ -465,8 +465,16 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         });
       };
 
+      // Read stream with a per-chunk timeout to prevent infinite hanging
+      const readWithTimeout = async () => {
+        return Promise.race([
+          reader.read(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Stream timeout')), 30000)),
+        ]);
+      };
+
       while (true) {
-        const { done, value } = await reader.read();
+        const { done, value } = await readWithTimeout();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
 
