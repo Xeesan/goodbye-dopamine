@@ -283,7 +283,17 @@ If you cannot read anything, return an empty array: []`;
     setError(null);
 
     try {
-      if (ocrMode === 'online') {
+      if (ocrMode === 'lovable') {
+        setLoadingMsg('Analyzing with AI...');
+        const base64 = preview.split(',')[1];
+        const items = await processViaLovableAI(base64);
+        const arr = Array.isArray(items) ? items : [];
+        if (arr.length === 0) {
+          setError('No data could be extracted. Try a clearer photo.');
+        } else {
+          setResults(arr);
+        }
+      } else if (ocrMode === 'online') {
         if (!apiConfig.apiKey) {
           setError('Please add your API key in settings first.');
           setLoading(false);
