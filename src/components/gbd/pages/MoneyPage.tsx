@@ -406,7 +406,7 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                   <input type="text" id="debt-person" className="input-simple" placeholder={t('money.who')} />
                 </div>
                 <div>
-                  <label className="form-label">AMOUNT (৳)</label>
+                  <label className="form-label">{t('money.amount')} (৳)</label>
                   <input type="number" id="debt-amount" className="input-simple" placeholder="0" min={1} />
                 </div>
               </div>
