@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
 import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
+import { runAutoBackup } from '@/lib/autoBackup';
 import { useHealthReminders } from '@/hooks/useHealthReminders';
 import DashboardPage from './pages/DashboardPage';
 import PlannerPage from './pages/PlannerPage';
@@ -36,6 +37,12 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
+
+  // Run silent auto-backup on mount (once per 24h)
+  useEffect(() => {
+    const timer = setTimeout(() => { runAutoBackup().catch(() => {}); }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Sync sidebar state on resize (close on mobile, open on desktop)
   useEffect(() => {

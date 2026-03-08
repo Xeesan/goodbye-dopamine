@@ -176,6 +176,7 @@ export type Database = {
       task_reminders: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: string
           remind_at: string
           sent: boolean
@@ -184,6 +185,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           remind_at: string
           sent?: boolean
@@ -192,6 +194,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           remind_at?: string
           sent?: boolean
@@ -206,6 +209,7 @@ export type Database = {
           created_at: string
           date: string | null
           debt_type: string
+          deleted_at: string | null
           description: string | null
           id: string
           person: string
@@ -218,6 +222,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           debt_type?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           person: string
@@ -230,6 +235,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           debt_type?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           person?: string
@@ -244,6 +250,7 @@ export type Database = {
           created_at: string
           credits: number | null
           date: string
+          deleted_at: string | null
           grade: string | null
           id: string
           room: string | null
@@ -258,6 +265,7 @@ export type Database = {
           created_at?: string
           credits?: number | null
           date: string
+          deleted_at?: string | null
           grade?: string | null
           id?: string
           room?: string | null
@@ -272,6 +280,7 @@ export type Database = {
           created_at?: string
           credits?: number | null
           date?: string
+          deleted_at?: string | null
           grade?: string | null
           id?: string
           room?: string | null
@@ -318,6 +327,7 @@ export type Database = {
         Row: {
           created_at: string
           day: string
+          deleted_at: string | null
           end_time: string
           id: string
           room: string | null
@@ -328,6 +338,7 @@ export type Database = {
         Insert: {
           created_at?: string
           day: string
+          deleted_at?: string | null
           end_time: string
           id?: string
           room?: string | null
@@ -338,6 +349,7 @@ export type Database = {
         Update: {
           created_at?: string
           day?: string
+          deleted_at?: string | null
           end_time?: string
           id?: string
           room?: string | null
@@ -352,6 +364,7 @@ export type Database = {
           amount: number
           created_at: string
           date: string
+          deleted_at: string | null
           description: string
           id: string
           type: string
@@ -361,6 +374,7 @@ export type Database = {
           amount?: number
           created_at?: string
           date?: string
+          deleted_at?: string | null
           description: string
           id?: string
           type?: string
@@ -370,6 +384,7 @@ export type Database = {
           amount?: number
           created_at?: string
           date?: string
+          deleted_at?: string | null
           description?: string
           id?: string
           type?: string

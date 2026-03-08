@@ -345,6 +345,7 @@ const translations = {
   'profile.export_data': { en: 'Export Data', bn: 'এক্সপোর্ট ডাটা' },
   'profile.import_data': { en: 'Import Data', bn: 'ইম্পোর্ট ডাটা' },
   'profile.clear_all': { en: 'Clear All Data', bn: 'ক্লিয়ার অল ডাটা' },
+  'profile.restore_cloud': { en: 'Restore from Cloud', bn: 'ক্লাউড থেকে রিস্টোর' },
   'profile.notifications': { en: 'Notifications', bn: 'নোটিফিকেশনস' },
   'profile.account': { en: 'Account', bn: 'অ্যাকাউন্ট' },
   'profile.logout': { en: 'Logout', bn: 'লগআউট' },

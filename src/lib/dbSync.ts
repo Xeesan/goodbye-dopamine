@@ -2,6 +2,7 @@
  * Database sync with LWW (Last-Write-Wins) conflict resolution.
  * Each record carries an `updated_at` / `updatedAt` timestamp.
  * On sync, per-record comparison keeps the newer version.
+ * Deletes are soft (sets deleted_at) for recoverability.
  */
 import { supabase } from '@/integrations/supabase/client';
 import Storage from './storage';
@@ -76,6 +77,7 @@ export async function syncExamsFromDB(): Promise<any[]> {
       .from('user_exams')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('date', { ascending: true });
 
     if (error) {
@@ -207,7 +209,8 @@ export async function deleteExamFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_exams').delete().eq('id', id).eq('user_id', userId);
+    // Soft delete
+    await supabase.from('user_exams').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete exam DB error:', e);
   }
@@ -217,7 +220,8 @@ export async function clearExamsInDB(type?: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    let query = supabase.from('user_exams').delete().eq('user_id', userId);
+    // Soft delete all
+    let query = supabase.from('user_exams').update({ deleted_at: new Date().toISOString() }).eq('user_id', userId).is('deleted_at', null);
     if (type) query = query.eq('type', type);
     await query;
   } catch (e) {
@@ -235,7 +239,8 @@ export async function syncRoutineFromDB(): Promise<Record<string, any[]>> {
     const { data, error } = await supabase
       .from('user_routine')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .is('deleted_at', null);
 
     if (error) {
       console.error('Failed to fetch routine from DB:', error);
@@ -341,7 +346,7 @@ export async function deletePeriodFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_routine').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_routine').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete period DB error:', e);
   }
@@ -351,7 +356,7 @@ export async function clearRoutineInDB() {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_routine').delete().eq('user_id', userId);
+    await supabase.from('user_routine').update({ deleted_at: new Date().toISOString() }).eq('user_id', userId).is('deleted_at', null);
   } catch (e) {
     console.error('Clear routine DB error:', e);
   }
@@ -368,6 +373,7 @@ export async function syncTransactionsFromDB(): Promise<any[]> {
       .from('user_transactions')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('date', { ascending: true });
 
     if (error) {
@@ -453,7 +459,7 @@ export async function deleteTransactionFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_transactions').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_transactions').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete transaction DB error:', e);
   }
@@ -470,6 +476,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       .from('user_debts')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -587,7 +594,7 @@ export async function deleteDebtFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_debts').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_debts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete debt DB error:', e);
   }
