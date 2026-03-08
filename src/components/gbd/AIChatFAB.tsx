@@ -544,7 +544,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
           const result = await executeToolCall(tc);
           results.push(result);
         }
-        const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n');
+        const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
         updateAssistant(toolResultText);
 
         // Notify parent that data changed
