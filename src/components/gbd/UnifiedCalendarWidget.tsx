@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import Storage from '@/lib/storage';
-import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus } from 'lucide-react';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
@@ -212,9 +212,33 @@ const UnifiedCalendarWidget = ({ navigateTo }: UnifiedCalendarWidgetProps) => {
       {/* Selected day details */}
       {selectedDate && (
         <div className="mt-4 pt-3 border-t" style={{ borderColor: 'hsl(var(--border))' }}>
-          <div className="text-xs font-semibold text-foreground mb-2">
-            {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-semibold text-foreground">
+              {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </div>
           </div>
+
+          {/* Quick Add Buttons */}
+          <div className="flex items-center gap-2 mb-3">
+            {[
+              { label: 'Task', page: 'planner', color: 'hsl(var(--primary))' },
+              { label: 'Exam', page: 'exams', color: 'hsl(var(--destructive))' },
+              { label: 'Class', page: 'routine', color: 'hsl(var(--info))' },
+            ].map(item => (
+              <button
+                key={item.page}
+                onClick={() => {
+                  sessionStorage.setItem('calendar_prefill_date', selectedDate);
+                  navigateTo(item.page);
+                }}
+                className="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[0.65rem] font-semibold tracking-wide transition-all border-none cursor-pointer hover:scale-105"
+                style={{ background: `${item.color}15`, color: item.color }}
+              >
+                <Plus className="w-3 h-3" /> {item.label}
+              </button>
+            ))}
+          </div>
+
           {selectedEvents.length === 0 ? (
             <p className="text-xs text-muted-foreground">Nothing scheduled for this day.</p>
           ) : (

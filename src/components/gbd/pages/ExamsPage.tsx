@@ -43,6 +43,20 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     syncExamsFromDB().then(() => refresh());
   }, []);
 
+  // Pre-fill date from calendar quick-add
+  useEffect(() => {
+    const prefillDate = sessionStorage.getItem('calendar_prefill_date');
+    if (prefillDate) {
+      sessionStorage.removeItem('calendar_prefill_date');
+      const dateInput = document.getElementById('exam-date') as HTMLInputElement;
+      if (dateInput) dateInput.value = prefillDate;
+      setTimeout(() => {
+        const subjectInput = document.getElementById('exam-subject') as HTMLInputElement;
+        subjectInput?.focus();
+      }, 100);
+    }
+  }, []);
+
   const exams = Storage.getExams();
   const filtered = exams
     .filter(e => e.type === examTab || (!e.type && examTab === 'exams'))

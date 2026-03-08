@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
@@ -19,6 +19,21 @@ const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
   const { addXP } = useGamification();
   const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
+  // Pre-fill date from calendar quick-add
+  useEffect(() => {
+    const prefillDate = sessionStorage.getItem('calendar_prefill_date');
+    if (prefillDate) {
+      sessionStorage.removeItem('calendar_prefill_date');
+      const dateInput = document.getElementById('task-date') as HTMLInputElement;
+      if (dateInput) dateInput.value = prefillDate;
+      // Focus the title input for quick entry
+      setTimeout(() => {
+        const titleInput = document.getElementById('task-title') as HTMLInputElement;
+        titleInput?.focus();
+      }, 100);
+    }
+  }, []);
 
   const tasks = Storage.getTasks();
   const todoTasks = tasks.filter(t => t.status === 'todo');
