@@ -76,8 +76,8 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const addTransaction = async () => {
     const description = (document.getElementById('txn-desc') as HTMLInputElement)?.value.trim();
     const amount = parseFloat((document.getElementById('txn-amount') as HTMLInputElement)?.value);
-    if (!description || !amount) {
-      await showDialog({ title: 'Missing Info', message: 'Please fill in all fields.', type: 'alert' });
+    if (!description || !amount || isNaN(amount) || amount <= 0 || amount > 10000000) {
+      await showDialog({ title: 'Missing Info', message: 'Please enter a valid description and amount (1 — 10,000,000).', type: 'alert' });
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
