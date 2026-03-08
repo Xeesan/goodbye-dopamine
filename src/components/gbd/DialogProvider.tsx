@@ -268,7 +268,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
                 })}
               </div>
 
-              <div className="flex gap-3 mt-5">
+              <div className="flex gap-3 mt-4 pt-3 shrink-0" style={{ borderTop: '1px solid hsl(var(--border))' }}>
                 <button
                   className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all text-primary"
                   style={{
