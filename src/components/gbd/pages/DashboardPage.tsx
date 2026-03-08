@@ -28,14 +28,18 @@ const ALL_TILES = [
 ];
 
 const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
-  const [quote, setQuote] = useState(getDailyQuote());
+  const { t, lang } = useI18n();
+  const [quote, setQuote] = useState(() => getDailyQuote());
   const [quoteKey, setQuoteKey] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [showXpBadge, setShowXpBadge] = useState(false);
   const [refreshSpinning, setRefreshSpinning] = useState(false);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
-  const { t } = useI18n();
+
+  // Update quote when language changes
+  useState(() => { setQuote(getDailyQuote()); });
+
 
   const refreshQuote = useCallback(() => {
     setSpinning(true);
