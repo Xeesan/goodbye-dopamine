@@ -904,8 +904,30 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
                 const semesterMonths = parseInt((document.getElementById('budget-months') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
-                if (!totalFee || totalFee <= 0 || !semesterMonths || semesterMonths <= 0 || !startDate) {
-                  toast({ title: 'Missing info', description: 'Please fill total fee, duration, and start date.', variant: 'destructive' });
+                if (!totalFee || isNaN(totalFee) || totalFee <= 0 || totalFee > 10000000) {
+                  toast({ title: 'Invalid fee', description: 'Total fee must be between ৳1 and ৳10,000,000.', variant: 'destructive' });
+                  return;
+                }
+                if (!semesterMonths || semesterMonths < 1 || semesterMonths > 24) {
+                  toast({ title: 'Invalid duration', description: 'Semester must be 1–24 months.', variant: 'destructive' });
+                  return;
+                }
+                if (!startDate) {
+                  toast({ title: 'Missing start date', description: 'Please select a start date.', variant: 'destructive' });
+                  return;
+                }
+                // Validate start date is parseable
+                const parsedStart = new Date(startDate);
+                if (isNaN(parsedStart.getTime())) {
+                  toast({ title: 'Invalid date', description: 'Start date is not valid.', variant: 'destructive' });
+                  return;
+                }
+                if (monthlyInstallment < 0 || monthlyInstallment > totalFee) {
+                  toast({ title: 'Invalid installment', description: 'Monthly installment cannot exceed total fee.', variant: 'destructive' });
+                  return;
+                }
+                if (livingBudget < 0 || livingBudget > 10000000) {
+                  toast({ title: 'Invalid budget', description: 'Living budget must be reasonable.', variant: 'destructive' });
                   return;
                 }
                 const budget: SemesterBudget = {
