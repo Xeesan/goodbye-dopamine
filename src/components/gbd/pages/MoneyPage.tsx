@@ -22,6 +22,11 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
   const { addXP } = useGamification();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
+  // Hydrate from DB on mount
+  useEffect(() => {
+    Promise.all([syncTransactionsFromDB(), syncDebtsFromDB()]).then(() => refresh());
+  }, []);
+
   const txns = Storage.getTransactions();
   const debts = Storage.getDebts();
   const goals = Storage.getSavingsGoals();
