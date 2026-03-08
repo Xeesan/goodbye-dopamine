@@ -228,7 +228,7 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
                   </button>
                   <button className="btn-green flex-1" onClick={processImage} disabled={loading}>
                     {loading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin inline-block mr-1.5" /> Processing...</>
+                      <><Loader2 className="w-4 h-4 animate-spin inline-block mr-1.5" /> {loadingMsg || 'Processing...'}</>
                     ) : (
                       'Extract Data'
                     )}
