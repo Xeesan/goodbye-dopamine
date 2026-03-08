@@ -86,6 +86,19 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
     }
   };
 
+  const clearAllExams = async () => {
+    const label = examTab === 'exams' ? 'exams' : 'assignments';
+    const confirmed = await showDialog({ title: `Clear All ${label}`, message: `Are you sure you want to delete ALL ${filtered.length} ${label}? This cannot be undone.`, type: 'confirm', confirmText: 'Delete All' });
+    if (confirmed) {
+      // Remove only items matching current tab type
+      const remaining = exams.filter(e => (e.type || 'exams') !== examTab);
+      Storage.setExams(remaining);
+      setEditingId(null);
+      refresh();
+      toast({ title: `All ${label} cleared`, description: `${filtered.length} item(s) removed` });
+    }
+  };
+
   const handleOCRImport = (items: any[]) => {
     items.forEach((item: any) => {
       Storage.addExam({
@@ -116,6 +129,11 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ImageOCRImport mode="exams" onImport={handleOCRImport} />
+          {filtered.length > 0 && (
+            <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10" onClick={clearAllExams}>
+              <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All
+            </button>
+          )}
           <div className="tab-group">
             <button className={`tab-item ${examTab === 'exams' ? 'active' : ''}`} onClick={() => setExamTab('exams')}>EXAMS</button>
             <button className={`tab-item ${examTab === 'assignments' ? 'active' : ''}`} onClick={() => setExamTab('assignments')}>ASSIGNMENTS</button>

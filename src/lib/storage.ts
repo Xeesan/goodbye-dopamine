@@ -72,6 +72,9 @@ const Storage = {
     routine[day] = routine[day].filter(p => p.id !== id);
     this.setRoutine(routine);
   },
+  clearRoutine() {
+    this.setRoutine({ monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] });
+  },
 
   // Exams
   getExams(): any[] {
@@ -95,6 +98,7 @@ const Storage = {
     const idx = exams.findIndex(e => String(e.id) === String(exam.id));
     if (idx !== -1) { exams[idx] = exam; this.setExams(exams); }
   },
+  clearExams() { this.setExams([]); },
 
   // Semesters
   getSemesters(): any[] {
