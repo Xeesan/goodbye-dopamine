@@ -329,7 +329,9 @@ body {
   background: hsl(var(--bg-card));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab-item {
