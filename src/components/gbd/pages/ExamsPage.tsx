@@ -158,7 +158,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
           <div><label className="form-label">TIME</label><input type="time" id="exam-time" className="input-simple" defaultValue="09:00" /></div>
           <div><label className="form-label">TARGET GRADE</label><input type="text" id="exam-grade" className="input-simple" placeholder="A+" defaultValue="A+" /></div>
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <div><label className="form-label">CREDITS</label><input type="number" id="exam-credits" className="input-simple" defaultValue={3} min={1} max={10} /></div>
           <div><label className="form-label">TEACHER</label><input type="text" id="exam-teacher" className="input-simple" placeholder="e.g. Dr. Smith" /></div>
           <div><label className="form-label">ROOM</label><input type="text" id="exam-room" className="input-simple" placeholder="e.g. Room 301" /></div>
