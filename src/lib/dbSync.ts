@@ -2,6 +2,7 @@
  * Database sync with LWW (Last-Write-Wins) conflict resolution.
  * Each record carries an `updated_at` / `updatedAt` timestamp.
  * On sync, per-record comparison keeps the newer version.
+ * Deletes are soft (sets deleted_at) for recoverability.
  */
 import { supabase } from '@/integrations/supabase/client';
 import Storage from './storage';
