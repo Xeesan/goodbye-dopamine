@@ -41,7 +41,7 @@ const TopHeader = ({ onToggleSidebar, onNavigate, calendarOpen, onToggleCalendar
         <button className="icon-btn relative" onClick={() => setShowNotif(!showNotif)} aria-label="Notifications">
           <Bell className="w-5 h-5" />
         </button>
-        <button className="icon-btn" onClick={() => onNavigate('profile')}>
+        <button className="icon-btn" onClick={() => onNavigate('profile')} aria-label="Profile">
           <User className="w-5 h-5" />
         </button>
       </div>
