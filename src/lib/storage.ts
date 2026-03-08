@@ -98,7 +98,7 @@ const Storage = {
     if (!exam || !exam.id) return;
     const exams = this.getExams();
     const idx = exams.findIndex(e => String(e.id) === String(exam.id));
-    if (idx !== -1) { exams[idx] = exam; this.setExams(exams); }
+    if (idx !== -1) { exams[idx] = { ...exam, updatedAt: new Date().toISOString() }; this.setExams(exams); }
   },
   clearExams() { this.setExams([]); },
 
