@@ -564,9 +564,14 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       } else if (!assistantContent) {
         updateAssistant("I couldn't process that. Try something like: *Add a task to study Math tomorrow*");
       }
-    } catch (e) {
-      console.error('AI chat error:', e);
-      toast({ title: 'Connection Error', description: 'Could not reach AI assistant.', variant: 'destructive' });
+    } catch (e: any) {
+      if (e?.name === 'AbortError') {
+        // User cancelled or timeout — don't show error toast
+        console.log('AI request aborted');
+      } else {
+        console.error('AI chat error:', e);
+        toast({ title: 'Connection Error', description: 'Could not reach AI assistant. Check your connection and try again.', variant: 'destructive' });
+      }
     }
 
     abortRef.current = null;
