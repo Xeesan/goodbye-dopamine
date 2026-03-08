@@ -1,4 +1,5 @@
 import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User } from 'lucide-react';
+import appLogo from '@/assets/icon.svg';
 
 interface SidebarProps {
   currentPage: string;
