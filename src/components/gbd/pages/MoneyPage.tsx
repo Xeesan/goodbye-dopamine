@@ -861,12 +861,12 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
             
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="form-label">Semester Start</label>
-                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
+                <label className="form-label">Semester Duration (months)</label>
+                <input type="number" id="budget-months" className="input-simple" placeholder="e.g. 6" min={1} max={24} defaultValue={semesterBudget?.semesterMonths || ''} />
               </div>
               <div>
-                <label className="form-label">Semester End</label>
-                <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
+                <label className="form-label">Start Date</label>
+                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
               </div>
             </div>
             <div className="flex gap-3">
@@ -883,28 +883,24 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
                 const totalFee = parseFloat((document.getElementById('budget-total-fee') as HTMLInputElement)?.value);
                 const monthlyInstallment = parseFloat((document.getElementById('budget-installment') as HTMLInputElement)?.value) || 0;
                 const livingBudget = parseFloat((document.getElementById('budget-living') as HTMLInputElement)?.value) || 0;
+                const semesterMonths = parseInt((document.getElementById('budget-months') as HTMLInputElement)?.value) || 0;
                 const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
-                const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
-                if (!totalFee || totalFee <= 0 || !startDate || !endDate) {
-                  toast({ title: 'Missing info', description: 'Please fill total fee and semester dates.', variant: 'destructive' });
-                  return;
-                }
-                if (new Date(endDate) <= new Date(startDate)) {
-                  toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
+                if (!totalFee || totalFee <= 0 || !semesterMonths || semesterMonths <= 0 || !startDate) {
+                  toast({ title: 'Missing info', description: 'Please fill total fee, duration, and start date.', variant: 'destructive' });
                   return;
                 }
                 const budget: SemesterBudget = {
                   totalFee,
                   monthlyInstallment,
                   livingBudget,
+                  semesterMonths,
                   startDate,
-                  endDate,
                   installments: semesterBudget?.installments || [],
                 };
                 Storage.setSemesterBudget(budget);
                 setSemesterBudgetState(budget);
                 setShowBudgetSetup(false);
-                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} total fee` });
+                toast({ title: 'Fee tracker saved ✓', description: `৳${totalFee.toLocaleString()} over ${semesterMonths} months` });
               }}>Save</button>
             </div>
           </div>
