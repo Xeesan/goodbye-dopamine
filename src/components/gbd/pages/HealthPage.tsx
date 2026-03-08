@@ -23,7 +23,7 @@ function saveHealthData(data: any) {
   Storage.set('health', data.all);
 }
 
-const HealthPage = ({ navigateTo }: HealthPageProps) => {
+const HealthPage = ({ navigateTo, onRestartReminders }: HealthPageProps) => {
   const [tab, setTab] = useState('overview');
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPhase, setBreathingPhase] = useState('START');
