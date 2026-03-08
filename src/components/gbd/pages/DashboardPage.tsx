@@ -6,8 +6,8 @@ import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
-import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw } from 'lucide-react';
-
+import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target } from 'lucide-react';
+import FocusNowOverlay, { pickMostUrgentTask } from '../FocusNowOverlay';
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
@@ -34,11 +34,16 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
   const [spinning, setSpinning] = useState(false);
   const [showXpBadge, setShowXpBadge] = useState(false);
   const [refreshSpinning, setRefreshSpinning] = useState(false);
+  const [focusDuration, setFocusDuration] = useState<number | null>(null);
+  const [focusTask, setFocusTask] = useState<ReturnType<typeof pickMostUrgentTask>>(null);
   const { xp } = useGamification();
   const { showPrompt, showTileCustomizer } = useDialog();
 
   // Update quote when language changes
   useEffect(() => { setQuote(getDailyQuote()); }, [lang]);
+
+  // Compute urgent task
+  const urgentTask = pickMostUrgentTask();
 
 
   const refreshQuote = useCallback(() => {
@@ -92,8 +97,62 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
         </div>
       </div>
 
+      {/* ─── Focus Now Hero Card ─── */}
+      <div className="glass-card-accent relative overflow-hidden !p-5 mb-5 group">
+        <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-[0.65rem] font-bold tracking-widest uppercase mb-2"
+            style={{ color: 'hsl(var(--primary))' }}>
+            <Target className="w-3.5 h-3.5" /> {t('focus.title' as TranslationKey)}
+          </div>
+          {urgentTask ? (
+            <div>
+              <p className="text-lg font-bold text-foreground mb-1">{urgentTask.title}</p>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-[0.65rem] font-bold tracking-wider px-2 py-0.5 rounded-full"
+                  style={{ background: 'hsl(var(--warning) / 0.15)', color: 'hsl(var(--warning))' }}>
+                  {t('focus.most_urgent' as TranslationKey)}
+                </span>
+                <span className="text-xs text-muted-foreground">{urgentTask.reason}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {[15, 25, 45, 60].map(min => (
+                  <button key={min}
+                    onClick={() => { setFocusTask(urgentTask); setFocusDuration(min); }}
+                    className="px-4 py-2 rounded-full text-xs font-semibold transition-all hover:scale-105 cursor-pointer"
+                    style={{
+                      background: min === 25 ? 'hsl(var(--primary))' : 'hsl(var(--primary) / 0.1)',
+                      color: min === 25 ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                    }}>
+                    {min} min
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🎉</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('focus.no_tasks' as TranslationKey)}</p>
+                <p className="text-xs text-muted-foreground">{t('focus.subtitle' as TranslationKey)}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Level Progress (togglable) + Daily Inspiration side by side */}
+      {/* Focus Timer Overlay */}
+      {focusTask && focusDuration && (
+        <FocusNowOverlay
+          task={focusTask}
+          duration={focusDuration}
+          onClose={() => { setFocusTask(null); setFocusDuration(null); }}
+          onComplete={() => { setFocusTask(null); setFocusDuration(null); navigateTo('dashboard'); }}
+        />
+      )}
+
+
       <div className={`grid grid-cols-1 ${showXpBadge ? 'lg:grid-cols-2' : ''} gap-4 mb-5`}>
         {showXpBadge && (
           <div className="glass-card-accent flex items-center gap-6 animate-fade-in">
