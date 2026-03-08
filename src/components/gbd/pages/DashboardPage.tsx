@@ -66,12 +66,6 @@ const DashboardPage = ({ navigateTo, user }: DashboardPageProps) => {
         </button>
       </div>
 
-      {/* Calendar — hidden by default, toggled from header date */}
-      {calendarOpen && (
-        <div className="mb-5 animate-[slideUp_0.2s_ease]">
-          <UnifiedCalendarWidget navigateTo={navigateTo} />
-        </div>
-      )}
 
       {/* Level Progress (togglable) + Daily Inspiration side by side */}
       <div className={`grid grid-cols-1 ${showXpBadge ? 'lg:grid-cols-2' : ''} gap-4 mb-5`}>
