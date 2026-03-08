@@ -736,6 +736,60 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
           </div>
         </div>
       )}
+
+      {showBudgetSetup && (
+        <div className="modal-overlay" onClick={() => setShowBudgetSetup(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-foreground mb-1">Semester Budget</h2>
+            <p className="text-xs text-muted-foreground mb-5">Set your total allowance and semester dates to get a weekly spending guide.</p>
+            <label className="form-label">Total Budget (৳)</label>
+            <input type="number" id="budget-total" className="input-simple mb-4" placeholder="e.g. 50000" min={1} defaultValue={semesterBudget?.totalAmount || ''} />
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div>
+                <label className="form-label">Start Date</label>
+                <input type="date" id="budget-start" className="input-simple" defaultValue={semesterBudget?.startDate || ''} />
+              </div>
+              <div>
+                <label className="form-label">End Date</label>
+                <input type="date" id="budget-end" className="input-simple" defaultValue={semesterBudget?.endDate || ''} />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              {semesterBudget && (
+                <button className="btn-outline flex-1 !text-destructive" onClick={() => {
+                  Storage.setSemesterBudget(null);
+                  setSemesterBudgetState(null);
+                  setShowBudgetSetup(false);
+                  toast({ title: 'Budget removed' });
+                }}>Remove</button>
+              )}
+              <button className="btn-outline flex-1" onClick={() => setShowBudgetSetup(false)}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={() => {
+                const total = parseFloat((document.getElementById('budget-total') as HTMLInputElement)?.value);
+                const startDate = (document.getElementById('budget-start') as HTMLInputElement)?.value;
+                const endDate = (document.getElementById('budget-end') as HTMLInputElement)?.value;
+                if (!total || total <= 0 || !startDate || !endDate) {
+                  toast({ title: 'Missing info', description: 'Please fill in all fields.', variant: 'destructive' });
+                  return;
+                }
+                if (new Date(endDate) <= new Date(startDate)) {
+                  toast({ title: 'Invalid dates', description: 'End date must be after start date.', variant: 'destructive' });
+                  return;
+                }
+                if (total > 10000000) {
+                  toast({ title: 'Invalid amount', description: 'Budget seems too high.', variant: 'destructive' });
+                  return;
+                }
+                const budget: SemesterBudget = { totalAmount: total, startDate, endDate };
+                Storage.setSemesterBudget(budget);
+                setSemesterBudgetState(budget);
+                setShowBudgetSetup(false);
+                toast({ title: 'Budget saved ✓', description: `৳${total.toLocaleString()} for ${startDate} to ${endDate}` });
+              }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
