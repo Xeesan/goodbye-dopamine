@@ -5,7 +5,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText } from 'lucide-react';
-import UnifiedCalendarWidget from '../UnifiedCalendarWidget';
+
 
 interface DashboardPageProps {
   navigateTo: (page: string) => void;
