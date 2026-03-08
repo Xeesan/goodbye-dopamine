@@ -9,7 +9,7 @@ interface ImageOCRImportProps {
   buttonClassName?: string;
 }
 
-type OcrMode = 'offline' | 'online';
+type OcrMode = 'lovable' | 'offline' | 'online';
 
 interface ApiConfig {
   provider: 'gemini' | 'openai' | 'custom';
