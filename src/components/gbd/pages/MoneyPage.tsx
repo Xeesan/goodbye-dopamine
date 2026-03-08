@@ -46,6 +46,13 @@ const MoneyPage = ({ navigateTo }: MoneyPageProps) => {
       return;
     }
     Storage.addTransaction({ type: txnType, description, amount });
+    addTransactionToDB({ type: txnType, description, amount }).then(dbId => {
+      if (dbId) {
+        const current = Storage.getTransactions();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setTransactions(current); }
+      }
+    });
     addXP(5);
     setShowTxnModal(false);
     refresh();
