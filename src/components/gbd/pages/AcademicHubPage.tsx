@@ -33,7 +33,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
   const [showAddCourse, setShowAddCourse] = useState<string | null>(null);
   const [showAddSemester, setShowAddSemester] = useState(false);
   const { showDialog } = useDialog();
-
+  const { addXP } = useGamification();
   const [calcCourses, setCalcCourses] = useState<{ name: string; grade: string; credits: number }[]>([
     { name: '', grade: 'A', credits: 3 },
   ]);
