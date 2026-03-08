@@ -41,16 +41,16 @@ const TOOLS = [
     type: "function",
     function: {
       name: "add_entry",
-      description: "Add a new task, exam, or routine period to the user's data.",
+      description: "Add a new task, exam, routine period, money transaction, or note.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["task", "exam", "routine"],
+            enum: ["task", "exam", "routine", "transaction", "note"],
             description: "Which section to add to",
           },
-          title: { type: "string", description: "Task title (for tasks)" },
+          title: { type: "string", description: "Title (for tasks/notes)" },
           subject: { type: "string", description: "Subject name (for exams/routine)" },
           date: { type: "string", description: "Date in YYYY-MM-DD format" },
           time: { type: "string", description: "Time in HH:MM format" },
@@ -62,6 +62,10 @@ const TOOLS = [
           teacher: { type: "string", description: "Teacher name (exams)" },
           credits: { type: "number", description: "Credits (exams)" },
           examType: { type: "string", description: "Exam type e.g. midterm, final" },
+          amount: { type: "number", description: "Amount for transaction" },
+          description: { type: "string", description: "Description for transaction" },
+          transactionType: { type: "string", enum: ["income", "expense"], description: "Transaction type" },
+          content: { type: "string", description: "Content/body text for notes (supports markdown)" },
         },
         required: ["section"],
         additionalProperties: false,
@@ -72,16 +76,16 @@ const TOOLS = [
     type: "function",
     function: {
       name: "query_data",
-      description: "Query existing tasks, exams, or routine to answer user questions.",
+      description: "Query existing tasks, exams, routine, transactions, or notes to answer user questions.",
       parameters: {
         type: "object",
         properties: {
           section: {
             type: "string",
-            enum: ["tasks", "exams", "routine", "all"],
+            enum: ["tasks", "exams", "routine", "transactions", "notes", "all"],
             description: "Which section to query",
           },
-          filter: { type: "string", description: "Optional filter like 'today', 'this week', 'high priority', subject name" },
+          filter: { type: "string", description: "Optional filter like 'today', 'this week', 'high priority', subject name, note title, etc." },
         },
         required: ["section"],
         additionalProperties: false,

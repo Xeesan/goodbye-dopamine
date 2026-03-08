@@ -173,7 +173,38 @@ function executeToolCall(toolCall: ToolCall): string {
         return `🗓️ Here\'s your routine:\n${summary}\nStay consistent! 💯`;
       }
 
-      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, or **routine**!';
+      if (section === 'transactions' || section === 'all') {
+        let txns = Storage.getTransactions();
+        if (filterLower.includes('income')) {
+          txns = txns.filter((t: any) => t.type === 'income');
+        } else if (filterLower.includes('expense')) {
+          txns = txns.filter((t: any) => t.type === 'expense');
+        }
+        const recent = txns.slice(-10).reverse();
+        const summary = recent.map((t: any) =>
+          `• ${t.type === 'income' ? '💚' : '🔴'} **${t.description}** — ${t.type === 'income' ? '+' : '-'}${t.amount}`
+        ).join('\n');
+        if (txns.length === 0) return '💰 No transactions yet! Your wallet is a mystery to me 👀';
+        const totalIncome = txns.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
+        const totalExpense = txns.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + Number(t.amount), 0);
+        return `💰 **${txns.length} transaction${txns.length > 1 ? 's' : ''}** total (Income: **+${totalIncome}**, Expenses: **-${totalExpense}**, Net: **${totalIncome - totalExpense}**):\n${summary}`;
+      }
+
+      if (section === 'notes' || section === 'all') {
+        let notes = Storage.getNotes();
+        if (filterLower) {
+          notes = notes.filter((n: any) =>
+            n.title?.toLowerCase().includes(filterLower) || n.content?.toLowerCase().includes(filterLower)
+          );
+        }
+        const summary = notes.slice(0, 10).map((n: any) =>
+          `• **${n.title}**${n.content ? ` — ${n.content.slice(0, 50)}${n.content.length > 50 ? '...' : ''}` : ''}`
+        ).join('\n');
+        if (notes.length === 0) return '📝 No notes found! Your brain is either empty or you haven\'t written things down yet 😄';
+        return `📝 You\'ve got **${notes.length} note${notes.length > 1 ? 's' : ''}**:\n${summary}`;
+      }
+
+      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, or **notes**!';
     }
 
     return '🤔 Hmm, that one went over my head. Try again?';
