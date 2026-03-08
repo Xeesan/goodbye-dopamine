@@ -449,8 +449,18 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        toast({ title: 'AI Error', description: err.error || `Error ${resp.status}`, variant: 'destructive' });
+        const errMsg = err.error || `Error ${resp.status}`;
+        if (resp.status === 429) {
+          toast({ title: 'Too many requests ⏳', description: 'AI is busy. Wait a few seconds and try again.', variant: 'destructive' });
+        } else if (resp.status === 402) {
+          toast({ title: 'Usage limit reached', description: 'AI credits exhausted. Try again later.', variant: 'destructive' });
+        } else if (resp.status === 503) {
+          toast({ title: 'AI unavailable', description: 'Service is temporarily down. Try again shortly.', variant: 'destructive' });
+        } else {
+          toast({ title: 'AI Error', description: errMsg, variant: 'destructive' });
+        }
         setLoading(false);
+        abortRef.current = null;
         return;
       }
 
