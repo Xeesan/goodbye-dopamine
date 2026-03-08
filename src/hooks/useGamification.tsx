@@ -73,6 +73,19 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       const level = calcLevel(total);
       const next = { total, level };
       Storage.set('xp', next);
+
+      // Level-up celebration
+      if (level > prev.level) {
+        const title = levelTitle(level);
+        setTimeout(() => {
+          toast({
+            title: `🎉 Level Up!`,
+            description: `You reached Level ${level} — ${title}! Keep going!`,
+            duration: 5000,
+          });
+        }, 100);
+      }
+
       return next;
     });
 
