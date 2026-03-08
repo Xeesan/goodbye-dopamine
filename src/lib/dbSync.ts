@@ -594,7 +594,7 @@ export async function deleteDebtFromDB(id: string) {
   const userId = await getUserId();
   if (!userId) return;
   try {
-    await supabase.from('user_debts').delete().eq('id', id).eq('user_id', userId);
+    await supabase.from('user_debts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
   } catch (e) {
     console.error('Delete debt DB error:', e);
   }
