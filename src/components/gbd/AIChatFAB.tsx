@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
 import type { TranslationKey } from '@/lib/i18n';
@@ -47,7 +48,7 @@ function buildContext() {
   }
 }
 
-function executeToolCall(toolCall: ToolCall): string {
+async function executeToolCall(toolCall: ToolCall): Promise<string> {
   try {
     const args = JSON.parse(toolCall.function.arguments);
 
@@ -320,7 +321,7 @@ function executeToolCall(toolCall: ToolCall): string {
           matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
         }
         if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteExam(m.id));
+        for (const m of matches) { Storage.deleteExam(m.id); await deleteExamFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** exam${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].subject}" (${matches[0].date})` : ''}.`;
       }
 
@@ -328,7 +329,7 @@ function executeToolCall(toolCall: ToolCall): string {
         const txns = Storage.getTransactions();
         const matches = idLower === 'all' ? txns : txns.filter((t: any) => t.description?.toLowerCase().includes(idLower));
         if (matches.length === 0) return `🤔 Couldn't find any transaction matching **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteTransaction(m.id));
+        for (const m of matches) { Storage.deleteTransaction(m.id); await deleteTransactionFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** transaction${matches.length > 1 ? 's' : ''}.`;
       }
 
@@ -344,7 +345,7 @@ function executeToolCall(toolCall: ToolCall): string {
         const debts = Storage.getDebts();
         const matches = idLower === 'all' ? debts : debts.filter((d: any) => d.person?.toLowerCase().includes(idLower));
         if (matches.length === 0) return `🤔 Couldn't find any debt entry for **"${identifier}"**.`;
-        matches.forEach((m: any) => Storage.deleteDebt(m.id));
+        for (const m of matches) { Storage.deleteDebt(m.id); await deleteDebtFromDB(m.id); }
         return `🗑️ Deleted **${matches.length}** debt entr${matches.length > 1 ? 'ies' : 'y'}.`;
       }
 
@@ -507,7 +508,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
       if (pendingToolCalls.length > 0) {
         const results: string[] = [];
         for (const tc of pendingToolCalls) {
-          const result = executeToolCall(tc);
+          const result = await executeToolCall(tc);
           results.push(result);
         }
         const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n');
