@@ -468,7 +468,7 @@ const AIChatFAB = ({ onDataChanged }: AIChatFABProps) => {
                     : { background: 'hsl(var(--muted))' }
                   }>
                   {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p+p]:mt-1.5 [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&_li]:my-0.5 [&_blockquote]:my-1.5 [&_blockquote]:px-2.5 [&_blockquote]:py-1 [&_blockquote]:rounded-lg [&_blockquote]:text-xs [&_blockquote]:not-italic [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
