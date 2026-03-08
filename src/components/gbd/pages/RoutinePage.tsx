@@ -121,6 +121,14 @@ const RoutinePage = ({ navigateTo }: RoutinePageProps) => {
         )}
       </div>
 
+      {Object.values(routine).some(arr => arr.length > 0) && (
+        <div className="mt-4 flex justify-center">
+          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllRoutine}>
+            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />Clear All Routine
+          </button>
+        </div>
+      )}
+
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
