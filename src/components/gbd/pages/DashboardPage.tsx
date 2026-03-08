@@ -164,6 +164,28 @@ const DashboardPage = ({ navigateTo, user, calendarOpen }: DashboardPageProps) =
         </h3>
         <p className="text-sm text-muted-foreground">No badges earned yet. Keep pushing!</p>
       </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-5">
+        {[
+          { label: 'TASKS', value: completedTasks, icon: CheckSquare, color: 'hsl(var(--info))' },
+          { label: 'FOCUS TIME', value: `${(totalFocusMin / 60).toFixed(1)}h`, icon: Clock, color: 'hsl(var(--primary))' },
+          { label: 'STREAK', value: streak, icon: Zap, color: 'hsl(var(--pink))' },
+          { label: 'DETOX', value: sessions.length, icon: BarChart3, color: 'hsl(var(--purple))' },
+          { label: 'WELLNESS', value: 0, icon: Heart, color: 'hsl(var(--orange))' },
+        ].map(stat => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="glass-card !p-4">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground mb-1">{stat.label}</div>
+              <div className="text-xl font-bold text-foreground">{stat.value}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
