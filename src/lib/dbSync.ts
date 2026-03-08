@@ -564,6 +564,11 @@ export async function syncDebtsFromDB(): Promise<any[]> {
     }
 
     if (remoteDebts.length === 0 && localDebts.length > 0) {
+      const hasLocalOnly = localDebts.some(d => String(d.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setDebts([]);
+        return [];
+      }
       for (const d of localDebts) {
         const debtTypeValue = d.debtType === 'borrow' ? 'borrow' : 'lend';
         const { data: dd } = await supabase.from('user_debts').insert({
