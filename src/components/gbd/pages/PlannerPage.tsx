@@ -12,13 +12,16 @@ interface PlannerPageProps {
   refreshKey: number;
 }
 
-const PlannerPage = ({ navigateTo }: PlannerPageProps) => {
+const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
   const [priority, setPriority] = useState('medium');
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
   const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
+
+  // Re-read localStorage when AI adds entries
+  useEffect(() => { refresh(); }, [refreshKey]);
 
   // Pre-fill date from calendar quick-add
   useEffect(() => {
