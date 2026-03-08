@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
 
     if (settingsErr) {
       console.error("Error fetching health reminder settings:", settingsErr);
-      return new Response(JSON.stringify({ error: settingsErr.message }), {
+      return new Response(JSON.stringify({ error: "Failed to fetch reminder settings" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
