@@ -377,6 +377,13 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sendTimestamps = useRef<number[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const cancelRequest = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
