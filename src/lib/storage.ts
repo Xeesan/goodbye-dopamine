@@ -155,7 +155,8 @@ const Storage = {
   addTransaction(txn: any) {
     if (!txn) return;
     const txns = this.getTransactions();
-    txns.push({ ...txn, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: new Date().toISOString() });
+    const now = new Date().toISOString();
+    txns.push({ ...txn, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: new Date().toISOString(), updatedAt: now });
     this.setTransactions(txns);
   },
   deleteTransaction(id: string) {
