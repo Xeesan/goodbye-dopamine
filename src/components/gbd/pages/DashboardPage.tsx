@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { getDailyQuote, getRandomQuote } from '@/lib/quotes';
 import { useGamification } from '@/hooks/useGamification';
