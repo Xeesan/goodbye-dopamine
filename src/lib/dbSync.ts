@@ -525,6 +525,7 @@ export async function syncDebtsFromDB(): Promise<any[]> {
     // Push newer local debts to DB
     for (const d of toUpload) {
       await supabase.from('user_debts').update({
+        debt_type: d.debtType === 'borrow' ? 'borrow' : 'lend',
         settled: d.settled,
         settled_date: d.settledDate || null,
       }).eq('id', d.id).eq('user_id', userId);
