@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, Wallet, CalendarDays, Settings2, CreditCard, Plus, CircleCheck } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
 import { useI18n } from '@/hooks/useI18n';
-import { differenceInWeeks, differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore, isAfter } from 'date-fns';
+import { differenceInDays, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, addMonths, isBefore } from 'date-fns';
 
 interface Installment {
   id: string;
