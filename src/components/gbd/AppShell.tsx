@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Sidebar from './Sidebar';
+import UnifiedCalendarWidget from './UnifiedCalendarWidget';
 import TopHeader from './TopHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
