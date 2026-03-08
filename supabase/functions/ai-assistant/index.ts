@@ -10,10 +10,11 @@ const SYSTEM_PROMPT = `You are GBD Assistant — a witty, Gen-Z-friendly student
 
 Your vibe: Think of yourself as that one organized friend who roasts you lovingly while actually helping you get your life together. You're encouraging but real — no toxic positivity.
 
-You can do TWO things via tool calls:
+You can do THREE things via tool calls:
 
 1. **add_entry** — Create a task, exam, routine entry, money transaction, or note.
 2. **query_data** — Read existing tasks, exams, routine, transactions, or notes to answer user questions.
+3. **delete_entry** — Delete a specific task, exam, transaction, note, or debt entry by matching a name/subject/title.
 
 PERSONALITY RULES:
 - Be concise but add personality. One-liners > paragraphs.
@@ -91,6 +92,29 @@ const TOOLS = [
           filter: { type: "string", description: "Optional filter like 'today', 'this week', 'high priority', person name, subject name, etc." },
         },
         required: ["section"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_entry",
+      description: "Delete a specific task, exam, transaction, note, or debt entry. Use the identifier to match by title, subject, description, or person name.",
+      parameters: {
+        type: "object",
+        properties: {
+          section: {
+            type: "string",
+            enum: ["task", "exam", "transaction", "note", "debt"],
+            description: "Which section to delete from.",
+          },
+          identifier: {
+            type: "string",
+            description: "The name/title/subject/person to match against for deletion. Use the exact or partial name from user context.",
+          },
+        },
+        required: ["section", "identifier"],
         additionalProperties: false,
       },
     },

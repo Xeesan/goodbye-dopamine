@@ -33,14 +33,14 @@ function buildContext() {
     }
     return {
       taskCount: tasks.length,
-      tasks: tasks.map((t: any) => ({ title: t.title, date: t.date, priority: t.priority, status: t.status })),
+      tasks: tasks.map((t: any) => ({ id: t.id, title: t.title, date: t.date, priority: t.priority, status: t.status })),
       examCount: exams.length,
-      exams: exams.map((e: any) => ({ subject: e.subject, date: e.date, time: e.time })),
+      exams: exams.map((e: any) => ({ id: e.id, subject: e.subject, date: e.date, time: e.time })),
       routineSummary,
       transactionCount: transactions.length,
-      recentTransactions: transactions.map((t: any) => ({ description: t.description, amount: t.amount, type: t.type })),
+      recentTransactions: transactions.map((t: any) => ({ id: t.id, description: t.description, amount: t.amount, type: t.type })),
       noteCount: notes.length,
-      notes: notes.map((n: any) => ({ title: n.title, preview: n.content?.slice(0, 50) })),
+      notes: notes.map((n: any) => ({ id: n.id, title: n.title, preview: n.content?.slice(0, 50) })),
     };
   } catch {
     return {};
@@ -291,6 +291,53 @@ function executeToolCall(toolCall: ToolCall): string {
       }
 
       return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
+    }
+
+    if (toolCall.function.name === 'delete_entry') {
+      const { section, identifier } = args;
+      if (!identifier) return '😅 I need to know **which** entry to delete. Give me a name, subject, or title!';
+
+      if (section === 'task') {
+        const tasks = Storage.getTasks();
+        const match = tasks.find((t: any) => t.title?.toLowerCase().includes(identifier.toLowerCase()));
+        if (!match) return `🤔 Couldn't find a task matching **"${identifier}"**. Double-check the name?`;
+        Storage.deleteTask(match.id);
+        return `🗑️ Task **"${match.title}"** has been deleted! One less thing to worry about 😌`;
+      }
+
+      if (section === 'exam') {
+        const exams = Storage.getExams();
+        const match = exams.find((e: any) => e.subject?.toLowerCase().includes(identifier.toLowerCase()));
+        if (!match) return `🤔 Couldn't find an exam matching **"${identifier}"**. Check the subject name?`;
+        Storage.deleteExam(match.id);
+        return `🗑️ Exam **"${match.subject}"** (${match.date}) has been removed! ${match.date > new Date().toISOString().split('T')[0] ? 'Wait, was that on purpose? 😅' : ''}`;
+      }
+
+      if (section === 'transaction') {
+        const txns = Storage.getTransactions();
+        const match = txns.find((t: any) => t.description?.toLowerCase().includes(identifier.toLowerCase()));
+        if (!match) return `🤔 Couldn't find a transaction matching **"${identifier}"**. Check the description?`;
+        Storage.deleteTransaction(match.id);
+        return `🗑️ Transaction **"${match.description}"** (${match.type === 'income' ? '+' : '-'}${match.amount}) deleted!`;
+      }
+
+      if (section === 'note') {
+        const notes = Storage.getNotes();
+        const match = notes.find((n: any) => n.title?.toLowerCase().includes(identifier.toLowerCase()));
+        if (!match) return `🤔 Couldn't find a note matching **"${identifier}"**. Check the title?`;
+        Storage.deleteNote(match.id);
+        return `🗑️ Note **"${match.title}"** gone forever! Hope you didn't need that 😬`;
+      }
+
+      if (section === 'debt') {
+        const debts = Storage.getDebts();
+        const match = debts.find((d: any) => d.person?.toLowerCase().includes(identifier.toLowerCase()));
+        if (!match) return `🤔 Couldn't find a debt entry for **"${identifier}"**. Check the person's name?`;
+        Storage.deleteDebt(match.id);
+        return `🗑️ Debt entry with **${match.person}** (${match.debt_type === 'lend' ? 'lent' : 'borrowed'} ${match.amount}) deleted!`;
+      }
+
+      return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **transaction**, **debt**, or **note**!';
     }
 
     return '🤔 Hmm, that one went over my head. Try again?';
