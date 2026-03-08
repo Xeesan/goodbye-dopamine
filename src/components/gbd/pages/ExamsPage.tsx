@@ -118,7 +118,7 @@ const ExamsPage = ({ navigateTo }: ExamsPageProps) => {
   };
 
   return (
-    <div className="page-enter max-w-[1200px] mx-auto">
+    <div className="page-enter">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>

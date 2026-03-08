@@ -116,7 +116,7 @@ const NotesPage = ({ navigateTo }: NotesPageProps) => {
   };
 
   return (
-    <div className="page-enter max-w-[1200px] mx-auto">
+    <div className="page-enter">
       <div className="flex items-center gap-3 mb-5">
         <button className="icon-btn !w-9 !h-9" onClick={() => navigateTo('dashboard')}><ArrowLeft className="w-4 h-4" /></button>
         <div>
