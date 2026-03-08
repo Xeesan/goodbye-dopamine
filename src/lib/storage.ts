@@ -195,7 +195,8 @@ const Storage = {
   addDebt(debt: any) {
     if (!debt) return;
     const debts = this.getDebts();
-    debts.push({ ...debt, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: debt.date || new Date().toISOString(), settled: false });
+    const now = new Date().toISOString();
+    debts.push({ ...debt, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: debt.date || new Date().toISOString(), settled: false, updatedAt: now });
     this.setDebts(debts);
   },
   deleteDebt(id: string) {
