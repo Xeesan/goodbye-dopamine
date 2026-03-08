@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Camera, ImageIcon, Loader2, X, Check, AlertCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Camera, ImageIcon, Loader2, X, Check, AlertCircle, Wifi, WifiOff, Key, ChevronDown, Settings2 } from 'lucide-react';
 import Tesseract from 'tesseract.js';
 
 interface ImageOCRImportProps {
@@ -8,6 +8,35 @@ interface ImageOCRImportProps {
   buttonClassName?: string;
 }
 
+type OcrMode = 'offline' | 'online';
+
+interface ApiConfig {
+  provider: 'gemini' | 'openai' | 'custom';
+  apiKey: string;
+  model: string;
+  endpoint: string;
+}
+
+const DEFAULT_CONFIGS: Record<string, Partial<ApiConfig>> = {
+  gemini: { model: 'gemini-2.0-flash', endpoint: 'https://generativelanguage.googleapis.com/v1beta' },
+  openai: { model: 'gpt-4o-mini', endpoint: 'https://api.openai.com/v1/chat/completions' },
+  custom: { model: '', endpoint: '' },
+};
+
+const STORAGE_KEY = 'gbd_ocr_config';
+
+const loadConfig = (): { ocrMode: OcrMode; api: ApiConfig } => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { ocrMode: 'offline', api: { provider: 'gemini', apiKey: '', model: 'gemini-2.0-flash', endpoint: DEFAULT_CONFIGS.gemini.endpoint! } };
+};
+
+const saveConfig = (ocrMode: OcrMode, api: ApiConfig) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ocrMode, api }));
+};
+
 const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: ImageOCRImportProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,8 +44,17 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
   const [preview, setPreview] = useState<string | null>(null);
   const [results, setResults] = useState<any[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+
+  const saved = loadConfig();
+  const [ocrMode, setOcrMode] = useState<OcrMode>(saved.ocrMode);
+  const [apiConfig, setApiConfig] = useState<ApiConfig>(saved.api);
+
+  useEffect(() => {
+    saveConfig(ocrMode, apiConfig);
+  }, [ocrMode, apiConfig]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,41 +66,108 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     setError(null);
     setResults(null);
     const reader = new FileReader();
-    reader.onload = () => {
-      setPreview(reader.result as string);
-    };
+    reader.onload = () => setPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
+  const getSystemPrompt = () => {
+    if (mode === 'routine') {
+      return `You are an OCR assistant that extracts class routine/timetable data from images.
+Extract ALL class periods visible in the image. For each period return:
+- day: the day of the week (lowercase: monday, tuesday, etc.)
+- subject: the subject/course name
+- startTime: start time in HH:MM 24h format
+- endTime: end time in HH:MM 24h format  
+- room: room number/name if visible (empty string if not)
+
+Return ONLY a valid JSON array of objects. No markdown, no explanation.
+Example: [{"day":"monday","subject":"Mathematics","startTime":"09:00","endTime":"10:00","room":"Room 301"}]
+If you cannot read anything, return an empty array: []`;
+    }
+    return `You are an OCR assistant that extracts exam/assignment schedule data from images.
+Extract ALL exams or assignments visible in the image. For each item return:
+- subject: the subject/course name
+- date: the date in YYYY-MM-DD format
+- time: the time in HH:MM 24h format (use "09:00" if not visible)
+- room: room number/name if visible (empty string if not)
+- teacher: teacher name if visible (empty string if not)
+- credits: credit hours as a number if visible (3 if not)
+- grade: target grade if visible (empty string if not)
+
+Return ONLY a valid JSON array of objects. No markdown, no explanation.
+If you cannot read anything, return an empty array: []`;
+  };
+
+  const processOnlineGemini = async (base64: string): Promise<any[]> => {
+    const url = `${apiConfig.endpoint}/models/${apiConfig.model}:generateContent?key=${apiConfig.apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: getSystemPrompt() + '\n\nExtract all data from this image:' },
+            { inline_data: { mime_type: 'image/jpeg', data: base64 } },
+          ],
+        }],
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Gemini API error (${res.status}): ${errText.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  };
+
+  const processOnlineOpenAI = async (base64: string): Promise<any[]> => {
+    const res = await fetch(apiConfig.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiConfig.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: apiConfig.model,
+        messages: [
+          { role: 'system', content: getSystemPrompt() },
+          { role: 'user', content: [
+            { type: 'text', text: 'Extract all data from this image:' },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
+          ]},
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`OpenAI API error (${res.status}): ${errText.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '[]';
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  };
+
+  // -- Offline parsing helpers --
   const parseRoutineFromText = (text: string): any[] => {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const timeRegex = /(\d{1,2}[:.]\d{2})\s*[-–to]+\s*(\d{1,2}[:.]\d{2})/i;
     const items: any[] = [];
     let currentDay = '';
-
     for (const line of lines) {
       const lower = line.toLowerCase();
       const foundDay = days.find(d => lower.includes(d));
       if (foundDay) currentDay = foundDay;
-
       const timeMatch = line.match(timeRegex);
       if (timeMatch && currentDay) {
         const startTime = timeMatch[1].replace('.', ':');
         const endTime = timeMatch[2].replace('.', ':');
-        const subject = line
-          .replace(timeMatch[0], '')
-          .replace(new RegExp(currentDay, 'i'), '')
-          .replace(/room\s*[:\-]?\s*\S+/i, '')
-          .trim() || 'Unknown Subject';
+        const subject = line.replace(timeMatch[0], '').replace(new RegExp(currentDay, 'i'), '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
         const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
-        items.push({
-          day: currentDay,
-          subject,
-          startTime,
-          endTime,
-          room: roomMatch?.[1] || '',
-        });
+        items.push({ day: currentDay, subject, startTime, endTime, room: roomMatch?.[1] || '' });
       }
     }
     return items;
@@ -73,32 +178,18 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     const dateRegex = /(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/;
     const timeRegex = /(\d{1,2}[:.]\d{2}\s*(?:am|pm)?)/i;
     const items: any[] = [];
-
     for (const line of lines) {
       const dateMatch = line.match(dateRegex);
       if (dateMatch) {
         let date = dateMatch[1].replace(/\//g, '-');
-        // Try to normalize to YYYY-MM-DD
         const parts = date.split('-');
         if (parts[0].length <= 2) {
           date = `20${parts[2].length === 2 ? parts[2] : parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
         }
         const timeMatch = line.match(timeRegex);
-        const subject = line
-          .replace(dateMatch[0], '')
-          .replace(timeMatch?.[0] || '', '')
-          .replace(/room\s*[:\-]?\s*\S+/i, '')
-          .trim() || 'Unknown Subject';
+        const subject = line.replace(dateMatch[0], '').replace(timeMatch?.[0] || '', '').replace(/room\s*[:\-]?\s*\S+/i, '').trim() || 'Unknown Subject';
         const roomMatch = line.match(/room\s*[:\-]?\s*(\S+)/i);
-        items.push({
-          subject,
-          date,
-          time: timeMatch?.[1]?.replace('.', ':') || '09:00',
-          room: roomMatch?.[1] || '',
-          teacher: '',
-          credits: 3,
-          grade: '',
-        });
+        items.push({ subject, date, time: timeMatch?.[1]?.replace('.', ':') || '09:00', room: roomMatch?.[1] || '', teacher: '', credits: 3, grade: '' });
       }
     }
     return items;
@@ -108,27 +199,46 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     if (!preview) return;
     setLoading(true);
     setError(null);
-    setLoadingMsg('Loading OCR engine...');
+
     try {
-      const { data: { text } } = await Tesseract.recognize(preview, 'eng', {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            setLoadingMsg(`Recognizing... ${Math.round((m.progress || 0) * 100)}%`);
-          }
-        },
-      });
-
-      if (!text.trim()) {
-        setError('No text could be extracted. Try a clearer, well-lit photo.');
-        return;
-      }
-
-      const items = mode === 'routine' ? parseRoutineFromText(text) : parseExamsFromText(text);
-
-      if (items.length === 0) {
-        setError('Text was found but no structured data could be parsed. Try a clearer image with visible times and dates.');
+      if (ocrMode === 'online') {
+        if (!apiConfig.apiKey) {
+          setError('Please add your API key in settings first.');
+          return;
+        }
+        setLoadingMsg('Sending to AI...');
+        const base64 = preview.split(',')[1];
+        let items: any[];
+        if (apiConfig.provider === 'gemini') {
+          items = await processOnlineGemini(base64);
+        } else {
+          items = await processOnlineOpenAI(base64);
+        }
+        const arr = Array.isArray(items) ? items : [];
+        if (arr.length === 0) {
+          setError('No data could be extracted. Try a clearer photo.');
+        } else {
+          setResults(arr);
+        }
       } else {
-        setResults(items);
+        setLoadingMsg('Loading OCR engine...');
+        const { data: { text } } = await Tesseract.recognize(preview, 'eng', {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              setLoadingMsg(`Recognizing... ${Math.round((m.progress || 0) * 100)}%`);
+            }
+          },
+        });
+        if (!text.trim()) {
+          setError('No text could be extracted. Try a clearer, well-lit photo.');
+          return;
+        }
+        const items = mode === 'routine' ? parseRoutineFromText(text) : parseExamsFromText(text);
+        if (items.length === 0) {
+          setError('Text was found but no structured data could be parsed. Try a clearer image.');
+        } else {
+          setResults(items);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to process image');
@@ -152,6 +262,17 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
     setError(null);
     setLoading(false);
     setLoadingMsg('');
+    setShowSettings(false);
+  };
+
+  const handleProviderChange = (provider: 'gemini' | 'openai' | 'custom') => {
+    const defaults = DEFAULT_CONFIGS[provider];
+    setApiConfig(prev => ({
+      ...prev,
+      provider,
+      model: defaults.model || prev.model,
+      endpoint: defaults.endpoint || prev.endpoint,
+    }));
   };
 
   return (
@@ -168,13 +289,139 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
               <h2 className="text-lg font-bold text-foreground">
                 Import {mode === 'routine' ? 'Routine' : 'Exams'} from Image
               </h2>
-              <button className="icon-btn !w-8 !h-8" onClick={close}>
-                <X className="w-4 h-4" />
+              <div className="flex items-center gap-1">
+                <button
+                  className="icon-btn !w-8 !h-8"
+                  onClick={() => setShowSettings(!showSettings)}
+                  title="OCR Settings"
+                >
+                  <Settings2 className="w-4 h-4" />
+                </button>
+                <button className="icon-btn !w-8 !h-8" onClick={close}>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* OCR Mode Toggle */}
+            <div className="flex items-center gap-2 mb-3 p-2 rounded-lg" style={{ background: 'hsl(var(--bg-input))' }}>
+              <button
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  ocrMode === 'offline'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setOcrMode('offline')}
+              >
+                <WifiOff className="w-3.5 h-3.5" />
+                Offline OCR
+              </button>
+              <button
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  ocrMode === 'online'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setOcrMode('online')}
+              >
+                <Wifi className="w-3.5 h-3.5" />
+                AI API
               </button>
             </div>
 
+            {/* Settings Panel */}
+            {showSettings && ocrMode === 'online' && (
+              <div className="mb-4 p-3 rounded-lg space-y-3 border" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}>
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Key className="w-4 h-4 text-primary" />
+                  API Configuration
+                </div>
+
+                {/* Provider Select */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Provider</label>
+                  <div className="relative">
+                    <select
+                      value={apiConfig.provider}
+                      onChange={e => handleProviderChange(e.target.value as any)}
+                      className="w-full px-3 py-2 rounded-md text-sm appearance-none cursor-pointer"
+                      style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                    >
+                      <option value="gemini">Google Gemini</option>
+                      <option value="openai">OpenAI (GPT-4o)</option>
+                      <option value="custom">Custom (OpenAI-compatible)</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* API Key */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">API Key</label>
+                  <input
+                    type="password"
+                    value={apiConfig.apiKey}
+                    onChange={e => setApiConfig(prev => ({ ...prev, apiKey: e.target.value }))}
+                    placeholder={apiConfig.provider === 'gemini' ? 'AIza...' : 'sk-...'}
+                    className="w-full px-3 py-2 rounded-md text-sm"
+                    style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {apiConfig.provider === 'gemini'
+                      ? 'Get your key from aistudio.google.com'
+                      : apiConfig.provider === 'openai'
+                      ? 'Get your key from platform.openai.com'
+                      : 'Enter your API key'}
+                  </p>
+                </div>
+
+                {/* Model */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Model</label>
+                  <input
+                    type="text"
+                    value={apiConfig.model}
+                    onChange={e => setApiConfig(prev => ({ ...prev, model: e.target.value }))}
+                    placeholder="Model name"
+                    className="w-full px-3 py-2 rounded-md text-sm"
+                    style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                  />
+                </div>
+
+                {/* Custom Endpoint (only for custom provider) */}
+                {apiConfig.provider === 'custom' && (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">API Endpoint</label>
+                    <input
+                      type="text"
+                      value={apiConfig.endpoint}
+                      onChange={e => setApiConfig(prev => ({ ...prev, endpoint: e.target.value }))}
+                      placeholder="https://api.example.com/v1/chat/completions"
+                      className="w-full px-3 py-2 rounded-md text-sm"
+                      style={{ background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' }}
+                    />
+                  </div>
+                )}
+
+                {apiConfig.apiKey && (
+                  <div className="flex items-center gap-1.5 text-xs text-green-500">
+                    <Check className="w-3 h-3" /> API key saved locally
+                  </div>
+                )}
+              </div>
+            )}
+
+            {showSettings && ocrMode === 'offline' && (
+              <div className="mb-4 p-3 rounded-lg border" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--bg-input))' }}>
+                <p className="text-sm text-muted-foreground">
+                  Offline mode uses <strong className="text-foreground">Tesseract.js</strong> — runs entirely in your browser, no API key needed. Works best with clean, high-contrast images.
+                </p>
+              </div>
+            )}
+
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'} and the data will be extracted automatically (offline OCR).
+              Upload a photo of your {mode === 'routine' ? 'class timetable/routine' : 'exam schedule'}.
+              {ocrMode === 'offline' ? ' Text will be extracted offline using Tesseract.js.' : ' AI will analyze and extract structured data.'}
             </p>
 
             {!preview && (
@@ -200,22 +447,8 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
               </div>
             )}
 
-            <input
-              ref={cameraRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleFile}
-            />
-
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFile}
-            />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
             {preview && !results && (
               <div className="space-y-3">
