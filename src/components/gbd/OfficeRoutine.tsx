@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, Settings, User, Link, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { RefreshCw, Settings, User, Link, X, ChevronLeft, ChevronRight, Calendar, Palmtree } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const LS_KEY_URL = 'gbd_office_sheet_url';
 const LS_KEY_NAME = 'gbd_office_routine_name';
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 interface ShiftEntry {
   shift: string;
@@ -14,11 +16,7 @@ interface DayRow {
   date: string;
   day: string;
   shifts: ShiftEntry[];
-}
-
-interface SheetTab {
-  name: string;
-  gid: string;
+  monthKey: string; // "2026-03" format
 }
 
 function parseCSV(text: string): string[][] {
@@ -60,91 +58,37 @@ function parseCSV(text: string): string[][] {
   return rows;
 }
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function extractMonthKey(dateStr: string): string {
+  // Handle formats like "2026-03-01" or "2026/03/01"
+  const normalized = dateStr.replace(/\//g, '-');
+  const parts = normalized.split('-');
+  if (parts.length >= 2) return `${parts[0]}-${parts[1].padStart(2, '0')}`;
+  return '';
+}
+
+function formatMonthLabel(monthKey: string): string {
+  const [year, month] = monthKey.split('-');
+  const monthIdx = parseInt(month, 10) - 1;
+  if (monthIdx >= 0 && monthIdx < 12) return `${MONTH_NAMES[monthIdx]} ${year}`;
+  return monthKey;
+}
 
 const OfficeRoutine = () => {
   const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem(LS_KEY_URL) || '');
   const [filterName, setFilterName] = useState(() => localStorage.getItem(LS_KEY_NAME) || '');
-  const [data, setData] = useState<DayRow[]>([]);
+  const [allData, setAllData] = useState<DayRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [nameInput, setNameInput] = useState('');
-  const [sheetTabs, setSheetTabs] = useState<SheetTab[]>([]);
-  const [selectedTab, setSelectedTab] = useState<string>('');
-  const [sheetId, setSheetId] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
 
-  // Extract sheet ID from URL
-  const extractSheetId = (url: string) => {
+  const fetchData = useCallback(async (url: string) => {
     const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : '';
-  };
-
-  // Fetch list of sheet tabs
-  const fetchSheetTabs = useCallback(async (url: string) => {
-    const id = extractSheetId(url);
-    if (!id) return;
-    setSheetId(id);
-    try {
-      // Fetch the HTML page to extract sheet tab names and gids
-      const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/htmlview`);
-      if (!res.ok) throw new Error('Failed to fetch sheet info');
-      const html = await res.text();
-      
-      // Parse sheet tabs from the HTML
-      const tabRegex = /id="sheet-button-(\d+)"[^>]*>([^<]+)</g;
-      const tabs: SheetTab[] = [];
-      let m;
-      while ((m = tabRegex.exec(html)) !== null) {
-        tabs.push({ gid: m[1], name: m[2].trim() });
-      }
-      
-      // Fallback: try another pattern
-      if (tabs.length === 0) {
-        const altRegex = /gid=(\d+)[^>]*>([^<]*)</g;
-        while ((m = altRegex.exec(html)) !== null) {
-          const name = m[2].trim();
-          if (name && !tabs.find(t => t.gid === m![1])) {
-            tabs.push({ gid: m[1], name });
-          }
-        }
-      }
-
-      if (tabs.length > 0) {
-        setSheetTabs(tabs);
-        // Auto-select current month tab if it matches
-        const now = new Date();
-        const currentMonthName = MONTH_NAMES[now.getMonth()];
-        const currentTab = tabs.find(t => 
-          t.name.toLowerCase().includes(currentMonthName.toLowerCase())
-        );
-        if (currentTab && !selectedTab) {
-          setSelectedTab(currentTab.gid);
-        } else if (!selectedTab) {
-          setSelectedTab(tabs[0].gid);
-        }
-      } else {
-        // No tabs found, just use default (gid=0)
-        setSheetTabs([{ gid: '0', name: 'Sheet 1' }]);
-        if (!selectedTab) setSelectedTab('0');
-      }
-    } catch {
-      // Fallback: use default sheet
-      setSheetTabs([{ gid: '0', name: 'Default' }]);
-      if (!selectedTab) setSelectedTab('0');
-    }
-  }, [selectedTab]);
-
-  // Fetch data for a specific sheet tab
-  const fetchData = useCallback(async (url: string, gid?: string) => {
-    const id = extractSheetId(url);
-    if (!id) return;
+    if (!match) return;
     setLoading(true);
     try {
-      let csvUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`;
-      if (gid && gid !== '0') {
-        csvUrl += `&gid=${gid}`;
-      }
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/gviz/tq?tqx=out:csv`;
       const res = await fetch(csvUrl);
       if (!res.ok) throw new Error('Failed to fetch');
       const text = await res.text();
@@ -159,30 +103,52 @@ const OfficeRoutine = () => {
         const day = r[1] || '';
         const shifts: ShiftEntry[] = [];
         for (let j = 2; j < r.length && j < hdr.length; j++) {
-          if (r[j]) {
-            shifts.push({ shift: hdr[j], name: r[j] });
-          }
+          if (r[j]) shifts.push({ shift: hdr[j], name: r[j] });
         }
-        if (date || day) parsed.push({ date, day, shifts });
+        const monthKey = extractMonthKey(date);
+        if (date || day) parsed.push({ date, day, shifts, monthKey });
       }
-      setData(parsed);
+      setAllData(parsed);
+
+      // Auto-select current month or first available
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const availableMonths = [...new Set(parsed.map(r => r.monthKey).filter(Boolean))];
+      if (availableMonths.includes(currentKey)) {
+        setSelectedMonth(currentKey);
+      } else if (availableMonths.length > 0) {
+        setSelectedMonth(availableMonths[availableMonths.length - 1]);
+      }
     } catch (err: any) {
       toast({ title: 'Error loading sheet', description: err.message });
-      setData([]);
+      setAllData([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Initial load: fetch tabs, then data
   useEffect(() => {
-    if (sheetUrl) fetchSheetTabs(sheetUrl);
-  }, [sheetUrl]);
+    if (sheetUrl) fetchData(sheetUrl);
+  }, [sheetUrl, fetchData]);
 
-  // Fetch data when selected tab changes
-  useEffect(() => {
-    if (sheetUrl && selectedTab) fetchData(sheetUrl, selectedTab);
-  }, [sheetUrl, selectedTab, fetchData]);
+  const availableMonths = useMemo(() => {
+    const months = [...new Set(allData.map(r => r.monthKey).filter(Boolean))];
+    months.sort();
+    return months;
+  }, [allData]);
+
+  const monthData = useMemo(() => {
+    if (!selectedMonth) return [];
+    return allData.filter(r => r.monthKey === selectedMonth);
+  }, [allData, selectedMonth]);
+
+  const navigateMonth = (dir: -1 | 1) => {
+    const idx = availableMonths.indexOf(selectedMonth);
+    const next = idx + dir;
+    if (next >= 0 && next < availableMonths.length) setSelectedMonth(availableMonths[next]);
+  };
+
+  const currentMonthIdx = availableMonths.indexOf(selectedMonth);
 
   const saveSettings = () => {
     const url = urlInput.trim();
@@ -190,8 +156,8 @@ const OfficeRoutine = () => {
     if (url) {
       localStorage.setItem(LS_KEY_URL, url);
       setSheetUrl(url);
-      setSelectedTab(''); // Reset so auto-select works
-      setSheetTabs([]);
+      setSelectedMonth('');
+      setAllData([]);
     }
     localStorage.setItem(LS_KEY_NAME, name);
     setFilterName(name);
@@ -204,27 +170,6 @@ const OfficeRoutine = () => {
     setNameInput(filterName);
     setShowSettings(true);
   };
-
-  const navigateTab = (direction: -1 | 1) => {
-    const idx = sheetTabs.findIndex(t => t.gid === selectedTab);
-    const newIdx = idx + direction;
-    if (newIdx >= 0 && newIdx < sheetTabs.length) {
-      setSelectedTab(sheetTabs[newIdx].gid);
-    }
-  };
-
-  const currentTabIdx = sheetTabs.findIndex(t => t.gid === selectedTab);
-  const currentTabName = sheetTabs.find(t => t.gid === selectedTab)?.name || '';
-
-  const filteredData = data.map(row => {
-    if (!filterName) return row;
-    const myShifts = row.shifts.filter(s =>
-      s.name.toLowerCase().includes(filterName.toLowerCase())
-    );
-    return { ...row, shifts: myShifts };
-  });
-
-  const hasAnyData = filteredData.some(r => r.shifts.length > 0);
 
   const settingsModal = showSettings && (
     <div className="modal-overlay" onClick={() => setShowSettings(false)}>
@@ -267,9 +212,11 @@ const OfficeRoutine = () => {
     );
   }
 
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <div>
-      {/* Top bar: filter name, month selector, actions */}
+      {/* Top bar */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           {filterName && (
@@ -279,7 +226,7 @@ const OfficeRoutine = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <button className="icon-btn !w-8 !h-8" onClick={() => fetchData(sheetUrl, selectedTab)} title="Refresh">
+          <button className="icon-btn !w-8 !h-8" onClick={() => fetchData(sheetUrl)} title="Refresh">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button className="icon-btn !w-8 !h-8" onClick={openSettings} title="Settings">
@@ -288,32 +235,32 @@ const OfficeRoutine = () => {
         </div>
       </div>
 
-      {/* Month/Sheet tab selector */}
-      {sheetTabs.length > 1 && (
+      {/* Month selector */}
+      {availableMonths.length > 0 && (
         <div className="flex items-center justify-center gap-3 mb-4">
           <button
             className="icon-btn !w-8 !h-8"
-            onClick={() => navigateTab(-1)}
-            disabled={currentTabIdx <= 0}
+            onClick={() => navigateMonth(-1)}
+            disabled={currentMonthIdx <= 0}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <div className="flex items-center gap-2 min-w-[140px] justify-center">
+          <div className="flex items-center gap-2 min-w-[160px] justify-center">
             <Calendar className="w-4 h-4 text-primary" />
             <select
               className="input-simple !w-auto !py-1 !px-2 text-sm font-medium"
-              value={selectedTab}
-              onChange={e => setSelectedTab(e.target.value)}
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
             >
-              {sheetTabs.map(tab => (
-                <option key={tab.gid} value={tab.gid}>{tab.name}</option>
+              {availableMonths.map(m => (
+                <option key={m} value={m}>{formatMonthLabel(m)}</option>
               ))}
             </select>
           </div>
           <button
             className="icon-btn !w-8 !h-8"
-            onClick={() => navigateTab(1)}
-            disabled={currentTabIdx >= sheetTabs.length - 1}
+            onClick={() => navigateMonth(1)}
+            disabled={currentMonthIdx >= availableMonths.length - 1}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -324,36 +271,52 @@ const OfficeRoutine = () => {
         <div className="glass-card min-h-[200px] flex items-center justify-center">
           <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
-      ) : !hasAnyData ? (
+      ) : monthData.length === 0 ? (
         <div className="glass-card min-h-[200px]">
           <div className="empty-state">
-            <p className="text-muted-foreground">
-              {filterName ? `No shifts found for "${filterName}" in ${currentTabName}` : 'No data found in this sheet'}
-            </p>
+            <p className="text-muted-foreground">No data found for this month</p>
           </div>
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredData.filter(r => r.shifts.length > 0).map((row, i) => {
-            // Highlight today's row
-            const today = new Date().toISOString().split('T')[0];
+          {monthData.map((row, i) => {
             const isToday = row.date === today || row.date.replace(/\//g, '-') === today;
+            const hasMyShift = filterName
+              ? row.shifts.some(s => s.name.toLowerCase().includes(filterName.toLowerCase()))
+              : true;
+            const myShifts = filterName
+              ? row.shifts.filter(s => s.name.toLowerCase().includes(filterName.toLowerCase()))
+              : row.shifts;
+            const isHoliday = filterName && !hasMyShift;
+
             return (
-              <div key={i} className={`glass-card !p-3 ${isToday ? 'ring-2 ring-primary/50' : ''}`}>
-                <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div
+                key={i}
+                className={`glass-card !p-3 ${isToday ? 'ring-2 ring-primary/50' : ''} ${isHoliday ? 'opacity-60' : ''}`}
+              >
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs font-semibold text-primary whitespace-nowrap">{row.date}</span>
                     <span className="text-xs text-muted-foreground uppercase">{row.day}</span>
-                    {isToday && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-medium">TODAY</span>}
+                    {isToday && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-medium">TODAY</span>
+                    )}
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {row.shifts.map((s, j) => (
-                    <span key={j} className="text-xs px-2 py-1 rounded-md bg-accent/50 text-accent-foreground">
-                      <span className="font-medium">{s.shift}:</span> {s.name}
+                  {isHoliday && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/15 text-green-500 flex items-center gap-1 font-medium">
+                      <Palmtree className="w-3 h-3" /> Holiday
                     </span>
-                  ))}
+                  )}
                 </div>
+                {!isHoliday && myShifts.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {myShifts.map((s, j) => (
+                      <span key={j} className="text-xs px-2 py-1 rounded-md bg-accent/50 text-accent-foreground">
+                        <span className="font-medium">{s.shift}:</span> {s.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
