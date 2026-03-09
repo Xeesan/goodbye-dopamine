@@ -96,13 +96,21 @@ const OfficeRoutine = () => {
       if (rows.length < 2) throw new Error('No data found');
 
       const hdr = rows[0];
+      // Only use columns with non-empty headers (the actual shift columns)
+      // Stop at first empty header after the shift columns
+      let lastShiftCol = 1; // start after Date + Day columns
+      for (let j = 2; j < hdr.length; j++) {
+        if (hdr[j]) lastShiftCol = j;
+        else break; // stop at first empty header
+      }
+
       const parsed: DayRow[] = [];
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
         const date = r[0] || '';
         const day = r[1] || '';
         const shifts: ShiftEntry[] = [];
-        for (let j = 2; j < r.length && j < hdr.length; j++) {
+        for (let j = 2; j <= lastShiftCol && j < r.length; j++) {
           if (r[j]) shifts.push({ shift: hdr[j], name: r[j] });
         }
         const monthKey = extractMonthKey(date);
