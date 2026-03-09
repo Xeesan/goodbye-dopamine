@@ -21,6 +21,7 @@ const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
 const DAY_KEYS: TranslationKey[] = ['day.monday', 'day.tuesday', 'day.wednesday', 'day.thursday', 'day.friday', 'day.saturday', 'day.sunday'];
 
 const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
+  const [activeTab, setActiveTab] = useState<'class' | 'office'>('class');
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
