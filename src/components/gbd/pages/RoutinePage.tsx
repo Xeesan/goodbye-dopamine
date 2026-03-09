@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB } from '@/lib/dbSync';
 import { getCurrentDayName } from '@/lib/helpers';
-import { Trash2, ArrowLeft, Download } from 'lucide-react';
+import { Trash2, ArrowLeft, Download, GraduationCap, Briefcase } from 'lucide-react';
 import { exportRoutineToICS } from '@/lib/icsExport';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
@@ -10,6 +10,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
+import OfficeRoutine from '../OfficeRoutine';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
@@ -20,6 +21,7 @@ const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
 const DAY_KEYS: TranslationKey[] = ['day.monday', 'day.tuesday', 'day.wednesday', 'day.thursday', 'day.friday', 'day.saturday', 'day.sunday'];
 
 const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
+  const [activeTab, setActiveTab] = useState<'class' | 'office'>('class');
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -122,59 +124,83 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
             <p className="text-muted-foreground text-sm">{t('routine.subtitle')}</p>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            className="btn-outline text-sm flex items-center gap-1.5"
-            onClick={() => {
-              const success = exportRoutineToICS(routine);
-              if (success) toast({ title: 'Routine exported', description: 'Open the .ics file to add weekly classes to your calendar' });
-              else toast({ title: 'Nothing to export', description: 'No classes found in routine' });
-            }}
-            title="Export to calendar"
-          >
-            <Download className="w-4 h-4" /> .ics
-          </button>
-          <ImageOCRImport mode="routine" onImport={handleOCRImport} />
-          <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
-        </div>
-      </div>
-
-      <div className="day-tabs mb-6">
-        {DAYS.map((d, i) => (
-          <button key={d} className={`day-tab ${d === selectedDay ? 'active' : ''}`} onClick={() => setSelectedDay(d)}>{t(DAY_KEYS[i])}</button>
-        ))}
-      </div>
-
-      <div className="glass-card min-h-[200px]">
-        {periods.length === 0 ? (
-          <div className="empty-state">
-            <p>{t('routine.no_classes')} {selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</p>
-            <button className="btn-outline mt-3" onClick={() => setShowModal(true)}>{t('routine.add_period_btn')}</button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {periods.map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between gap-3 p-3 rounded-lg flex-wrap" style={{ background: 'hsl(var(--bg-input))' }}>
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-wrap">
-                  <span className="text-sm font-semibold text-primary whitespace-nowrap">{p.startTime} - {p.endTime}</span>
-                  <span className="text-sm font-medium text-foreground truncate">{p.subject}</span>
-                  {p.room && <span className="text-xs text-muted-foreground">{p.room}</span>}
-                </div>
-                <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => deletePeriod(p.id)}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+        {activeTab === 'class' && (
+          <div className="flex gap-2 flex-wrap">
+            <button
+              className="btn-outline text-sm flex items-center gap-1.5"
+              onClick={() => {
+                const success = exportRoutineToICS(routine);
+                if (success) toast({ title: 'Routine exported', description: 'Open the .ics file to add weekly classes to your calendar' });
+                else toast({ title: 'Nothing to export', description: 'No classes found in routine' });
+              }}
+              title="Export to calendar"
+            >
+              <Download className="w-4 h-4" /> .ics
+            </button>
+            <ImageOCRImport mode="routine" onImport={handleOCRImport} />
+            <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
           </div>
         )}
       </div>
 
-      {Object.values(routine).some(arr => arr.length > 0) && (
-        <div className="mt-4 flex justify-center">
-          <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllRoutine}>
-            <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />{t('routine.clear_all')}
-          </button>
-        </div>
+      {/* Tab switcher */}
+      <div className="flex gap-2 mb-6">
+        <button
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'class' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setActiveTab('class')}
+        >
+          <GraduationCap className="w-4 h-4" /> Class Routine
+        </button>
+        <button
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'office' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setActiveTab('office')}
+        >
+          <Briefcase className="w-4 h-4" /> Office Routine
+        </button>
+      </div>
+
+      {activeTab === 'class' ? (
+        <>
+          <div className="day-tabs mb-6">
+            {DAYS.map((d, i) => (
+              <button key={d} className={`day-tab ${d === selectedDay ? 'active' : ''}`} onClick={() => setSelectedDay(d)}>{t(DAY_KEYS[i])}</button>
+            ))}
+          </div>
+
+          <div className="glass-card min-h-[200px]">
+            {periods.length === 0 ? (
+              <div className="empty-state">
+                <p>{t('routine.no_classes')} {selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</p>
+                <button className="btn-outline mt-3" onClick={() => setShowModal(true)}>{t('routine.add_period_btn')}</button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {periods.map((p: any) => (
+                  <div key={p.id} className="flex items-center justify-between gap-3 p-3 rounded-lg flex-wrap" style={{ background: 'hsl(var(--bg-input))' }}>
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-wrap">
+                      <span className="text-sm font-semibold text-primary whitespace-nowrap">{p.startTime} - {p.endTime}</span>
+                      <span className="text-sm font-medium text-foreground truncate">{p.subject}</span>
+                      {p.room && <span className="text-xs text-muted-foreground">{p.room}</span>}
+                    </div>
+                    <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => deletePeriod(p.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {Object.values(routine).some(arr => arr.length > 0) && (
+            <div className="mt-4 flex justify-center">
+              <button className="btn-outline !text-destructive !border-destructive/30 hover:!bg-destructive/10 text-sm" onClick={clearAllRoutine}>
+                <Trash2 className="w-3.5 h-3.5 inline-block mr-1" />{t('routine.clear_all')}
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <OfficeRoutine />
       )}
 
       {showModal && (
