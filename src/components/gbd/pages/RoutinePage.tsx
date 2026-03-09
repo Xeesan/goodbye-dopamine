@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB } from '@/lib/dbSync';
 import { getCurrentDayName } from '@/lib/helpers';
-import { Trash2, ArrowLeft, Download } from 'lucide-react';
+import { Trash2, ArrowLeft, Download, GraduationCap, Briefcase } from 'lucide-react';
 import { exportRoutineToICS } from '@/lib/icsExport';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
@@ -10,6 +10,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
+import OfficeRoutine from '../OfficeRoutine';
 
 interface RoutinePageProps {
   navigateTo: (page: string) => void;
