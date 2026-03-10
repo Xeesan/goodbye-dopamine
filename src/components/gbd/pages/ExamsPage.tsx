@@ -240,7 +240,26 @@ const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold px-2 py-1 rounded" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>🎯 {e.grade || '—'}</span>
                 <span className="text-xs font-semibold px-2 py-1 rounded" style={{ background: 'hsl(var(--purple) / 0.12)', color: 'hsl(var(--purple))' }}>{e.credits || 3} cr</span>
-                <button className="icon-btn !w-7 !h-7 !text-primary" onClick={() => setEditingId(String(e.id))}><Edit className="w-3.5 h-3.5" /></button>
+                <button className="icon-btn !w-7 !h-7 !text-primary" onClick={() => {
+                  setEditingId(String(e.id));
+                  setTimeout(() => {
+                    const si = document.getElementById('exam-subject') as HTMLInputElement;
+                    const di = document.getElementById('exam-date') as HTMLInputElement;
+                    const ti = document.getElementById('exam-time') as HTMLInputElement;
+                    const gi = document.getElementById('exam-grade') as HTMLInputElement;
+                    const ci = document.getElementById('exam-credits') as HTMLInputElement;
+                    const te = document.getElementById('exam-teacher') as HTMLInputElement;
+                    const ri = document.getElementById('exam-room') as HTMLInputElement;
+                    if (si) si.value = e.subject || '';
+                    if (di) di.value = e.date || '';
+                    if (ti) ti.value = e.time || '09:00';
+                    if (gi) gi.value = e.grade || '';
+                    if (ci) ci.value = String(e.credits || 3);
+                    if (te) te.value = e.teacher || '';
+                    if (ri) ri.value = e.room || '';
+                    si?.focus();
+                  }, 50);
+                }}><Edit className="w-3.5 h-3.5" /></button>
                 <button className="icon-btn !w-7 !h-7 !text-destructive" onClick={() => deleteExam(String(e.id))}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             </div>
