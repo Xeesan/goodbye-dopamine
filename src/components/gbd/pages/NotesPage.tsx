@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncNotesFromDB, addNoteToDB, updateNoteInDB, deleteNoteFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
 import { FileText, Trash2, Edit, Search, X, ArrowLeft, Hash, Eye, Pencil } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
@@ -43,8 +44,10 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
   const { addXP } = useGamification();
   const { t } = useI18n();
 
-  // Re-read localStorage when AI adds entries
-  useEffect(() => { setNotes(Storage.getNotes()); }, [refreshKey]);
+  // Sync from DB on mount and when AI adds entries
+  useEffect(() => {
+    syncNotesFromDB().then(() => setNotes(Storage.getNotes()));
+  }, [refreshKey]);
 
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
@@ -95,11 +98,27 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
       return;
     }
     if (editingId) {
-      Storage.updateNote(editingId, { title: formTitle.trim(), content: formContent.trim(), category: formCategory });
+      const updates = { title: formTitle.trim(), content: formContent.trim(), category: formCategory };
+      Storage.updateNote(editingId, updates);
+      // Sync update to DB
+      const updated = Storage.getNotes().find(n => n.id === editingId);
+      if (updated) updateNoteInDB(updated);
       toast({ title: 'Note updated', description: formTitle.trim() });
     } else {
       Storage.addNote({ title: formTitle.trim(), content: formContent.trim(), category: formCategory });
       addXP(10);
+      // Sync new note to DB and link ID
+      const current = Storage.getNotes();
+      const last = current[current.length - 1];
+      if (last) {
+        addNoteToDB(last).then(dbId => {
+          if (dbId) {
+            const notes = Storage.getNotes();
+            const item = notes.find(n => n.id === last.id);
+            if (item) { item.id = dbId; Storage.setNotes(notes); refresh(); }
+          }
+        });
+      }
       toast({ title: 'Note created', description: formTitle.trim() });
     }
     setShowModal(false);
@@ -114,6 +133,7 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
     const confirmed = await showDialog({ title: t('common.delete'), message: 'Are you sure you want to delete this note?', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deleteNote(id);
+      deleteNoteFromDB(id);
       if (selectedNoteId === id) setSelectedNoteId(null);
       refresh();
       toast({ title: 'Note deleted', description: note?.title || '' });

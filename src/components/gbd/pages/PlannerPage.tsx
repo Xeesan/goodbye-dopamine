@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncTasksFromDB, addTaskToDB, updateTaskInDB, deleteTaskFromDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
@@ -20,8 +21,10 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
   const { t } = useI18n();
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
-  // Re-read localStorage when AI adds entries
-  useEffect(() => { refresh(); }, [refreshKey]);
+  // Sync from DB on mount and when AI adds entries
+  useEffect(() => {
+    syncTasksFromDB().then(() => refresh());
+  }, [refreshKey]);
 
   // Pre-fill date from calendar quick-add
   useEffect(() => {
@@ -30,7 +33,6 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
       sessionStorage.removeItem('calendar_prefill_date');
       const dateInput = document.getElementById('task-date') as HTMLInputElement;
       if (dateInput) dateInput.value = prefillDate;
-      // Focus the title input for quick entry
       setTimeout(() => {
         const titleInput = document.getElementById('task-title') as HTMLInputElement;
         titleInput?.focus();
@@ -52,8 +54,19 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
     const date = (document.getElementById('task-date') as HTMLInputElement)?.value;
     const time = (document.getElementById('task-time') as HTMLInputElement)?.value;
     const reminder = (document.getElementById('task-reminder') as HTMLSelectElement)?.value;
-    Storage.addTask({ title, date, time, priority, reminder });
+    const taskData = { title, date, time, priority, reminder };
+    Storage.addTask(taskData);
     addXP(10);
+
+    // Sync new task to DB and link ID
+    addTaskToDB({ ...taskData, status: 'todo' }).then(dbId => {
+      if (dbId) {
+        const current = Storage.getTasks();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setTasks(current); refresh(); }
+      }
+    });
+
     (document.getElementById('task-title') as HTMLInputElement).value = '';
     refresh();
     toast({ title: 'Task created', description: title });
@@ -83,8 +96,10 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
 
   const moveTask = (id: string, status: string) => {
     const task = tasks.find(t => t.id === id);
-    Storage.updateTask(id, { status });
+    const now = new Date().toISOString();
+    Storage.updateTask(id, { status, updatedAt: now });
     if (status === 'done') addXP(20);
+    updateTaskInDB({ ...task, status, updatedAt: now });
     refresh();
     toast({ title: status === 'done' ? 'Task completed ✓' : 'Task moved', description: task?.title || '' });
   };
@@ -94,6 +109,7 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
     const confirmed = await showDialog({ title: t('common.delete'), message: 'Are you sure you want to delete this task?', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deleteTask(id);
+      deleteTaskFromDB(id);
       refresh();
       toast({ title: 'Task deleted', description: task?.title || '' });
     }

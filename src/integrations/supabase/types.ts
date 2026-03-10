@@ -323,6 +323,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notes: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_routine: {
         Row: {
           created_at: string
@@ -355,6 +388,48 @@ export type Database = {
           room?: string | null
           start_time?: string
           subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_tasks: {
+        Row: {
+          created_at: string
+          date: string | null
+          deleted_at: string | null
+          id: string
+          priority: string | null
+          reminder: string | null
+          status: string | null
+          time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string | null
+          deleted_at?: string | null
+          id?: string
+          priority?: string | null
+          reminder?: string | null
+          status?: string | null
+          time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string | null
+          deleted_at?: string | null
+          id?: string
+          priority?: string | null
+          reminder?: string | null
+          status?: string | null
+          time?: string | null
+          title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
