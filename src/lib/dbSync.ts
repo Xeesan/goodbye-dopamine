@@ -659,3 +659,275 @@ export async function deleteDebtFromDB(id: string) {
     console.error('Delete debt DB error:', e);
   }
 }
+
+// ── Tasks Sync ──
+
+export async function syncTasksFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getTasks();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch tasks from DB:', error);
+      return Storage.getTasks();
+    }
+
+    const remoteTasks = (data || []).map(t => ({
+      id: t.id,
+      title: t.title,
+      date: t.date,
+      time: t.time,
+      priority: t.priority,
+      reminder: t.reminder,
+      status: t.status,
+      createdAt: t.created_at,
+      updatedAt: t.updated_at,
+    }));
+
+    const localTasks = Storage.getTasks();
+
+    if (remoteTasks.length === 0 && localTasks.length === 0) {
+      Storage.setTasks([]);
+      return [];
+    }
+
+    if (remoteTasks.length === 0 && localTasks.length > 0) {
+      const hasLocalOnly = localTasks.some(t => String(t.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setTasks([]);
+        return [];
+      }
+      // Push all local tasks to DB
+      for (const t of localTasks) {
+        const dbId = await addTaskToDB(t);
+        if (dbId) t.id = dbId;
+      }
+      Storage.setTasks(localTasks);
+      return localTasks;
+    }
+
+    const remoteIdSet = new Set(remoteTasks.map(t => String(t.id)));
+
+    const localWithDbIds = localTasks.filter(t => {
+      const id = String(t.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
+    const localOnly = localTasks.filter(t => String(t.id).includes('_'));
+
+    const { merged, toUpload } = lwwMerge(
+      localWithDbIds,
+      remoteTasks,
+      (t) => t.updatedAt || t.updated_at || '1970-01-01'
+    );
+
+    // Push local-only items
+    for (const t of localOnly) {
+      const dbId = await addTaskToDB(t);
+      if (dbId) t.id = dbId;
+    }
+
+    // Push newer local items to DB
+    for (const item of toUpload) {
+      await updateTaskInDB(item);
+    }
+
+    const finalTasks = [...merged, ...localOnly];
+    Storage.setTasks(finalTasks);
+    return finalTasks;
+  } catch (e) {
+    console.error('Task sync error:', e);
+    return Storage.getTasks();
+  }
+}
+
+export async function addTaskToDB(task: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('user_tasks').insert({
+      user_id: userId,
+      title: task.title,
+      date: task.date || '',
+      time: task.time || '',
+      priority: task.priority || 'medium',
+      reminder: task.reminder || '',
+      status: task.status || 'todo',
+      updated_at: task.updatedAt || now,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add task to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add task DB error:', e);
+    return null;
+  }
+}
+
+export async function updateTaskInDB(task: any) {
+  const userId = await getUserId();
+  if (!userId || !task.id || !isDbId(task.id)) return;
+
+  try {
+    await supabase.from('user_tasks').update({
+      title: task.title,
+      date: task.date,
+      time: task.time,
+      priority: task.priority,
+      reminder: task.reminder,
+      status: task.status,
+      updated_at: task.updatedAt || new Date().toISOString(),
+    }).eq('id', task.id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Update task DB error:', e);
+  }
+}
+
+export async function deleteTaskFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId || !isDbId(id)) return;
+  try {
+    await supabase.from('user_tasks').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete task DB error:', e);
+  }
+}
+
+// ── Notes Sync ──
+
+export async function syncNotesFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getNotes();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_notes')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch notes from DB:', error);
+      return Storage.getNotes();
+    }
+
+    const remoteNotes = (data || []).map(n => ({
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      category: n.category,
+      createdAt: n.created_at,
+      updatedAt: n.updated_at,
+    }));
+
+    const localNotes = Storage.getNotes();
+
+    if (remoteNotes.length === 0 && localNotes.length === 0) {
+      Storage.setNotes([]);
+      return [];
+    }
+
+    if (remoteNotes.length === 0 && localNotes.length > 0) {
+      const hasLocalOnly = localNotes.some(n => String(n.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setNotes([]);
+        return [];
+      }
+      for (const n of localNotes) {
+        const dbId = await addNoteToDB(n);
+        if (dbId) n.id = dbId;
+      }
+      Storage.setNotes(localNotes);
+      return localNotes;
+    }
+
+    const remoteIdSet = new Set(remoteNotes.map(n => String(n.id)));
+
+    const localWithDbIds = localNotes.filter(n => {
+      const id = String(n.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
+    const localOnly = localNotes.filter(n => String(n.id).includes('_'));
+
+    const { merged, toUpload } = lwwMerge(
+      localWithDbIds,
+      remoteNotes,
+      (n) => n.updatedAt || n.updated_at || '1970-01-01'
+    );
+
+    for (const n of localOnly) {
+      const dbId = await addNoteToDB(n);
+      if (dbId) n.id = dbId;
+    }
+
+    for (const item of toUpload) {
+      await updateNoteInDB(item);
+    }
+
+    const finalNotes = [...merged, ...localOnly];
+    Storage.setNotes(finalNotes);
+    return finalNotes;
+  } catch (e) {
+    console.error('Notes sync error:', e);
+    return Storage.getNotes();
+  }
+}
+
+export async function addNoteToDB(note: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('user_notes').insert({
+      user_id: userId,
+      title: note.title,
+      content: note.content || '',
+      category: note.category || 'General',
+      updated_at: note.updatedAt || now,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add note to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add note DB error:', e);
+    return null;
+  }
+}
+
+export async function updateNoteInDB(note: any) {
+  const userId = await getUserId();
+  if (!userId || !note.id || !isDbId(note.id)) return;
+
+  try {
+    await supabase.from('user_notes').update({
+      title: note.title,
+      content: note.content,
+      category: note.category,
+      updated_at: note.updatedAt || new Date().toISOString(),
+    }).eq('id', note.id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Update note DB error:', e);
+  }
+}
+
+export async function deleteNoteFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId || !isDbId(id)) return;
+  try {
+    await supabase.from('user_notes').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete note DB error:', e);
+  }
+}
