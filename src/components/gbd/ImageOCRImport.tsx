@@ -687,37 +687,53 @@ If you cannot read anything, return: []`;
 
             {results && results.length > 0 && (
               <div className="space-y-3 mt-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                  <Check className="w-4 h-4" />
-                  Found {results.length} {mode === 'routine' ? 'period' : 'exam'}{results.length > 1 ? 's' : ''}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Check className="w-4 h-4" />
+                    Found {results.length} {mode === 'routine' ? 'period' : 'exam'}{results.length > 1 ? 's' : ''} — edit below
+                  </div>
                 </div>
-                <div className="max-h-48 overflow-y-auto space-y-2">
-                  {results.map((item, i) => (
-                    <div key={i} className="p-2.5 rounded-lg text-sm" style={{ background: 'hsl(var(--bg-input))' }}>
-                      {mode === 'routine' ? (
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className="font-semibold text-primary capitalize">{item.day}</span>
-                          <span className="text-foreground">{item.subject}</span>
-                          <span className="text-muted-foreground">{item.startTime} - {item.endTime}</span>
-                          {item.room && <span className="text-xs text-muted-foreground">{item.room}</span>}
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {results.map((item, i) => {
+                    const updateItem = (field: string, value: string) => {
+                      setResults(prev => prev ? prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r) : prev);
+                    };
+                    const removeItem = () => {
+                      setResults(prev => prev ? prev.filter((_, idx) => idx !== i) : prev);
+                    };
+                    return (
+                      <div key={i} className="p-2.5 rounded-lg text-sm space-y-1.5" style={{ background: 'hsl(var(--bg-input))' }}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted-foreground">#{i + 1}</span>
+                          <button className="text-xs text-destructive hover:underline" onClick={removeItem}>Remove</button>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className="font-semibold text-foreground">{item.subject}</span>
-                          <span className="text-muted-foreground">{item.date}</span>
-                          <span className="text-muted-foreground">{item.time}</span>
-                          {item.room && <span className="text-xs text-muted-foreground">{item.room}</span>}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {mode === 'routine' ? (
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <input className="input-simple !py-1 !text-xs" value={item.day} onChange={e => updateItem('day', e.target.value)} placeholder="Day" />
+                            <input className="input-simple !py-1 !text-xs" value={item.subject} onChange={e => updateItem('subject', e.target.value)} placeholder="Subject" />
+                            <input className="input-simple !py-1 !text-xs" type="time" value={item.startTime} onChange={e => updateItem('startTime', e.target.value)} />
+                            <input className="input-simple !py-1 !text-xs" type="time" value={item.endTime} onChange={e => updateItem('endTime', e.target.value)} />
+                            <input className="input-simple !py-1 !text-xs col-span-2" value={item.room || ''} onChange={e => updateItem('room', e.target.value)} placeholder="Room (optional)" />
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <input className="input-simple !py-1 !text-xs col-span-2" value={item.subject} onChange={e => updateItem('subject', e.target.value)} placeholder="Subject" />
+                            <input className="input-simple !py-1 !text-xs" type="date" value={item.date} onChange={e => updateItem('date', e.target.value)} />
+                            <input className="input-simple !py-1 !text-xs" type="time" value={item.time} onChange={e => updateItem('time', e.target.value)} />
+                            <input className="input-simple !py-1 !text-xs" value={item.teacher || ''} onChange={e => updateItem('teacher', e.target.value)} placeholder="Teacher" />
+                            <input className="input-simple !py-1 !text-xs" value={item.room || ''} onChange={e => updateItem('room', e.target.value)} placeholder="Room" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-3">
                   <button className="btn-outline flex-1" onClick={() => { setResults(null); setPreview(null); }}>
                     Try Another
                   </button>
                   <button className="btn-green flex-1" onClick={confirmImport}>
-                    <Check className="w-4 h-4 inline-block mr-1" /> Import All
+                    <Check className="w-4 h-4 inline-block mr-1" /> Import {results.length}
                   </button>
                 </div>
               </div>
