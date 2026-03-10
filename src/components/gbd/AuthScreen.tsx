@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
-import appIcon from '@/assets/icon.svg';
+import appIcon from '@/assets/icon.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const LOGIN_RATE_LIMIT = 5; // max attempts

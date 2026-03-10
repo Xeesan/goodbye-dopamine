@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/favicon.svg" alt="GBD Logo" width="80" height="80" />
+  <img src="public/favicon.png" alt="GBD Logo" width="80" height="80" />
 </p>
 
 <h1 align="center">GBD — Good Bye Dopamine</h1>

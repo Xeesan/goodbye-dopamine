@@ -8,8 +8,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.body || 'You have a reminder!',
-      icon: data.icon || '/icon-512.svg',
-      badge: data.badge || '/icon-512.svg',
+      icon: data.icon || '/icon-512.png',
+      badge: data.badge || '/icon-512.png',
       tag: data.tag || 'gbd-reminder',
       vibrate: [200, 100, 200],
       data: data.data || { url: '/' },
@@ -27,7 +27,7 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
       self.registration.showNotification('⏰ Reminder', {
         body: event.data.text(),
-        icon: '/icon-512.svg',
+        icon: '/icon-512.png',
       })
     );
   }

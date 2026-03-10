@@ -140,8 +140,8 @@ async function showNotification(reminder: HealthReminder) {
       if (reg) {
         reg.showNotification(reminder.title, {
           body: reminder.body,
-          icon: '/icon-512.svg',
-          badge: '/icon-512.svg',
+          icon: '/icon-512.png',
+          badge: '/icon-512.png',
           tag: reminder.tag,
         } as NotificationOptions);
       } else {

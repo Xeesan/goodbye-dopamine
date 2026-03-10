@@ -202,8 +202,8 @@ Deno.serve(async (req) => {
         const payload = JSON.stringify({
           title: `${meta.emoji} ${meta.title}`,
           body: meta.body,
-          icon: "/icon-512.svg",
-          badge: "/icon-512.svg",
+          icon: "/icon-512.png",
+          badge: "/icon-512.png",
           tag: `health-${setting.reminder_id}`,
           data: { url: "/" },
         });

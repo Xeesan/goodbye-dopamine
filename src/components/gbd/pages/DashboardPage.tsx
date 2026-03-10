@@ -245,8 +245,8 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
                 <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-700 ${spinning ? 'animate-[spin_0.9s_ease-in-out]' : ''}`} />
               </button>
             </div>
-            <div key={quoteKey} className="text-lg font-semibold leading-relaxed text-foreground animate-fade-in">"{quote.text}"</div>
-            <div key={`a-${quoteKey}`} className="text-muted-foreground text-sm mt-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>— {quote.author}</div>
+            <div key={quoteKey} className="text-lg font-semibold leading-relaxed text-foreground animate-fade-in font-serif italic">"{quote.text}"</div>
+            <div key={`a-${quoteKey}`} className="text-muted-foreground text-sm mt-2 animate-fade-in font-serif">— {quote.author}</div>
           </div>
           <div className="absolute right-6 top-3 text-5xl opacity-10 text-primary z-10">❞</div>
         </div>

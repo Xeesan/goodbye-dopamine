@@ -289,8 +289,8 @@ Deno.serve(async (req) => {
         const payload = JSON.stringify({
           title: notifTitle,
           body: notifBody,
-          icon: "/icon-512.svg",
-          badge: "/icon-512.svg",
+          icon: "/icon-512.png",
+          badge: "/icon-512.png",
           tag: `reminder-${reminder.id}`,
           data: { url: "/" },
         });

@@ -1,5 +1,5 @@
 import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User, Bell, Globe } from 'lucide-react';
-import appLogo from '@/assets/icon.svg';
+import appLogo from '@/assets/icon.png';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
 
