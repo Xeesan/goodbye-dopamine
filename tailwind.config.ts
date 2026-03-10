@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        serif: ['Lora', 'serif'],
-        heading: ['Outfit', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['"Playfair Display"', 'serif'],
+        heading: ['"Sora"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
