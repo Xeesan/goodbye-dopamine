@@ -90,12 +90,12 @@ const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
       refresh();
       toast({ title: 'Exam updated', description: subject });
     } else {
-      Storage.addExam(examData);
+      const tempId = Storage.addExam(examData);
       addExamToDB(examData).then(dbId => {
-        if (dbId) {
+        if (dbId && tempId) {
           const current = Storage.getExams();
-          const last = current[current.length - 1];
-          if (last) { last.id = dbId; Storage.setExams(current); refresh(); }
+          const target = current.find(e => e.id === tempId);
+          if (target) { target.id = dbId; Storage.setExams(current); refresh(); }
         }
       });
       addXP(15);
@@ -142,13 +142,13 @@ const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
         grade: item.grade || '',
         type: examTab,
       };
-      Storage.addExam(examData);
+      const tempId = Storage.addExam(examData);
       const dbId = await addExamToDB(examData);
-      if (dbId) {
+      if (dbId && tempId) {
         // Link DB id back to local item to prevent duplicates on next sync
         const current = Storage.getExams();
-        const last = current[current.length - 1];
-        if (last) { last.id = dbId; Storage.setExams(current); }
+        const target = current.find(e => e.id === tempId);
+        if (target) { target.id = dbId; Storage.setExams(current); }
       }
     }
     addXP(items.length * 15);

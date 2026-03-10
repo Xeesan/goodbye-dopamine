@@ -55,15 +55,15 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
     const time = (document.getElementById('task-time') as HTMLInputElement)?.value;
     const reminder = (document.getElementById('task-reminder') as HTMLSelectElement)?.value;
     const taskData = { title, date, time, priority, reminder };
-    Storage.addTask(taskData);
+    const tempId = Storage.addTask(taskData);
     addXP(10);
 
     // Sync new task to DB and link ID
     addTaskToDB({ ...taskData, status: 'todo' }).then(dbId => {
-      if (dbId) {
+      if (dbId && tempId) {
         const current = Storage.getTasks();
-        const last = current[current.length - 1];
-        if (last) { last.id = dbId; Storage.setTasks(current); refresh(); }
+        const target = current.find(t => t.id === tempId);
+        if (target) { target.id = dbId; Storage.setTasks(current); refresh(); }
       }
     });
 

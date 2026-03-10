@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus } from 'lucide-react';
 
@@ -23,6 +23,13 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [localRefresh, setLocalRefresh] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setLocalRefresh(k => k + 1);
+    window.addEventListener('gbd_storage_changed', handler);
+    return () => window.removeEventListener('gbd_storage_changed', handler);
+  }, []);
 
   const eventsMap = useMemo(() => {
     const map: Record<string, DayEvent[]> = {};
@@ -81,7 +88,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
     }
 
     return map;
-  }, [currentMonth, currentYear, refreshKey]);
+  }, [currentMonth, currentYear, refreshKey, localRefresh]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);

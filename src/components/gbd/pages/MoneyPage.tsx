@@ -80,12 +80,12 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
       await showDialog({ title: 'Missing Info', message: 'Please enter a valid description and amount (1 — 10,000,000).', type: 'alert' });
       return;
     }
-    Storage.addTransaction({ type: txnType, description, amount });
+    const tempId = Storage.addTransaction({ type: txnType, description, amount });
     addTransactionToDB({ type: txnType, description, amount }).then(dbId => {
-      if (dbId) {
+      if (dbId && tempId) {
         const current = Storage.getTransactions();
-        const last = current[current.length - 1];
-        if (last) { last.id = dbId; Storage.setTransactions(current); }
+        const target = current.find((t: any) => t.id === tempId);
+        if (target) { target.id = dbId; Storage.setTransactions(current); }
       }
     });
     addXP(5);
@@ -103,12 +103,12 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
     }
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
-    Storage.addDebt({ debtType, person, amount, description, date });
+    const tempId = Storage.addDebt({ debtType, person, amount, description, date });
     addDebtToDB({ debtType, person, amount, description, date }).then(dbId => {
-      if (dbId) {
+      if (dbId && tempId) {
         const current = Storage.getDebts();
-        const last = current[current.length - 1];
-        if (last) { last.id = dbId; Storage.setDebts(current); }
+        const target = current.find((d: any) => d.id === tempId);
+        if (target) { target.id = dbId; Storage.setDebts(current); }
       }
     });
     addXP(5);

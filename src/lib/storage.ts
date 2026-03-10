@@ -13,6 +13,9 @@ const Storage = {
   set(key: string, value: any) {
     try {
       localStorage.setItem('gbd_' + key, JSON.stringify(value));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('gbd_storage_changed'));
+      }
     } catch (e: any) {
       if (e.name === 'QuotaExceededError') {
         console.error('Storage quota exceeded');
@@ -37,8 +40,10 @@ const Storage = {
   addTask(task: any) {
     if (!task) return;
     const tasks = this.getTasks();
-    tasks.push({ ...task, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), status: 'todo', createdAt: new Date().toISOString() });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    tasks.push({ ...task, id, status: 'todo', createdAt: new Date().toISOString() });
     this.setTasks(tasks);
+    return id;
   },
   updateTask(id: string, updates: any) {
     if (!id) return;
@@ -63,8 +68,10 @@ const Storage = {
     const routine = this.getRoutine();
     if (!Array.isArray(routine[day])) routine[day] = [];
     const now = new Date().toISOString();
-    routine[day].push({ ...period, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    routine[day].push({ ...period, id, updatedAt: now });
     this.setRoutine(routine);
+    return id;
   },
   deletePeriod(day: string, id: string) {
     if (!day || !id) return;
@@ -87,8 +94,10 @@ const Storage = {
     if (!exam) return;
     const exams = this.getExams();
     const now = new Date().toISOString();
-    exams.push({ ...exam, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), updatedAt: now });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    exams.push({ ...exam, id, updatedAt: now });
     this.setExams(exams);
+    return id;
   },
   deleteExam(id: string) {
     if (!id) return;
@@ -156,8 +165,10 @@ const Storage = {
     if (!txn) return;
     const txns = this.getTransactions();
     const now = new Date().toISOString();
-    txns.push({ ...txn, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: new Date().toISOString(), updatedAt: now });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    txns.push({ ...txn, id, date: txn.date || now, updatedAt: now });
     this.setTransactions(txns);
+    return id;
   },
   deleteTransaction(id: string) {
     if (!id) return;
@@ -173,8 +184,11 @@ const Storage = {
   addNote(note: any) {
     if (!note) return;
     const notes = this.getNotes();
-    notes.push({ ...note, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const now = new Date().toISOString();
+    notes.push({ ...note, id, createdAt: now, updatedAt: now });
     this.setNotes(notes);
+    return id;
   },
   updateNote(id: string, updates: any) {
     if (!id) return;
@@ -196,8 +210,10 @@ const Storage = {
     if (!debt) return;
     const debts = this.getDebts();
     const now = new Date().toISOString();
-    debts.push({ ...debt, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), date: debt.date || new Date().toISOString(), settled: false, updatedAt: now });
+    const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    debts.push({ ...debt, id, date: debt.date || now, settled: false, updatedAt: now });
     this.setDebts(debts);
+    return id;
   },
   deleteDebt(id: string) {
     if (!id) return;

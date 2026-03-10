@@ -105,16 +105,16 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
       if (updated) updateNoteInDB(updated);
       toast({ title: 'Note updated', description: formTitle.trim() });
     } else {
-      Storage.addNote({ title: formTitle.trim(), content: formContent.trim(), category: formCategory });
+      const tempId = Storage.addNote({ title: formTitle.trim(), content: formContent.trim(), category: formCategory });
       addXP(10);
       // Sync new note to DB and link ID
       const current = Storage.getNotes();
-      const last = current[current.length - 1];
-      if (last) {
-        addNoteToDB(last).then(dbId => {
+      const target = current.find(n => n.id === tempId);
+      if (target) {
+        addNoteToDB(target).then(dbId => {
           if (dbId) {
             const notes = Storage.getNotes();
-            const item = notes.find(n => n.id === last.id);
+            const item = notes.find(n => n.id === tempId);
             if (item) { item.id = dbId; Storage.setNotes(notes); refresh(); }
           }
         });
