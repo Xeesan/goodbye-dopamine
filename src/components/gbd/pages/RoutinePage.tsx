@@ -88,15 +88,21 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
     }
   };
 
-  const handleOCRImport = (items: any[]) => {
-    items.forEach((item: any) => {
+  const handleOCRImport = async (items: any[]) => {
+    for (const item of items) {
       const day = (item.day || '').toLowerCase();
       if (DAYS.includes(day)) {
         const periodData = { subject: item.subject || 'Unknown', startTime: item.startTime || '09:00', endTime: item.endTime || '10:00', room: item.room || '' };
         Storage.addPeriod(day, periodData);
-        addPeriodToDB(day, periodData);
+        const dbId = await addPeriodToDB(day, periodData);
+        if (dbId) {
+          const r = Storage.getRoutine();
+          const dayPeriods = r[day] || [];
+          const last = dayPeriods[dayPeriods.length - 1];
+          if (last) { last.id = dbId; Storage.setRoutine(r); }
+        }
       }
-    });
+    }
     addXP(items.length * 5);
     refresh();
     toast({ title: 'Routine imported', description: `${items.length} period(s) added` });

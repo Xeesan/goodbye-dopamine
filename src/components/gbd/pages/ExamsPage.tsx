@@ -130,8 +130,8 @@ const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
     }
   };
 
-  const handleOCRImport = (items: any[]) => {
-    items.forEach((item: any) => {
+  const handleOCRImport = async (items: any[]) => {
+    for (const item of items) {
       const examData = {
         subject: item.subject || 'Unknown',
         date: item.date || new Date().toISOString().split('T')[0],
@@ -143,8 +143,14 @@ const ExamsPage = ({ navigateTo, refreshKey }: ExamsPageProps) => {
         type: examTab,
       };
       Storage.addExam(examData);
-      addExamToDB(examData);
-    });
+      const dbId = await addExamToDB(examData);
+      if (dbId) {
+        // Link DB id back to local item to prevent duplicates on next sync
+        const current = Storage.getExams();
+        const last = current[current.length - 1];
+        if (last) { last.id = dbId; Storage.setExams(current); }
+      }
+    }
     addXP(items.length * 15);
     refresh();
     toast({ title: 'Exams imported', description: `${items.length} item(s) added` });
