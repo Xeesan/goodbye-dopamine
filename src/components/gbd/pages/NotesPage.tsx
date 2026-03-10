@@ -228,7 +228,7 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
             <div>
               <div className="flex justify-between items-start mb-4 gap-3 flex-wrap">
                 <h2 className="text-xl font-bold text-foreground break-words flex-1 min-w-[150px]">{selectedNote.title}</h2>
-                <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                <div className="flex gap-2 shrink-0 flex-wrap w-full sm:w-auto mt-2 sm:mt-0">
                   <button className={`btn-outline !py-1.5 !px-3 !text-xs ${previewMode ? '' : '!bg-primary/10 !text-primary !border-primary/30'}`} onClick={() => setPreviewMode(false)}>
                     <Pencil className="w-3 h-3 inline-block mr-1" /> {t('notes.raw')}
                   </button>
