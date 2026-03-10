@@ -37,6 +37,13 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [notes, setNotes] = useState(Storage.getNotes());
@@ -60,8 +67,8 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
 
   const filtered = useMemo(() => {
     let result = category === 'all' ? notes : notes.filter(n => n.category === category);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase();
       result = result.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q));
     }
     if (activeTag) {
@@ -71,7 +78,7 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
       });
     }
     return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }, [notes, category, searchQuery, activeTag]);
+  }, [notes, category, debouncedSearchQuery, activeTag]);
 
   const selectedNote = notes.find(n => n.id === selectedNoteId) || null;
   const selectedNoteTags = selectedNote ? extractTags(`${selectedNote.title || ''} ${selectedNote.content || ''}`) : [];

@@ -57,7 +57,7 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
           duration: 8000,
         });
         localStorage.setItem(REMINDER_KEY, String(Date.now()));
-      }, 10000);
+      }, 5 * 60 * 1000); // 5 minutes
     }
 
     return () => clearTimeout(timer);
