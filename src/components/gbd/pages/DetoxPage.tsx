@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Storage from '@/lib/storage';
+import { syncFocusSessionsFromDB, addFocusSessionToDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
 import { Play, Square, Shield, Volume2, VolumeX, ArrowLeft, Youtube, FileText, ImageIcon, X, Maximize2, Minimize2 } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
@@ -53,6 +54,11 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
   const sessions = Storage.getFocusSessions();
   const totalMin = sessions.reduce((sum: number, s: any) => sum + (s.duration || 0), 0);
   const stage = getTreeStage();
+
+  // Sync focus sessions from DB on mount
+  useEffect(() => {
+    syncFocusSessionsFromDB();
+  }, []);
 
   const stopSound = useCallback(() => {
     audioNodesRef.current.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch {} });
@@ -117,6 +123,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
           const durMin = Math.floor((Date.now() - startTimeRef.current) / 60000);
           if (durMin > 0) {
             Storage.addFocusSession({ date: new Date().toISOString(), duration: durMin });
+            addFocusSessionToDB({ date: new Date().toISOString(), duration: durMin });
             addXP(Math.max(5, durMin));
           }
           stopSound();
@@ -136,6 +143,7 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
       const durMin = Math.floor((Date.now() - startTimeRef.current) / 60000);
       if (durMin > 0) {
         Storage.addFocusSession({ date: new Date().toISOString(), duration: durMin });
+        addFocusSessionToDB({ date: new Date().toISOString(), duration: durMin });
         addXP(Math.max(5, durMin));
       }
     }

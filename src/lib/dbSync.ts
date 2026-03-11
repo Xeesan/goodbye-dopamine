@@ -963,3 +963,358 @@ export async function deleteNoteFromDB(id: string) {
     console.error('Delete note DB error:', e);
   }
 }
+
+// ── Books Sync ──
+
+export async function syncBooksFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getBooks();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_books')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch books from DB:', error);
+      return Storage.getBooks();
+    }
+
+    const remoteBooks = (data || []).map(b => ({
+      id: b.id,
+      title: b.title,
+      author: b.author || '',
+      genre: b.genre || 'Fiction',
+      status: b.status || 'reading',
+      pages: b.pages || 0,
+      currentPage: b.current_page || 0,
+      rating: b.rating || 0,
+      notes: b.notes_text || '',
+      addedAt: b.created_at,
+      updatedAt: b.updated_at,
+    }));
+
+    const localBooks = Storage.getBooks();
+
+    if (remoteBooks.length === 0 && localBooks.length === 0) {
+      Storage.setBooks([]);
+      return [];
+    }
+
+    if (remoteBooks.length === 0 && localBooks.length > 0) {
+      const hasLocalOnly = localBooks.some((b: any) => String(b.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setBooks([]);
+        return [];
+      }
+      for (const b of localBooks) {
+        const dbId = await addBookToDB(b);
+        if (dbId) b.id = dbId;
+      }
+      Storage.setBooks(localBooks);
+      return localBooks;
+    }
+
+    const remoteIdSet = new Set(remoteBooks.map(b => String(b.id)));
+    const localWithDbIds = localBooks.filter((b: any) => {
+      const id = String(b.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
+    const localOnly = localBooks.filter((b: any) => String(b.id).includes('_'));
+
+    const { merged, toUpload } = lwwMerge(
+      localWithDbIds,
+      remoteBooks,
+      (b) => b.updatedAt || b.updated_at || '1970-01-01'
+    );
+
+    for (const b of localOnly) {
+      const dbId = await addBookToDB(b);
+      if (dbId) b.id = dbId;
+    }
+
+    for (const item of toUpload) {
+      await updateBookInDB(item);
+    }
+
+    const finalBooks = [...merged, ...localOnly];
+    Storage.setBooks(finalBooks);
+    return finalBooks;
+  } catch (e) {
+    console.error('Books sync error:', e);
+    return Storage.getBooks();
+  }
+}
+
+export async function addBookToDB(book: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('user_books').insert({
+      user_id: userId,
+      title: book.title,
+      author: book.author || '',
+      genre: book.genre || 'Fiction',
+      status: book.status || 'reading',
+      pages: book.pages || 0,
+      current_page: book.currentPage || 0,
+      rating: book.rating || 0,
+      notes_text: book.notes || '',
+      updated_at: book.updatedAt || now,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add book to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add book DB error:', e);
+    return null;
+  }
+}
+
+export async function updateBookInDB(book: any) {
+  const userId = await getUserId();
+  if (!userId || !book.id || !isDbId(book.id)) return;
+
+  try {
+    await supabase.from('user_books').update({
+      title: book.title,
+      author: book.author || '',
+      genre: book.genre || 'Fiction',
+      status: book.status || 'reading',
+      pages: book.pages || 0,
+      current_page: book.currentPage || 0,
+      rating: book.rating || 0,
+      notes_text: book.notes || '',
+      updated_at: book.updatedAt || new Date().toISOString(),
+    }).eq('id', book.id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Update book DB error:', e);
+  }
+}
+
+export async function deleteBookFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId || !isDbId(id)) return;
+  try {
+    await supabase.from('user_books').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete book DB error:', e);
+  }
+}
+
+// ── Semesters Sync ──
+
+export async function syncSemestersFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getSemesters();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_semesters')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch semesters from DB:', error);
+      return Storage.getSemesters();
+    }
+
+    const remoteSemesters = (data || []).map(s => ({
+      id: s.id,
+      name: s.name,
+      courses: Array.isArray(s.courses) ? s.courses : [],
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+    }));
+
+    const localSemesters = Storage.getSemesters();
+
+    if (remoteSemesters.length === 0 && localSemesters.length === 0) {
+      Storage.setSemesters([]);
+      return [];
+    }
+
+    if (remoteSemesters.length === 0 && localSemesters.length > 0) {
+      const hasLocalOnly = localSemesters.some((s: any) => String(s.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setSemesters([]);
+        return [];
+      }
+      for (const s of localSemesters) {
+        const dbId = await addSemesterToDB(s);
+        if (dbId) s.id = dbId;
+      }
+      Storage.setSemesters(localSemesters);
+      return localSemesters;
+    }
+
+    const remoteIdSet = new Set(remoteSemesters.map(s => String(s.id)));
+    const localWithDbIds = localSemesters.filter((s: any) => {
+      const id = String(s.id);
+      if (!id.includes('_')) return remoteIdSet.has(id);
+      return false;
+    });
+    const localOnly = localSemesters.filter((s: any) => String(s.id).includes('_'));
+
+    const { merged, toUpload } = lwwMerge(
+      localWithDbIds,
+      remoteSemesters,
+      (s) => s.updatedAt || s.updated_at || '1970-01-01'
+    );
+
+    for (const s of localOnly) {
+      const dbId = await addSemesterToDB(s);
+      if (dbId) s.id = dbId;
+    }
+
+    for (const item of toUpload) {
+      await updateSemesterInDB(item);
+    }
+
+    const finalSemesters = [...merged, ...localOnly];
+    Storage.setSemesters(finalSemesters);
+    return finalSemesters;
+  } catch (e) {
+    console.error('Semesters sync error:', e);
+    return Storage.getSemesters();
+  }
+}
+
+export async function addSemesterToDB(semester: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from('user_semesters').insert({
+      user_id: userId,
+      name: semester.name,
+      courses: semester.courses || [],
+      updated_at: semester.updatedAt || now,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add semester to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add semester DB error:', e);
+    return null;
+  }
+}
+
+export async function updateSemesterInDB(semester: any) {
+  const userId = await getUserId();
+  if (!userId || !semester.id || !isDbId(semester.id)) return;
+
+  try {
+    await supabase.from('user_semesters').update({
+      name: semester.name,
+      courses: semester.courses || [],
+      updated_at: semester.updatedAt || new Date().toISOString(),
+    }).eq('id', semester.id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Update semester DB error:', e);
+  }
+}
+
+export async function deleteSemesterFromDB(id: string) {
+  const userId = await getUserId();
+  if (!userId || !isDbId(id)) return;
+  try {
+    await supabase.from('user_semesters').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Delete semester DB error:', e);
+  }
+}
+
+// ── Focus Sessions Sync ──
+
+export async function syncFocusSessionsFromDB(): Promise<any[]> {
+  const userId = await getUserId();
+  if (!userId) return Storage.getFocusSessions();
+
+  try {
+    const { data, error } = await supabase
+      .from('user_focus_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch focus sessions from DB:', error);
+      return Storage.getFocusSessions();
+    }
+
+    const remoteSessions = (data || []).map(s => ({
+      id: s.id,
+      date: s.date,
+      duration: s.duration,
+      createdAt: s.created_at,
+    }));
+
+    const localSessions = Storage.getFocusSessions();
+
+    if (remoteSessions.length === 0 && localSessions.length === 0) {
+      Storage.setFocusSessions([]);
+      return [];
+    }
+
+    if (remoteSessions.length === 0 && localSessions.length > 0) {
+      const hasLocalOnly = localSessions.some((s: any) => String(s.id).includes('_'));
+      if (!hasLocalOnly) {
+        Storage.setFocusSessions([]);
+        return [];
+      }
+      for (const s of localSessions) {
+        const dbId = await addFocusSessionToDB(s);
+        if (dbId) s.id = dbId;
+      }
+      Storage.setFocusSessions(localSessions);
+      return localSessions;
+    }
+
+    // For sessions, we do a simple union — no LWW needed since sessions are append-only
+    const remoteIdSet = new Set(remoteSessions.map(s => String(s.id)));
+    const localOnly = localSessions.filter((s: any) => String(s.id).includes('_'));
+
+    // Upload local-only sessions to DB
+    for (const s of localOnly) {
+      const dbId = await addFocusSessionToDB(s);
+      if (dbId) s.id = dbId;
+    }
+
+    const finalSessions = [...remoteSessions, ...localOnly];
+    Storage.setFocusSessions(finalSessions);
+    return finalSessions;
+  } catch (e) {
+    console.error('Focus sessions sync error:', e);
+    return Storage.getFocusSessions();
+  }
+}
+
+export async function addFocusSessionToDB(session: any): Promise<string | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+
+  try {
+    const { data, error } = await supabase.from('user_focus_sessions').insert({
+      user_id: userId,
+      date: session.date,
+      duration: session.duration,
+    }).select('id').single();
+
+    if (error) console.error('Failed to add focus session to DB:', error);
+    return data?.id ?? null;
+  } catch (e) {
+    console.error('Add focus session DB error:', e);
+    return null;
+  }
+}

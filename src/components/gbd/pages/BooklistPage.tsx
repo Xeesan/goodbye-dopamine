@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
+import { syncBooksFromDB, addBookToDB, updateBookInDB, deleteBookFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
 import { Book, BookOpen, Bookmark, CheckCircle, Search, X, Trash2, Edit, Star, Plus, ArrowLeft } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
@@ -49,6 +50,11 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
 
   const refresh = () => setBooks(Storage.getBooks());
 
+  // Sync from DB on mount
+  useEffect(() => {
+    syncBooksFromDB().then(() => setBooks(Storage.getBooks()));
+  }, []);
+
   const filtered = useMemo(() => {
     let result = books.filter((b: any) => b.status === activeTab);
     if (searchQuery.trim()) {
@@ -78,10 +84,24 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     const notes = (document.getElementById('book-notes') as HTMLTextAreaElement)?.value.trim();
     if (editingId) {
       Storage.updateBook(editingId, { title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
+      const updated = Storage.getBooks().find(b => b.id === editingId);
+      if (updated) updateBookInDB(updated);
       toast({ title: 'Book updated', description: title });
     } else {
-      Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
+      const tempId = Storage.addBook({ title, author, genre: newGenre, pages, currentPage: Math.min(currentPage, pages), rating: newRating, notes, status: newStatus });
       addXP(10);
+      // Sync to DB and link ID
+      const current = Storage.getBooks();
+      const target = current.find(b => b.id === tempId);
+      if (target) {
+        addBookToDB(target).then(dbId => {
+          if (dbId) {
+            const books = Storage.getBooks();
+            const item = books.find(b => b.id === tempId);
+            if (item) { item.id = dbId; Storage.setBooks(books); refresh(); }
+          }
+        });
+      }
       toast({ title: 'Book added', description: `${title} by ${author || 'Unknown'}` });
     }
     setShowModal(false); setEditingId(null); refresh();
@@ -90,7 +110,7 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
   const deleteBook = async (id: string) => {
     const book = books.find((b: any) => b.id === id);
     const confirmed = await showDialog({ title: t('common.remove'), message: 'Are you sure you want to remove this book?', type: 'confirm', confirmText: t('common.remove') });
-    if (confirmed) { Storage.deleteBook(id); if (selectedBookId === id) setSelectedBookId(null); refresh(); toast({ title: 'Book removed', description: book?.title || '' }); }
+    if (confirmed) { Storage.deleteBook(id); deleteBookFromDB(id); if (selectedBookId === id) setSelectedBookId(null); refresh(); toast({ title: 'Book removed', description: book?.title || '' }); }
   };
 
   const moveBook = (id: string, status: string) => {
@@ -98,6 +118,8 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     const updates: any = { status };
     if (status === 'finished' && book?.pages) updates.currentPage = book.pages;
     Storage.updateBook(id, updates);
+    const updated = Storage.getBooks().find(b => b.id === id);
+    if (updated) updateBookInDB(updated);
     if (status === 'finished') addXP(25);
     refresh();
     toast({ title: status === 'finished' ? 'Book finished! 🎉' : 'Status updated', description: book?.title || '' });
@@ -107,6 +129,8 @@ const BooklistPage = ({ navigateTo }: BooklistPageProps) => {
     const book = books.find((b: any) => b.id === id);
     const maxPage = book?.pages || 9999;
     Storage.updateBook(id, { currentPage: Math.max(0, Math.min(currentPage, maxPage)) });
+    const updated = Storage.getBooks().find(b => b.id === id);
+    if (updated) updateBookInDB(updated);
     refresh();
   };
 

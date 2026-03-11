@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import UnifiedCalendarWidget from './UnifiedCalendarWidget';
 import TopHeader from './TopHeader';
@@ -8,6 +9,7 @@ import InstallPrompt from './InstallPrompt';
 import { GamificationProvider } from '@/hooks/useGamification';
 import { runAutoBackup } from '@/lib/autoBackup';
 import { useHealthReminders } from '@/hooks/useHealthReminders';
+import { flushQueue, getQueueLength } from '@/lib/syncQueue';
 import { toast } from '@/hooks/use-toast';
 import AIChatFAB from './AIChatFAB';
 import DashboardPage from './pages/DashboardPage';
@@ -29,8 +31,31 @@ interface AppShellProps {
   onLogout: () => void;
 }
 
+/** Map URL paths to page keys */
+const pathToPage: Record<string, string> = {
+  '/': 'dashboard',
+  '/planner': 'planner',
+  '/routine': 'routine',
+  '/exams': 'exams',
+  '/academic-hub': 'academic-hub',
+  '/money': 'money',
+  '/notes': 'notes',
+  '/booklist': 'booklist',
+  '/detox': 'detox',
+  '/health': 'health',
+  '/reports': 'reports',
+  '/notifications': 'notifications',
+  '/profile': 'profile',
+};
+
+const pageToPath: Record<string, string> = Object.fromEntries(
+  Object.entries(pathToPage).map(([path, page]) => [page, path])
+);
+
 const AppShell = ({ user, onLogout }: AppShellProps) => {
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentPage = pathToPage[location.pathname] || 'dashboard';
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== 'undefined') return window.innerWidth >= 1024;
     return false;
@@ -63,6 +88,25 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Flush offline sync queue on mount and when coming back online
+  useEffect(() => {
+    const tryFlush = async () => {
+      const pending = getQueueLength();
+      if (pending > 0) {
+        const processed = await flushQueue();
+        if (processed > 0) {
+          toast({
+            title: '✅ Synced offline changes',
+            description: `${processed} pending change${processed > 1 ? 's' : ''} synced to the server.`,
+          });
+        }
+      }
+    };
+    tryFlush();
+    window.addEventListener('online', tryFlush);
+    return () => window.removeEventListener('online', tryFlush);
+  }, []);
+
   // Sync sidebar state on resize (close on mobile, open on desktop)
   useEffect(() => {
     const handleResize = () => {
@@ -74,10 +118,11 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   }, []);
 
   const navigateTo = useCallback((page: string) => {
-    setCurrentPage(page);
+    const path = pageToPath[page] || '/';
+    navigate(path);
     if (window.innerWidth < 1024) setSidebarOpen(false);
     setRefreshKey(k => k + 1);
-  }, []);
+  }, [navigate]);
 
   const renderPage = () => {
     const props = { navigateTo, refreshKey };

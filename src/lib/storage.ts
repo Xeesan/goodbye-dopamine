@@ -271,11 +271,12 @@ const Storage = {
     const sessions = this.get('focus_sessions', []);
     return Array.isArray(sessions) ? sessions : [];
   },
+  setFocusSessions(sessions: any[]) { this.set('focus_sessions', Array.isArray(sessions) ? sessions : []); },
   addFocusSession(session: any) {
     if (!session) return;
     const sessions = this.getFocusSessions();
     sessions.push({ ...session, id: Date.now() + '_' + Math.random().toString(36).slice(2, 8) });
-    this.set('focus_sessions', sessions);
+    this.setFocusSessions(sessions);
   },
 
   // Settings

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { Trash2, Plus, ChevronDown, ChevronUp, Calculator, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
+import { syncSemestersFromDB, addSemesterToDB, updateSemesterInDB, deleteSemesterFromDB } from '@/lib/dbSync';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
@@ -46,6 +47,11 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
 
   const refresh = () => setSemesters(Storage.getSemesters());
 
+  // Sync from DB on mount
+  useEffect(() => {
+    syncSemestersFromDB().then(() => setSemesters(Storage.getSemesters()));
+  }, []);
+
   let totalPoints = 0, totalCredits = 0;
   semesters.forEach((sem: any) => {
     (sem.courses || []).forEach((c: any) => {
@@ -63,9 +69,20 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     const name = (document.getElementById('sem-name-input') as HTMLInputElement)?.value.trim();
     if (!name) return;
     Storage.addSemester({ name });
+    const updated = Storage.getSemesters();
+    // Sync new semester to DB
+    const newSem = updated[updated.length - 1];
+    if (newSem) {
+      addSemesterToDB(newSem).then(dbId => {
+        if (dbId) {
+          const sems = Storage.getSemesters();
+          const target = sems.find((s: any) => s.id === newSem.id);
+          if (target) { target.id = dbId; Storage.setSemesters(sems); refresh(); }
+        }
+      });
+    }
     refresh();
     setShowAddSemester(false);
-    const updated = Storage.getSemesters();
     setExpandedSem(updated[updated.length - 1]?.id);
     toast({ title: t('academic.add_semester'), description: name });
   };
@@ -75,6 +92,7 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     const confirmed = await showDialog({ title: t('common.delete'), message: 'Delete this semester and all its courses? This cannot be undone.', type: 'confirm', confirmText: t('common.delete') });
     if (confirmed) {
       Storage.deleteSemester(id);
+      deleteSemesterFromDB(id);
       refresh();
       if (expandedSem === id) setExpandedSem(null);
       toast({ title: 'Semester deleted', description: sem?.name || '' });
@@ -88,6 +106,9 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
     if (!name) { await showDialog({ title: 'Missing Info', message: 'Please enter a course name.', type: 'alert' }); return; }
     const gpa = GRADE_MAP[grade] ?? 0;
     Storage.addCourse(semId, { name, grade, gpa, credits });
+    // Sync updated semester (with new course) to DB
+    const updatedSem = Storage.getSemesters().find((s: any) => String(s.id) === String(semId));
+    if (updatedSem) updateSemesterInDB(updatedSem);
     addXP(10);
     refresh();
     setShowAddCourse(null);
@@ -96,6 +117,9 @@ const AcademicHubPage = ({ navigateTo }: AcademicHubPageProps) => {
 
   const deleteCourse = (semId: string, courseId: string) => {
     Storage.deleteCourse(semId, courseId);
+    // Sync updated semester (without deleted course) to DB
+    const updatedSem = Storage.getSemesters().find((s: any) => String(s.id) === String(semId));
+    if (updatedSem) updateSemesterInDB(updatedSem);
     refresh();
     toast({ title: 'Course removed' });
   };

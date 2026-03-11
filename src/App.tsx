@@ -26,10 +26,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            {/* All app pages render inside Index → AppShell, which reads pathname */}
+            <Route path="/*" element={<Index />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_books: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          author: string | null
+          genre: string | null
+          status: string | null
+          pages: number | null
+          current_page: number | null
+          rating: number | null
+          notes_text: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          author?: string | null
+          genre?: string | null
+          status?: string | null
+          pages?: number | null
+          current_page?: number | null
+          rating?: number | null
+          notes_text?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          author?: string | null
+          genre?: string | null
+          status?: string | null
+          pages?: number | null
+          current_page?: number | null
+          rating?: number | null
+          notes_text?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      user_focus_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          date: string
+          duration: number
+          created_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          date: string
+          duration: number
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          date?: string
+          duration?: number
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      user_semesters: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          courses: any | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          courses?: any | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          courses?: any | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
       health_reminder_settings: {
         Row: {
           created_at: string

@@ -20,6 +20,10 @@ function getQueue(): QueueItem[] {
   }
 }
 
+export function getQueueLength(): number {
+  return getQueue().length;
+}
+
 function setQueue(queue: QueueItem[]) {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
 }
@@ -81,8 +85,4 @@ export async function flushQueue(): Promise<number> {
 
   setQueue(remaining);
   return processed;
-}
-
-export function getQueueLength(): number {
-  return getQueue().length;
 }
