@@ -238,7 +238,7 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
                   </div>
                   <p className="text-sm font-medium text-foreground">{col.title === t('planner.done') ? t('planner.complete_to_see') : t('planner.clear_agenda')}</p>
                 </div>
-              ) : col.tasks.map(t => renderTaskCard(t))}
+              ) : col.tasks.slice().reverse().map(t => renderTaskCard(t))}
             </div>
           ))}
         </div>
