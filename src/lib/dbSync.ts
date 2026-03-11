@@ -551,6 +551,8 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       amount: Number(d.amount),
       description: d.description,
       date: d.date,
+      dueDate: d.due_date,
+      originalId: d.original_debt_id,
       settled: d.settled,
       settledDate: d.settled_date,
       updatedAt: d.created_at,
@@ -578,6 +580,8 @@ export async function syncDebtsFromDB(): Promise<any[]> {
           amount: d.amount,
           description: d.description || '',
           date: d.date || '',
+          due_date: d.dueDate || null,
+          original_debt_id: d.originalId || null,
           settled: d.settled || false,
           settled_date: d.settledDate || null,
         }).select('id').single();
@@ -626,6 +630,8 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
       amount: debt.amount,
       description: debt.description || '',
       date: debt.date || '',
+      due_date: debt.dueDate || null,
+      original_debt_id: debt.originalId || null,
       settled: false,
     }).select('id').single();
 
@@ -657,6 +663,8 @@ export async function settleDebtInDB(id: string, amount?: number) {
           amount: amount,
           description: `Partial payment — ${debt.description || (debt.debt_type === 'lend' ? 'Lent' : 'Borrowed')}`,
           date: debt.date || '',
+          due_date: debt.due_date,
+          original_debt_id: debt.id,
           settled: true,
           settled_date: new Date().toISOString(),
         }).select('id').single();

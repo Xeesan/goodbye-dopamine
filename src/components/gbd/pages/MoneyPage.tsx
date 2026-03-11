@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck, AlertTriangle, Calendar, CheckSquare, Clock } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck, AlertTriangle, Calendar, CheckSquare, Clock, Download } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
@@ -104,8 +104,10 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
     }
     const description = (document.getElementById('debt-description') as HTMLInputElement)?.value.trim();
     const date = (document.getElementById('debt-date') as HTMLInputElement)?.value;
-    const tempId = Storage.addDebt({ debtType, person, amount, description, date });
-    addDebtToDB({ debtType, person, amount, description, date }).then(dbId => {
+    const dueDate = (document.getElementById('debt-due-date') as HTMLInputElement)?.value || undefined;
+    
+    const tempId = Storage.addDebt({ debtType, person, amount, description, date, dueDate });
+    addDebtToDB({ debtType, person, amount, description, date, dueDate }).then(dbId => {
       if (dbId && tempId) {
         const current = Storage.getDebts();
         const target = current.find((d: any) => d.id === tempId);
@@ -117,6 +119,8 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
     (document.getElementById('debt-amount') as HTMLInputElement).value = '';
     (document.getElementById('debt-description') as HTMLInputElement).value = '';
     (document.getElementById('debt-date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+    const dueDateInput = document.getElementById('debt-due-date') as HTMLInputElement;
+    if (dueDateInput) dueDateInput.value = '';
     refresh();
     toast({ title: 'Debt added', description: `${debtType === 'lend' ? 'Lent to' : 'Borrowed from'} ${person} — ৳${amount}` });
   };
@@ -147,6 +151,40 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
       refresh();
       toast({ title: 'Transaction deleted', description: txn?.description || '' });
     }
+  };
+
+  const exportSettledHistoryTxt = () => {
+    const sorted = historyDebts.slice().sort((a: any, b: any) => new Date(b.settledDate || b.date).getTime() - new Date(a.settledDate || a.date).getTime());
+    
+    let textContent = "Goodbye Dopamine - Settled Debt History\n";
+    textContent += `Exported on: ${new Date().toLocaleString()}\n`;
+    textContent += "----------------------------------------\n\n";
+
+    if (sorted.length === 0) {
+      textContent += "No settled history to display.\n";
+    }
+
+    sorted.forEach((d: any) => {
+      const isPartial = d.description?.includes('Partial');
+      const action = d.debtType === 'lend' ? 'Lent to' : 'Borrowed from';
+      const status = isPartial ? 'Partially settled' : 'Settled';
+      const dateStr = formatDate(d.settledDate || d.date);
+      
+      textContent += `[${dateStr}] ${status} ৳${d.amount.toLocaleString()} with ${d.person}\n`;
+      textContent += `  Details: ${action} · ${d.description?.replace('Partial payment — ', '') || 'No description'}\n`;
+      textContent += `  Original Debt Date: ${formatDate(d.date)}\n\n`;
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `GBD_Settled_History_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: 'Backup downloaded', description: 'Saved history as text file' });
   };
 
   const settleDebt = async (debt: any) => {
@@ -702,8 +740,12 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
               </div>
               <div>
                 <label className="form-label">{t('money.date')}</label>
-                <input type="date" id="debt-date" className="input-simple max-w-[50%]" defaultValue={new Date().toISOString().split('T')[0]} />
+                <input type="date" id="debt-date" className="input-simple" defaultValue={new Date().toISOString().split('T')[0]} />
               </div>
+            </div>
+            <div className="mb-2">
+              <label className="form-label">Expected Return Date <span className="text-muted-foreground font-normal">(optional)</span></label>
+              <input type="date" id="debt-due-date" className="input-simple max-w-[50%]" />
             </div>
             <div className="flex gap-3 justify-end mt-5">
               <button className={`${debtType === 'lend' ? 'btn-green' : 'btn-danger'} !min-w-[120px]`} onClick={addDebt}>
@@ -767,33 +809,71 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
                   )}
                 </div>
                 <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
-                  {p.debts.slice().reverse().map((d: any, i: number) => (
-                    <div key={d.id} className="flex items-center justify-between py-3.5 px-3.5"
-                      style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.12)' }}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
-                          style={{
-                            background: d.debtType === 'lend' ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--destructive) / 0.15)',
-                          }}>
-                          {d.debtType === 'lend' ? '🔼' : '🔽'}
+                  {p.debts.slice().reverse().map((d: any, i: number) => {
+                    const settledHistory = historyDebts.filter((h: any) => h.originalId === d.id);
+                    const settledAmount = settledHistory.reduce((sum: number, h: any) => sum + Number(h.amount), 0);
+                    const hasPartial = settledAmount > 0;
+                    const originalTotal = d.amount + settledAmount;
+                    const progress = hasPartial ? Math.round((settledAmount / originalTotal) * 100) : 0;
+
+                    return (
+                      <div key={d.id} style={{ borderBottom: i < p.debts.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.12)' }}>
+                        <div className="flex items-center justify-between py-3.5 px-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                              style={{
+                                background: d.debtType === 'lend' ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--destructive) / 0.15)',
+                              }}>
+                              {d.debtType === 'lend' ? '🔼' : '🔽'}
+                            </div>
+                            <div>
+                              <div className="text-sm text-foreground font-medium flex gap-2 items-center flex-wrap">
+                                {d.description || (d.debtType === 'lend' ? t('money.lent_label') : t('money.borrowed_label'))}
+                                {d.dueDate && isBefore(parseISO(d.dueDate), new Date()) && (
+                                  <span className="text-[0.6rem] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded uppercase font-bold tracking-wider flex items-center gap-1">
+                                    <AlertTriangle className="w-3 h-3" /> Overdue
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[0.65rem] text-muted-foreground flex gap-2 items-center">
+                                <span>{formatDate(d.date)}</span>
+                                {d.dueDate && (
+                                  <>
+                                    <span>·</span>
+                                    <span className={isBefore(parseISO(d.dueDate), new Date()) ? 'text-destructive font-semibold' : ''}>
+                                      Due: {formatDate(d.dueDate)}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <div className="text-right">
+                              <div className={`font-bold text-sm ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount.toLocaleString()}</div>
+                              {hasPartial && (
+                                <div className="text-[0.6rem] text-muted-foreground mt-0.5">
+                                  {progress}% settled
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => settleDebt(d)}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
+                              style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
+                              <Check className="w-3.5 h-3.5" />
+                              {t('money.settle')}
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm text-foreground font-medium">{d.description || (d.debtType === 'lend' ? t('money.lent_label') : t('money.borrowed_label'))}</div>
-                          <div className="text-[0.65rem] text-muted-foreground">{formatDate(d.date)}</div>
-                        </div>
+                        {hasPartial && (
+                          <div className="px-3.5 pb-2.5">
+                            <div className="xp-bar !h-1.5 opacity-60"><div className="xp-bar-fill" style={{ width: `${progress}%` }} /></div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2.5">
-                        <span className={`font-bold text-sm ${d.debtType === 'lend' ? 'text-primary' : 'text-destructive'}`}>৳{d.amount.toLocaleString()}</span>
-                        <button
-                          onClick={() => settleDebt(d)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95"
-                          style={{ background: 'hsl(142 71% 45% / 0.15)', color: 'hsl(142 71% 45%)' }}>
-                          <Check className="w-3.5 h-3.5" />
-                          {t('money.settle')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -821,7 +901,15 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
 
             return (
               <div className="glass-card min-h-[100px]">
-                <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ {t('money.settled_history')}</h2>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">✅ {t('money.settled_history')}</h2>
+                  <button
+                    onClick={exportSettledHistoryTxt}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[0.7rem] font-semibold transition-all hover:scale-105 active:scale-95 bg-transparent border border-border text-foreground hover:bg-muted">
+                    <Download className="w-3 h-3" />
+                    Backup .txt
+                  </button>
+                </div>
                 {sortedPeople.map(([personName, entries]) => {
                   const totalSettled = entries.reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
                   const isPartial = entries.some((d: any) => d.description?.includes('Partial'));

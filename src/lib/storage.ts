@@ -211,6 +211,7 @@ const Storage = {
     const debts = this.getDebts();
     const now = new Date().toISOString();
     const id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    // Include dueDate if provided
     debts.push({ ...debt, id, date: debt.date || now, settled: false, updatedAt: now });
     this.setDebts(debts);
     return id;
@@ -241,6 +242,7 @@ const Storage = {
         settledDate: now,
         description: `Partial payment — ${debt.description || (debt.debtType === 'lend' ? 'Lent' : 'Borrowed')}`,
         updatedAt: now,
+        originalId: debt.id, // Link to original debt
       });
     } else {
       // Full settle

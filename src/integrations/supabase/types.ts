@@ -316,7 +316,9 @@ export type Database = {
           debt_type: string
           deleted_at: string | null
           description: string | null
+          due_date: string | null
           id: string
+          original_debt_id: string | null
           person: string
           settled: boolean
           settled_date: string | null
@@ -329,7 +331,9 @@ export type Database = {
           debt_type?: string
           deleted_at?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
+          original_debt_id?: string | null
           person: string
           settled?: boolean
           settled_date?: string | null
@@ -342,7 +346,9 @@ export type Database = {
           debt_type?: string
           deleted_at?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
+          original_debt_id?: string | null
           person?: string
           settled?: boolean
           settled_date?: string | null
