@@ -126,7 +126,7 @@ async function sendPushNotification(
   paddedPayload[1] = paddingLength & 0xff;
   paddedPayload.set(payloadBytes, 2 + paddingLength);
 
-  const aesKey = await crypto.subtle.importKey("raw", contentEncryptionKey, { name: "AES-GCM" }, false, ["encrypt"]);
+  const aesKey = await crypto.subtle.importKey("raw", contentEncryptionKey.buffer as ArrayBuffer, { name: "AES-GCM" }, false, ["encrypt"]);
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, paddedPayload);
   const encryptedBytes = new Uint8Array(encrypted);
 
