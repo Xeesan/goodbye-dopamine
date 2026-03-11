@@ -194,7 +194,12 @@ const NotesPage = ({ navigateTo, refreshKey }: NotesPageProps) => {
 
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {filtered.length === 0 ? (
-              <div className="text-center py-8"><span className="text-3xl block mb-2">{searchQuery || activeTag ? '🔍' : '📝'}</span><p className="text-sm text-muted-foreground">{searchQuery || activeTag ? t('notes.no_match') : t('notes.start_writing')}</p></div>
+              <div className="text-center py-8">
+                <span className="mb-3 flex justify-center text-muted-foreground">
+                  {searchQuery || activeTag ? <Search size={36} /> : <FileText size={36} />}
+                </span>
+                <p className="text-sm text-muted-foreground">{searchQuery || activeTag ? t('notes.no_match') : t('notes.start_writing')}</p>
+              </div>
             ) : filtered.map(n => {
               const noteTags = extractTags(`${n.title || ''} ${n.content || ''}`);
               return (

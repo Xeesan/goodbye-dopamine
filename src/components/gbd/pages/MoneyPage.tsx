@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncTransactionsFromDB, addTransactionToDB, deleteTransactionFromDB, syncDebtsFromDB, addDebtToDB, settleDebtInDB, deleteDebtFromDB } from '@/lib/dbSync';
 import { formatDate } from '@/lib/helpers';
-import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck } from 'lucide-react';
+import { ArrowLeft, Search, Star, X, Check, CheckCheck, Trash2, CalendarDays, Settings2, CreditCard, CircleCheck, AlertTriangle, Calendar, CheckSquare, Clock } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { toast } from '@/hooks/use-toast';
 import { useGamification } from '@/hooks/useGamification';
@@ -389,8 +389,9 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
                   <div className={`rounded-xl p-4 mb-5 flex items-center justify-between`}
                     style={{ background: isOverdue ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--accent))' }}>
                     <div>
-                      <div className="text-xs font-medium text-muted-foreground mb-0.5">
-                        {isOverdue ? '⚠️ Overdue — Installment #' : '📅 Next — Installment #'}{nextInstallmentNumber}
+                      <div className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1.5">
+                        {isOverdue ? <AlertTriangle size={14} className="text-destructive" /> : <Calendar size={14} />}
+                        {isOverdue ? 'Overdue — Installment #' : 'Next — Installment #'}{nextInstallmentNumber}
                       </div>
                       <div className={`text-xl font-bold ${isOverdue ? 'text-destructive' : 'text-foreground'}`}>
                         ৳{Math.min(monthlyInstallment, feeRemaining).toLocaleString()}
@@ -835,7 +836,7 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
                             style={{ borderBottom: i < entries.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.08)' }}>
                             <div className="flex items-center gap-3">
                               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0" style={{ background: 'hsl(var(--muted) / 0.4)' }}>
-                                {d.description?.includes('Partial') ? '◐' : '☑️'}
+                                {d.description?.includes('Partial') ? <Clock size={14} /> : <CheckSquare size={14} className="text-green-500" />}
                               </div>
                               <div>
                                 <div className="text-sm text-foreground font-medium flex items-center gap-1.5">

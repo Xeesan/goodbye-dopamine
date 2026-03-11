@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { syncTasksFromDB, addTaskToDB, updateTaskInDB, deleteTaskFromDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2 } from 'lucide-react';
+import { Search, ArrowLeft, ArrowRight, CheckCircle2, Trash2, Undo2, ClipboardList, Zap, PartyPopper } from 'lucide-react';
 import { useDialog } from '../DialogProvider';
 import { useGamification } from '@/hooks/useGamification';
 import { toast } from '@/hooks/use-toast';
@@ -229,7 +229,11 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
               </div>
               {col.tasks.length === 0 ? (
                 <div className="empty-state !p-8">
-                  <span className="text-3xl mb-1">{col.title === t('planner.todo') ? '📋' : col.title === t('planner.in_progress') ? '⚡' : '🎉'}</span>
+                  <span className="mb-2 flex justify-center text-muted-foreground">
+                    {col.title === t('planner.todo') ? <ClipboardList size={32} /> : 
+                     col.title === t('planner.in_progress') ? <Zap size={32} /> : 
+                     <PartyPopper size={32} />}
+                  </span>
                   <p className="text-sm">{col.title === t('planner.done') ? t('planner.complete_to_see') : t('planner.clear_agenda')}</p>
                 </div>
               ) : col.tasks.map(t => renderTaskCard(t))}

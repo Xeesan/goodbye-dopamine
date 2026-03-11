@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
+import { User, Lock, Mail, AtSign, Eye, EyeOff, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
 import appIcon from '@/assets/icon.png';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -354,7 +354,9 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
           )}
         </div>
 
-        <p className="text-center text-[0.65rem] text-muted-foreground mt-6 tracking-wider">BUILT WITH ❤️ FOR STUDENTS</p>
+        <p className="flex justify-center items-center gap-1.5 text-center text-[0.65rem] text-muted-foreground mt-6 tracking-wider">
+          BUILT WITH <Heart className="w-3 h-3 text-red-500 fill-red-500" /> FOR STUDENTS
+        </p>
       </div>
 
       {/* Toast */}

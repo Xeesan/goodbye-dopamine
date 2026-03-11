@@ -7,7 +7,7 @@ import { levelProgress, levelTitle } from '@/lib/leveling';
 import { useDialog } from '../DialogProvider';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
-import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target, SkipForward } from 'lucide-react';
+import { Clock, CheckSquare, BarChart3, Heart, Zap, Star, RefreshCw, Link2, Settings, Calendar, Monitor, Wallet, StickyNote, BookOpen, Timer, FileText, RotateCcw, Target, SkipForward } from 'lucide-react';
 import FocusNowOverlay, { getRankedTasks, type FocusTask } from '../FocusNowOverlay';
 import { syncExamsFromDB } from '@/lib/dbSync';
 
@@ -289,7 +289,7 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
       <div className="mb-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-widest text-muted-foreground uppercase">
-            <Link className="w-4 h-4" /> {t('dash.quick_access')}
+            <Link2 className="w-4 h-4" /> {t('dash.quick_access')}
           </div>
           <button className="btn-outline !py-1.5 !px-3 !text-xs" onClick={async () => {
             const name = await showPrompt({ title: t('dash.add_link_title'), message: t('dash.link_name_prompt'), placeholder: 'e.g. Google Classroom' });
@@ -301,7 +301,10 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
           }}>{t('dash.add_link')}</button>
         </div>
         {quickLinks.length === 0 ? (
-          <div className="glass-card !p-6 text-center"><span className="text-2xl mb-2 block">🔗</span><p className="text-muted-foreground text-sm">{t('dash.no_links')}</p></div>
+          <div className="glass-card !p-6 text-center">
+            <span className="mb-2 flex justify-center text-muted-foreground"><Link2 size={24} /></span>
+            <p className="text-muted-foreground text-sm">{t('dash.no_links')}</p>
+          </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             {quickLinks.map((l: any) => (
