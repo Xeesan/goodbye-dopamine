@@ -219,10 +219,33 @@ const Storage = {
     if (!id) return;
     this.setDebts(this.getDebts().filter(d => String(d.id) !== String(id)));
   },
-  settleDebt(id: string) {
+  settleDebt(id: string, amount?: number) {
     if (!id) return;
+    const debts = this.getDebts();
     const now = new Date().toISOString();
-    const debts = this.getDebts().map(d => String(d.id) === String(id) ? { ...d, settled: true, settledDate: now, updatedAt: now } : d);
+    const idx = debts.findIndex(d => String(d.id) === String(id));
+    if (idx === -1) return;
+    const debt = debts[idx];
+    const settleAmount = amount ?? debt.amount;
+    const remaining = debt.amount - settleAmount;
+
+    if (remaining > 0) {
+      // Partial: reduce original, create settled record
+      debts[idx] = { ...debt, amount: remaining, updatedAt: now };
+      const settledId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      debts.push({
+        ...debt,
+        id: settledId,
+        amount: settleAmount,
+        settled: true,
+        settledDate: now,
+        description: `Partial payment — ${debt.description || (debt.debtType === 'lend' ? 'Lent' : 'Borrowed')}`,
+        updatedAt: now,
+      });
+    } else {
+      // Full settle
+      debts[idx] = { ...debt, settled: true, settledDate: now, updatedAt: now };
+    }
     this.setDebts(debts);
   },
 

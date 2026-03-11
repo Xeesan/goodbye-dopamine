@@ -637,16 +637,48 @@ export async function addDebtToDB(debt: any): Promise<string | null> {
   }
 }
 
-export async function settleDebtInDB(id: string) {
+export async function settleDebtInDB(id: string, amount?: number) {
   const userId = await getUserId();
-  if (!userId || !isDbId(id)) return;
+  if (!userId || !isDbId(id)) return null;
   try {
-    await supabase.from('user_debts').update({
-      settled: true,
-      settled_date: new Date().toISOString(),
-    }).eq('id', id).eq('user_id', userId);
+    if (amount !== undefined) {
+      // Partial settlement: get current debt, reduce amount, create settled record
+      const { data: debt } = await supabase.from('user_debts').select('*').eq('id', id).eq('user_id', userId).single();
+      if (!debt) return null;
+      const remaining = Number(debt.amount) - amount;
+      if (remaining > 0) {
+        // Update original with reduced amount
+        await supabase.from('user_debts').update({ amount: remaining }).eq('id', id).eq('user_id', userId);
+        // Create settled record for the paid portion
+        const { data: settled } = await supabase.from('user_debts').insert({
+          user_id: userId,
+          debt_type: debt.debt_type,
+          person: debt.person,
+          amount: amount,
+          description: `Partial payment — ${debt.description || (debt.debt_type === 'lend' ? 'Lent' : 'Borrowed')}`,
+          date: debt.date || '',
+          settled: true,
+          settled_date: new Date().toISOString(),
+        }).select('id').single();
+        return settled?.id ?? null;
+      } else {
+        // Full settle
+        await supabase.from('user_debts').update({
+          settled: true,
+          settled_date: new Date().toISOString(),
+        }).eq('id', id).eq('user_id', userId);
+        return null;
+      }
+    } else {
+      await supabase.from('user_debts').update({
+        settled: true,
+        settled_date: new Date().toISOString(),
+      }).eq('id', id).eq('user_id', userId);
+      return null;
+    }
   } catch (e) {
     console.error('Settle debt DB error:', e);
+    return null;
   }
 }
 
