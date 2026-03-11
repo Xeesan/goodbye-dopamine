@@ -856,8 +856,13 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
                                     {d.description?.includes('Partial') ? 'Partial' : t('money.settled')}
                                   </span>
                                 </div>
-                                <div className="text-[0.65rem] text-muted-foreground">
-                                  {d.debtType === 'lend' ? '↑ Lent' : '↓ Borrowed'} · {d.description?.replace('Partial payment — ', '') || ''} · {formatDate(d.settledDate || d.date)}
+                                <div className="text-[0.65rem] text-muted-foreground mt-0.5 space-y-0.5">
+                                  <div>{d.debtType === 'lend' ? '↑ Lent' : '↓ Borrowed'} · {d.description?.replace('Partial payment — ', '') || ''}</div>
+                                  <div className="flex gap-2 opacity-80">
+                                    <span>Added: {formatDate(d.date)}</span>
+                                    <span>·</span>
+                                    <span>Settled: {formatDate(d.settledDate || d.date)}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
