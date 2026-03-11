@@ -113,9 +113,9 @@ async function sendPushNotification(
 
   // Build info for nonce
   const nonceInfo = buildInfo("nonce", subscriberPublicKey, localPublicKeyBytes);
-  const nonceHmacKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const nonceHmacKey = await crypto.subtle.importKey("raw", prk.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const nonceInfoFull = concatUint8(nonceInfo, new Uint8Array([1]));
-  const nonceHmac = new Uint8Array(await crypto.subtle.sign("HMAC", nonceHmacKey, nonceInfoFull));
+  const nonceHmac = new Uint8Array(await crypto.subtle.sign("HMAC", nonceHmacKey, nonceInfoFull.buffer as ArrayBuffer));
   const nonce = nonceHmac.slice(0, 12);
 
   // Encrypt payload
