@@ -228,13 +228,15 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
                 <span className="text-[0.75rem] text-muted-foreground">{col.tasks.length}</span>
               </div>
               {col.tasks.length === 0 ? (
-                <div className="empty-state !p-8">
-                  <span className="mb-2 flex justify-center text-muted-foreground">
-                    {col.title === t('planner.todo') ? <ClipboardList size={32} /> : 
-                     col.title === t('planner.in_progress') ? <Zap size={32} /> : 
-                     <PartyPopper size={32} />}
-                  </span>
-                  <p className="text-sm">{col.title === t('planner.done') ? t('planner.complete_to_see') : t('planner.clear_agenda')}</p>
+                <div className="empty-state !p-8 flex flex-col items-center justify-center">
+                  <div className="mb-4">
+                    <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-[0_8px_32px_rgba(var(--primary),0.15)] ring-1 ring-white/5">
+                      {col.title === t('planner.todo') ? <ClipboardList size={28} className="text-primary" /> : 
+                       col.title === t('planner.in_progress') ? <Zap size={28} className="text-warning fill-warning/20" /> : 
+                       <PartyPopper size={28} className="text-green-500" />}
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-foreground">{col.title === t('planner.done') ? t('planner.complete_to_see') : t('planner.clear_agenda')}</p>
                 </div>
               ) : col.tasks.map(t => renderTaskCard(t))}
             </div>

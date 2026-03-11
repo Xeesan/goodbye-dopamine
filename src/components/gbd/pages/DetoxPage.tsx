@@ -283,10 +283,13 @@ const DetoxPage = ({ navigateTo }: DetoxPageProps) => {
       <div className="page-enter max-w-[800px] mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
-              <Shield className="text-primary w-6 h-6" /> {t('detox.title')}
+            <h2 className="text-xl font-bold text-primary flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[0.6rem] bg-gradient-to-br from-primary/30 to-primary/5 flex items-center justify-center border border-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.25)]">
+                <Shield className="text-primary w-5 h-5 fill-primary/20" />
+              </div>
+              {t('detox.title')}
             </h2>
-            <p className="text-xs text-muted-foreground">{t('detox.distractions_blocked')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('detox.distractions_blocked')}</p>
           </div>
           <div className="flex items-center gap-1 text-4xl font-mono font-bold text-foreground"><span>{m}</span><span className="text-muted-foreground">:</span><span>{s}</span></div>
           <button className="btn-danger" onClick={stopFocus}>{t('detox.exit')}</button>

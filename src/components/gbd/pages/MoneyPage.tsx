@@ -389,9 +389,20 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
                   <div className={`rounded-xl p-4 mb-5 flex items-center justify-between`}
                     style={{ background: isOverdue ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--accent))' }}>
                     <div>
-                      <div className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1.5">
-                        {isOverdue ? <AlertTriangle size={14} className="text-destructive" /> : <Calendar size={14} />}
-                        {isOverdue ? 'Overdue — Installment #' : 'Next — Installment #'}{nextInstallmentNumber}
+                      <div className="text-xs font-bold tracking-wider text-muted-foreground mb-2 flex items-center gap-2 uppercase">
+                        {isOverdue ? (
+                          <div className="bg-gradient-to-br from-destructive/20 to-destructive/5 p-1.5 rounded-lg border border-destructive/20 shadow-[0_0_15px_rgba(var(--destructive),0.2)]">
+                            <AlertTriangle size={14} className="text-destructive drop-shadow-[0_0_8px_rgba(var(--destructive),0.5)]" />
+                          </div>
+                        ) : (
+                          <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-1.5 rounded-lg border border-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.2)]">
+                            <Calendar size={14} className="text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                          </div>
+                        )}
+                        <span className={isOverdue ? "text-destructive" : "text-primary"}>
+                          {isOverdue ? 'Overdue — Installment #' : 'Next — Installment #'}
+                        </span>
+                        {nextInstallmentNumber}
                       </div>
                       <div className={`text-xl font-bold ${isOverdue ? 'text-destructive' : 'text-foreground'}`}>
                         ৳{Math.min(monthlyInstallment, feeRemaining).toLocaleString()}

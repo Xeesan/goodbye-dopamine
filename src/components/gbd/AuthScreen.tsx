@@ -354,8 +354,8 @@ const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: () => void }) => {
           )}
         </div>
 
-        <p className="flex justify-center items-center gap-1.5 text-center text-[0.65rem] text-muted-foreground mt-6 tracking-wider">
-          BUILT WITH <Heart className="w-3 h-3 text-red-500 fill-red-500" /> FOR STUDENTS
+        <p className="flex justify-center items-center gap-1.5 text-center text-[0.65rem] text-muted-foreground mt-6 tracking-widest font-semibold uppercase">
+          BUILT WITH <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse" /> FOR STUDENTS
         </p>
       </div>
 

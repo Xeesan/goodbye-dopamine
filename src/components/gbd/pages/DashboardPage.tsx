@@ -301,9 +301,12 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
           }}>{t('dash.add_link')}</button>
         </div>
         {quickLinks.length === 0 ? (
-          <div className="glass-card !p-6 text-center">
-            <span className="mb-2 flex justify-center text-muted-foreground"><Link2 size={24} /></span>
-            <p className="text-muted-foreground text-sm">{t('dash.no_links')}</p>
+          <div className="glass-card !p-8 text-center flex flex-col items-center justify-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-14 h-14 rounded-[1.25rem] flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted/20 border border-white/5 shadow-inner mb-4 transition-transform duration-300 group-hover:scale-110">
+              <Link2 size={24} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-muted-foreground text-sm font-medium">{t('dash.no_links')}</p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
