@@ -101,7 +101,7 @@ async function sendPushNotification(
   const ikm = new Uint8Array(sharedSecret);
   
   // PRK = HMAC-SHA-256(auth_secret, shared_secret)
-  const prkKey = await crypto.subtle.importKey("raw", authSecret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const prkKey = await crypto.subtle.importKey("raw", authSecret.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const prk = new Uint8Array(await crypto.subtle.sign("HMAC", prkKey, ikm));
 
   // Build info for content encryption key
