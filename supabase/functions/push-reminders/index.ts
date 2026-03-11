@@ -106,9 +106,9 @@ async function sendPushNotification(
 
   // Build info for content encryption key
   const contentEncInfo = buildInfo("aesgcm", subscriberPublicKey, localPublicKeyBytes);
-  const cekHmacKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const cekHmacKey = await crypto.subtle.importKey("raw", prk.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const cekInfo = concatUint8(contentEncInfo, new Uint8Array([1]));
-  const cekHmac = new Uint8Array(await crypto.subtle.sign("HMAC", cekHmacKey, cekInfo));
+  const cekHmac = new Uint8Array(await crypto.subtle.sign("HMAC", cekHmacKey, cekInfo.buffer as ArrayBuffer));
   const contentEncryptionKey = cekHmac.slice(0, 16);
 
   // Build info for nonce
