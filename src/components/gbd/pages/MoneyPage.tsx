@@ -787,34 +787,83 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
             ))}
           </div>
 
-          {/* Settled History */}
-          {historyDebts.length > 0 && (
-            <div className="glass-card min-h-[100px]" style={{ opacity: 0.75 }}>
-              <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ {t('money.settled_history')}</h2>
-              {historyDebts.slice().reverse().map((d: any) => (
-                <div key={d.id} className="flex items-center justify-between py-3.5 px-1" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'hsl(var(--muted) / 0.5)' }}>
-                      ☑️
+          {/* Settled History — grouped by person, newest first */}
+          {historyDebts.length > 0 && (() => {
+            // Group settled debts by person
+            const settledByPerson: Record<string, any[]> = {};
+            historyDebts.forEach((d: any) => {
+              if (!settledByPerson[d.person]) settledByPerson[d.person] = [];
+              settledByPerson[d.person].push(d);
+            });
+            // Sort each person's entries newest first (by settledDate or date)
+            Object.values(settledByPerson).forEach(arr => arr.sort((a: any, b: any) => {
+              const ta = new Date(a.settledDate || a.date || 0).getTime();
+              const tb = new Date(b.settledDate || b.date || 0).getTime();
+              return tb - ta;
+            }));
+            const sortedPeople = Object.entries(settledByPerson).sort((a, b) => {
+              const latestA = new Date(a[1][0]?.settledDate || a[1][0]?.date || 0).getTime();
+              const latestB = new Date(b[1][0]?.settledDate || b[1][0]?.date || 0).getTime();
+              return latestB - latestA;
+            });
+
+            return (
+              <div className="glass-card min-h-[100px]">
+                <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">✅ {t('money.settled_history')}</h2>
+                {sortedPeople.map(([personName, entries]) => {
+                  const totalSettled = entries.reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
+                  const isPartial = entries.some((d: any) => d.description?.includes('Partial'));
+                  return (
+                    <div key={personName} className="mb-4 last:mb-0">
+                      <div className="flex items-center justify-between mb-2 px-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.55rem] font-bold shrink-0 bg-muted text-muted-foreground">
+                            {personName.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-sm font-medium text-foreground">{personName}</span>
+                          {isPartial && (
+                            <span className="text-[0.6rem] px-2 py-0.5 rounded-full font-medium" style={{ background: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                              Partial
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-muted-foreground">৳{totalSettled.toLocaleString()} total</span>
+                      </div>
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
+                        {entries.map((d: any, i: number) => (
+                          <div key={d.id} className="flex items-center justify-between py-3 px-3.5"
+                            style={{ borderBottom: i < entries.length - 1 ? '1px solid hsl(var(--border))' : 'none', background: 'hsl(var(--muted) / 0.08)' }}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0" style={{ background: 'hsl(var(--muted) / 0.4)' }}>
+                                {d.description?.includes('Partial') ? '◐' : '☑️'}
+                              </div>
+                              <div>
+                                <div className="text-sm text-foreground font-medium flex items-center gap-1.5">
+                                  <span className="line-through opacity-70">৳{d.amount.toLocaleString()}</span>
+                                  <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                                    {d.description?.includes('Partial') ? 'Partial' : t('money.settled')}
+                                  </span>
+                                </div>
+                                <div className="text-[0.65rem] text-muted-foreground">
+                                  {d.debtType === 'lend' ? '↑ Lent' : '↓ Borrowed'} · {d.description?.replace('Partial payment — ', '') || ''} · {formatDate(d.settledDate || d.date)}
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => deleteDebt(d.id)}
+                              className="flex items-center gap-1 px-2 py-1.5 rounded-full text-[0.65rem] font-semibold transition-all hover:scale-105 active:scale-95"
+                              style={{ background: 'hsl(var(--destructive) / 0.12)', color: 'hsl(var(--destructive))' }}>
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-foreground text-sm">{d.person} <span className="text-[0.6rem] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full ml-1">{t('money.settled')}</span></div>
-                      <div className="text-[0.65rem] text-muted-foreground">{d.description || ''} · {formatDate(d.date)}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-muted-foreground line-through text-sm">৳{d.amount.toLocaleString()}</span>
-                    <button
-                      onClick={() => deleteDebt(d.id)}
-                      className="flex items-center gap-1 px-2 py-1.5 rounded-full text-[0.65rem] font-semibold transition-all hover:scale-105 active:scale-95"
-                      style={{ background: 'hsl(var(--destructive) / 0.12)', color: 'hsl(var(--destructive))' }}>
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            );
+          })()}
         </>
         );
       })()}
