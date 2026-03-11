@@ -40,27 +40,27 @@ async function sendPushNotification(
   const localPublicKey = await crypto.subtle.exportKey("raw", localKeyPair.publicKey);
   const localPublicKeyBytes = new Uint8Array(localPublicKey);
   const subscriberPublicKey = base64urlDecode(subscription.p256dh);
-  const subscriberKey = await crypto.subtle.importKey("raw", subscriberPublicKey, { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const subscriberKey = await crypto.subtle.importKey("raw", subscriberPublicKey.buffer as ArrayBuffer, { name: "ECDH", namedCurve: "P-256" }, false, []);
   const sharedSecret = await crypto.subtle.deriveBits({ name: "ECDH", public: subscriberKey }, localKeyPair.privateKey, 256);
   const authSecret = base64urlDecode(subscription.auth);
   const ikm = new Uint8Array(sharedSecret);
-  const prkKey = await crypto.subtle.importKey("raw", authSecret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const prkKey = await crypto.subtle.importKey("raw", authSecret.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const prk = new Uint8Array(await crypto.subtle.sign("HMAC", prkKey, ikm));
   const contentEncInfo = buildInfo("aesgcm", subscriberPublicKey, localPublicKeyBytes);
-  const cekHmacKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const cekHmacKey = await crypto.subtle.importKey("raw", prk.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const cekInfo = concatUint8(contentEncInfo, new Uint8Array([1]));
-  const cekHmac = new Uint8Array(await crypto.subtle.sign("HMAC", cekHmacKey, cekInfo));
+  const cekHmac = new Uint8Array(await crypto.subtle.sign("HMAC", cekHmacKey, cekInfo.buffer as ArrayBuffer));
   const contentEncryptionKey = cekHmac.slice(0, 16);
   const nonceInfo = buildInfo("nonce", subscriberPublicKey, localPublicKeyBytes);
-  const nonceHmacKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const nonceHmacKey = await crypto.subtle.importKey("raw", prk.buffer as ArrayBuffer, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const nonceInfoFull = concatUint8(nonceInfo, new Uint8Array([1]));
-  const nonceHmac = new Uint8Array(await crypto.subtle.sign("HMAC", nonceHmacKey, nonceInfoFull));
+  const nonceHmac = new Uint8Array(await crypto.subtle.sign("HMAC", nonceHmacKey, nonceInfoFull.buffer as ArrayBuffer));
   const nonce = nonceHmac.slice(0, 12);
   const payloadBytes = new TextEncoder().encode(payload);
   const paddedPayload = new Uint8Array(2 + payloadBytes.length);
   paddedPayload[0] = 0; paddedPayload[1] = 0;
   paddedPayload.set(payloadBytes, 2);
-  const aesKey = await crypto.subtle.importKey("raw", contentEncryptionKey, { name: "AES-GCM" }, false, ["encrypt"]);
+  const aesKey = await crypto.subtle.importKey("raw", contentEncryptionKey.buffer as ArrayBuffer, { name: "AES-GCM" }, false, ["encrypt"]);
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, paddedPayload);
   const encryptedBytes = new Uint8Array(encrypted);
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -69,7 +69,7 @@ async function sendPushNotification(
   return await fetch(subscription.endpoint, {
     method: "POST",
     headers: { ...vapidHeaders, "Content-Type": "application/octet-stream", "Content-Encoding": "aes128gcm", TTL: "86400" },
-    body,
+    body: body.buffer as ArrayBuffer,
   });
 }
 
