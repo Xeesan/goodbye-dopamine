@@ -149,15 +149,26 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
     }
   };
 
-  const settleDebt = async (id: string) => {
-    const debt = debts.find((d: any) => d.id === id);
-    const confirmed = await showDialog({ title: 'Settle Debt', message: 'Mark this debt as settled?', type: 'confirm', confirmText: 'Settle' });
-    if (confirmed) {
-      Storage.settleDebt(id);
-      settleDebtInDB(id);
-      refresh();
-      toast({ title: 'Debt settled ✓', description: `${debt?.person} — ৳${debt?.amount}` });
-    }
+  const settleDebt = async (debt: any) => {
+    // Open the partial settlement modal
+    setShowSettleModal(debt);
+  };
+
+  const confirmSettle = async (settleAmount: number) => {
+    const debt = showSettleModal;
+    if (!debt) return;
+    const isPartial = settleAmount < debt.amount;
+
+    Storage.settleDebt(debt.id, settleAmount);
+    await settleDebtInDB(debt.id, settleAmount);
+    // Re-sync to get correct IDs
+    await syncDebtsFromDB();
+    setShowSettleModal(null);
+    refresh();
+    toast({
+      title: isPartial ? `Partial settlement ✓` : 'Debt settled ✓',
+      description: `${debt.person} — ৳${settleAmount.toLocaleString()}${isPartial ? ` (৳${(debt.amount - settleAmount).toLocaleString()} remaining)` : ''}`,
+    });
   };
 
   const deleteDebt = async (id: string) => {
