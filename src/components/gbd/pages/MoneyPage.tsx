@@ -35,6 +35,7 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
   const [showTxnModal, setShowTxnModal] = useState(false);
   const [txnType, setTxnType] = useState('income');
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [showSettleModal, setShowSettleModal] = useState<any>(null); // debt object or null
   const [debtSearch, setDebtSearch] = useState('');
   const [favoriteContacts, setFavoriteContacts] = useState<string[]>(() => Storage.get('favoriteContacts', []));
   const [semesterBudget, setSemesterBudgetState] = useState<SemesterBudget | null>(() => Storage.getSemesterBudget());
