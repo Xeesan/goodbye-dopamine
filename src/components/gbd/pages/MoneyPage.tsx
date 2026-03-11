@@ -190,10 +190,11 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
       confirmText: 'Settle All'
     });
     if (confirmed) {
-      personDebts.forEach(d => {
+      for (const d of personDebts) {
         Storage.settleDebt(d.id);
-        settleDebtInDB(d.id);
-      });
+        await settleDebtInDB(d.id);
+      }
+      await syncDebtsFromDB();
       refresh();
       toast({ title: `All debts with ${personName} settled ✓`, description: `${personDebts.length} entries cleared` });
     }
