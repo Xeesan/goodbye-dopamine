@@ -156,7 +156,7 @@ async function sendPushNotification(
       "Content-Encoding": "aes128gcm",
       TTL: "86400",
     },
-    body,
+    body: body.buffer as ArrayBuffer,
   });
 
   return response;
