@@ -1009,6 +1009,63 @@ const MoneyPage = ({ navigateTo, refreshKey }: MoneyPageProps) => {
           </div>
         </div>
       )}
+
+      {/* Partial Settlement Modal */}
+      {showSettleModal && (
+        <div className="modal-overlay" onClick={() => setShowSettleModal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-foreground mb-1">Settle Debt</h2>
+            <p className="text-sm text-muted-foreground mb-5">
+              {showSettleModal.debtType === 'lend' ? 'Lent to' : 'Borrowed from'} <strong>{showSettleModal.person}</strong> — ৳{showSettleModal.amount.toLocaleString()}
+            </p>
+            
+            <label className="form-label">Settlement Amount (৳)</label>
+            <input
+              type="number"
+              id="settle-amount"
+              className="input-simple mb-2"
+              placeholder={`Max: ${showSettleModal.amount}`}
+              min={1}
+              max={showSettleModal.amount}
+              defaultValue={showSettleModal.amount}
+            />
+            <div className="flex gap-2 mb-5">
+              {[0.25, 0.5, 0.75, 1].map(fraction => {
+                const val = Math.round(showSettleModal.amount * fraction);
+                return (
+                  <button
+                    key={fraction}
+                    className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+                    style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+                    onClick={() => {
+                      const el = document.getElementById('settle-amount') as HTMLInputElement;
+                      if (el) el.value = String(val);
+                    }}>
+                    {fraction === 1 ? 'Full' : `${fraction * 100}%`}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3">
+              <button className="btn-outline flex-1" onClick={() => setShowSettleModal(null)}>Cancel</button>
+              <button
+                className="btn-green flex-1"
+                onClick={() => {
+                  const el = document.getElementById('settle-amount') as HTMLInputElement;
+                  const amount = parseFloat(el?.value || '0');
+                  if (!amount || amount <= 0 || amount > showSettleModal.amount) {
+                    toast({ title: 'Invalid amount', description: `Enter an amount between 1 and ৳${showSettleModal.amount.toLocaleString()}` });
+                    return;
+                  }
+                  confirmSettle(amount);
+                }}>
+                Settle ৳
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
