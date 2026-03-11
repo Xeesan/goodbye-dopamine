@@ -82,7 +82,7 @@ async function sendPushNotification(
   const subscriberPublicKey = base64urlDecode(subscription.p256dh);
   const subscriberKey = await crypto.subtle.importKey(
     "raw",
-    subscriberPublicKey,
+    subscriberPublicKey.buffer as ArrayBuffer,
     { name: "ECDH", namedCurve: "P-256" },
     false,
     []
