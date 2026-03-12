@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
-import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
+import { getHolidaysForMonth } from '@/lib/bdHolidays';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
@@ -8,7 +9,7 @@ interface UnifiedCalendarWidgetProps {
 }
 
 interface DayEvent {
-  type: 'exam' | 'task' | 'routine';
+  type: 'exam' | 'task' | 'routine' | 'holiday';
   title: string;
   time?: string;
   meta?: string;
