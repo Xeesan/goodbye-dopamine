@@ -513,7 +513,7 @@ body {
   left: 0;
   transform: translateX(-100%);
   box-shadow: none;
-  will-change: transform;
+  /* will-change removed — permanent layer promotion hurts low-end devices */
 }
 
 .sidebar-container.sidebar-open {
