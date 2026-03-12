@@ -57,9 +57,9 @@ const HOLIDAYS: PublicHoliday[] = [
 
   // ── 2027 ──
   { date: '2027-02-21', name: 'International Mother Language Day', type: 'national' },
-  { date: '2027-03-10', name: 'Eid-ul-Fitr', type: 'religious' },
-  { date: '2027-03-11', name: 'Eid-ul-Fitr (2nd day)', type: 'religious' },
-  { date: '2027-03-12', name: 'Eid-ul-Fitr (3rd day)', type: 'religious' },
+  { date: '2027-03-10', name: 'Eid-ul-Fitr ☪', type: 'religious' },
+  { date: '2027-03-11', name: 'Eid-ul-Fitr (2nd day) ☪', type: 'religious' },
+  { date: '2027-03-12', name: 'Eid-ul-Fitr (3rd day) ☪', type: 'religious' },
   { date: '2027-03-17', name: 'Birthday of Bangabandhu', type: 'national' },
   { date: '2027-03-26', name: 'Independence Day', type: 'national' },
   { date: '2027-04-14', name: 'Pohela Boishakh', type: 'cultural' },
