@@ -106,7 +106,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       {dialog && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => handleClose(type === 'prompt' ? null : false)}>
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
+          <div className="absolute inset-0 bg-black/70 animate-[fadeIn_0.15s_ease]" />
 
           {/* Dialog Card */}
           <div
