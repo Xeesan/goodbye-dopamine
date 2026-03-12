@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
-import { getHolidaysForMonth } from '@/lib/bdHolidays';
+import { getHolidaysForMonth, isFriday } from '@/lib/bdHolidays';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
