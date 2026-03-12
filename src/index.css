@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Sora:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -384,8 +384,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -514,7 +513,7 @@ body {
   left: 0;
   transform: translateX(-100%);
   box-shadow: none;
-  will-change: transform;
+  /* will-change removed — permanent layer promotion hurts low-end devices */
 }
 
 .sidebar-container.sidebar-open {
@@ -526,8 +525,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1040;
 }
 
@@ -934,7 +932,7 @@ body {
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: toast-silk-shimmer 2.5s ease-in-out infinite;
+  animation: toast-silk-shimmer 2.5s ease-in-out 1;
   pointer-events: none;
   z-index: 0;
 }

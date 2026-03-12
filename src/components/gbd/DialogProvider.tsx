@@ -106,7 +106,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       {dialog && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => handleClose(type === 'prompt' ? null : false)}>
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
+          <div className="absolute inset-0 bg-black/70 animate-[fadeIn_0.15s_ease]" />
 
           {/* Dialog Card */}
           <div
@@ -216,7 +216,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       {/* Tile Customizer Dialog */}
       {tileDialog && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => handleTileClose(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" />
+          <div className="absolute inset-0 bg-black/70 animate-[fadeIn_0.15s_ease]" />
           <div
             className="relative w-full sm:max-w-[360px] max-h-[85vh] sm:max-h-[80vh] rounded-t-xl sm:rounded-xl overflow-hidden animate-[slideUpSheet_0.35s_cubic-bezier(0.32,0.72,0,1)] sm:animate-[slideUp_0.2s_ease] flex flex-col"
             style={{

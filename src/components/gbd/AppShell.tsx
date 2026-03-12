@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import UnifiedCalendarWidget from './UnifiedCalendarWidget';
 import TopHeader from './TopHeader';
 import { useTheme } from '@/hooks/useTheme';
 import { DialogProvider } from './DialogProvider';
@@ -13,18 +12,27 @@ import { flushQueue, getQueueLength } from '@/lib/syncQueue';
 import { toast } from '@/hooks/use-toast';
 import AIChatFAB from './AIChatFAB';
 import DashboardPage from './pages/DashboardPage';
-import PlannerPage from './pages/PlannerPage';
-import RoutinePage from './pages/RoutinePage';
-import ExamsPage from './pages/ExamsPage';
-import AcademicHubPage from './pages/AcademicHubPage';
-import MoneyPage from './pages/MoneyPage';
-import NotesPage from './pages/NotesPage';
-import BooklistPage from './pages/BooklistPage';
-import DetoxPage from './pages/DetoxPage';
-import HealthPage from './pages/HealthPage';
-import ReportsPage from './pages/ReportsPage';
-import ProfilePage from './pages/ProfilePage';
-import NotificationsPage from './pages/NotificationsPage';
+
+// Lazy-load non-dashboard pages — only downloaded when visited
+const UnifiedCalendarWidget = lazy(() => import('./UnifiedCalendarWidget'));
+const PlannerPage = lazy(() => import('./pages/PlannerPage'));
+const RoutinePage = lazy(() => import('./pages/RoutinePage'));
+const ExamsPage = lazy(() => import('./pages/ExamsPage'));
+const AcademicHubPage = lazy(() => import('./pages/AcademicHubPage'));
+const MoneyPage = lazy(() => import('./pages/MoneyPage'));
+const NotesPage = lazy(() => import('./pages/NotesPage'));
+const BooklistPage = lazy(() => import('./pages/BooklistPage'));
+const DetoxPage = lazy(() => import('./pages/DetoxPage'));
+const HealthPage = lazy(() => import('./pages/HealthPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+
+const PageFallback = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 interface AppShellProps {
   user: any;
@@ -171,10 +179,14 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               <div className="max-w-[1200px] mx-auto w-full">
                 {calendarOpen && (
                   <div className="mb-5 animate-[slideUp_0.2s_ease]">
-                    <UnifiedCalendarWidget navigateTo={navigateTo} refreshKey={refreshKey} />
+                    <Suspense fallback={<PageFallback />}>
+                      <UnifiedCalendarWidget navigateTo={navigateTo} refreshKey={refreshKey} />
+                    </Suspense>
                   </div>
                 )}
-                {renderPage()}
+                <Suspense fallback={<PageFallback />}>
+                  {renderPage()}
+                </Suspense>
               </div>
             </div>
           </main>
