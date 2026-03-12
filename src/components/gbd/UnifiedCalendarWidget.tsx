@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
-import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
+import { getHolidaysForMonth } from '@/lib/bdHolidays';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
@@ -8,7 +9,7 @@ interface UnifiedCalendarWidgetProps {
 }
 
 interface DayEvent {
-  type: 'exam' | 'task' | 'routine';
+  type: 'exam' | 'task' | 'routine' | 'holiday';
   title: string;
   time?: string;
   meta?: string;
@@ -87,6 +88,16 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       }
     }
 
+    // Public holidays (Bangladesh)
+    const holidays = getHolidaysForMonth(currentYear, currentMonth);
+    for (const h of holidays) {
+      addEvent(h.date, {
+        type: 'holiday',
+        title: h.name,
+        meta: h.type === 'national' ? '🇧🇩 National' : h.type === 'religious' ? '🕌 Religious' : '🎭 Cultural',
+      });
+    }
+
     return map;
   }, [currentMonth, currentYear, refreshKey, localRefresh]);
 
@@ -127,6 +138,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       case 'exam': return <FileText className="w-3.5 h-3.5" />;
       case 'task': return <CheckSquare className="w-3.5 h-3.5" />;
       case 'routine': return <Clock className="w-3.5 h-3.5" />;
+      case 'holiday': return <Flag className="w-3.5 h-3.5" />;
       default: return <Calendar className="w-3.5 h-3.5" />;
     }
   };
@@ -136,6 +148,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       case 'exam': return 'hsl(var(--destructive))';
       case 'task': return 'hsl(var(--primary))';
       case 'routine': return 'hsl(var(--info))';
+      case 'holiday': return 'hsl(var(--warning, 45 93% 47%))';
       default: return 'hsl(var(--muted-foreground))';
     }
   };
@@ -211,10 +224,11 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-3 text-[0.6rem] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 mt-3 text-[0.6rem] text-muted-foreground">
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--destructive))' }} /> Exams</span>
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--primary))' }} /> Tasks</span>
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--info))' }} /> Classes</span>
+        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--warning, 45 93% 47%))' }} /> Holidays</span>
       </div>
 
       {/* Selected day details */}
