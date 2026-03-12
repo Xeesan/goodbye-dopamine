@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
-import { getHolidaysForMonth } from '@/lib/bdHolidays';
+import { getHolidaysForMonth, isFriday } from '@/lib/bdHolidays';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
@@ -91,11 +91,24 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
     // Public holidays (Bangladesh)
     const holidays = getHolidaysForMonth(currentYear, currentMonth);
     for (const h of holidays) {
+      const isMoonBased = h.name.includes('☪');
       addEvent(h.date, {
         type: 'holiday',
         title: h.name,
-        meta: h.type === 'national' ? '🇧🇩 National' : h.type === 'religious' ? '🕌 Religious' : '🎭 Cultural',
+        meta: (h.type === 'national' ? '🇧🇩 National' : h.type === 'religious' ? '🕌 Religious' : '🎭 Cultural') + (isMoonBased ? ' · 🌙 Subject to moon sighting' : ''),
       });
+    }
+
+    // Fridays (weekly holiday)
+    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+      const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (isFriday(dateKey)) {
+        addEvent(dateKey, {
+          type: 'holiday',
+          title: 'Friday (Weekly Holiday)',
+          meta: '📅 Weekly',
+        });
+      }
     }
 
     return map;
