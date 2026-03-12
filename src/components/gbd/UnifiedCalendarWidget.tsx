@@ -67,16 +67,30 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       }
     }
 
-    // Routine — repeat for each week in the visible month
+    // Routine + Fridays — single loop through month days
     const routine = Storage.getRoutine();
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const totalDays = lastDay.getDate();
 
-    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-      const dayOfWeek = d.getDay();
-      const dayName = Object.keys(DAY_NAMES_MAP).find(k => DAY_NAMES_MAP[k] === dayOfWeek);
-      if (dayName && routine[dayName]?.length > 0) {
-        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+      const mm = String(currentMonth + 1).padStart(2, '0');
+      const dd = String(dayNum).padStart(2, '0');
+      const dateKey = `${currentYear}-${mm}-${dd}`;
+      const dow = new Date(currentYear, currentMonth, dayNum).getDay();
+
+      // Friday weekly holiday
+      if (dow === 5) {
+        addEvent(dateKey, {
+          type: 'holiday',
+          title: 'Friday (Weekly Holiday)',
+          meta: '📅 Weekly',
+        });
+      }
+
+      // Routine classes
+      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dow];
+      if (routine[dayName]?.length > 0) {
         for (const period of routine[dayName]) {
           addEvent(dateKey, {
             type: 'routine',
@@ -97,18 +111,6 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
         title: h.name,
         meta: (h.type === 'national' ? '🇧🇩 National' : h.type === 'religious' ? '🕌 Religious' : '🎭 Cultural') + (isMoonBased ? ' · 🌙 Subject to moon sighting' : ''),
       });
-    }
-
-    // Fridays (weekly holiday)
-    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-      const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      if (isFriday(dateKey)) {
-        addEvent(dateKey, {
-          type: 'holiday',
-          title: 'Friday (Weekly Holiday)',
-          meta: '📅 Weekly',
-        });
-      }
     }
 
     return map;
