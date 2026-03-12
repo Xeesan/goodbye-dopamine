@@ -88,6 +88,16 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       }
     }
 
+    // Public holidays (Bangladesh)
+    const holidays = getHolidaysForMonth(currentYear, currentMonth);
+    for (const h of holidays) {
+      addEvent(h.date, {
+        type: 'holiday',
+        title: h.name,
+        meta: h.type === 'national' ? '🇧🇩 National' : h.type === 'religious' ? '🕌 Religious' : '🎭 Cultural',
+      });
+    }
+
     return map;
   }, [currentMonth, currentYear, refreshKey, localRefresh]);
 
