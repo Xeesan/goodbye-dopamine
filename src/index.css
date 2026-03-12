@@ -932,7 +932,7 @@ body {
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: toast-silk-shimmer 2.5s ease-in-out infinite;
+  animation: toast-silk-shimmer 2.5s ease-in-out 1;
   pointer-events: none;
   z-index: 0;
 }
