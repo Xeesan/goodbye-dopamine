@@ -17,7 +17,7 @@ interface DayEvent {
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const DAY_NAMES_MAP: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+// DAY_NAMES_MAP no longer needed — using array index instead
 
 const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidgetProps) => {
   const today = new Date();
