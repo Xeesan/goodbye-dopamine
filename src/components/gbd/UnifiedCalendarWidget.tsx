@@ -224,10 +224,11 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-3 text-[0.6rem] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 mt-3 text-[0.6rem] text-muted-foreground">
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--destructive))' }} /> Exams</span>
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--primary))' }} /> Tasks</span>
         <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--info))' }} /> Classes</span>
+        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--warning, 45 93% 47%))' }} /> Holidays</span>
       </div>
 
       {/* Selected day details */}
