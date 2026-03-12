@@ -179,10 +179,14 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               <div className="max-w-[1200px] mx-auto w-full">
                 {calendarOpen && (
                   <div className="mb-5 animate-[slideUp_0.2s_ease]">
-                    <UnifiedCalendarWidget navigateTo={navigateTo} refreshKey={refreshKey} />
+                    <Suspense fallback={<PageFallback />}>
+                      <UnifiedCalendarWidget navigateTo={navigateTo} refreshKey={refreshKey} />
+                    </Suspense>
                   </div>
                 )}
-                {renderPage()}
+                <Suspense fallback={<PageFallback />}>
+                  {renderPage()}
+                </Suspense>
               </div>
             </div>
           </main>
