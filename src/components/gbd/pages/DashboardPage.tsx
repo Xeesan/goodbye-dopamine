@@ -230,12 +230,11 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
 
         {/* Daily Inspiration */}
         <div className="glass-card-accent relative overflow-hidden !p-6">
-          {/* Silk spinning gradient border */}
+          {/* Subtle accent border — static, no infinite animation */}
           <div
-            className="absolute inset-0 rounded-[inherit] animate-silk-spin opacity-20 pointer-events-none"
+            className="absolute inset-0 rounded-[inherit] opacity-10 pointer-events-none"
             style={{
-              background: 'linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary) / 0.4), hsl(var(--primary)))',
-              backgroundSize: '300% 300%',
+              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary) / 0.4))',
             }}
           />
           <div className="relative z-10">
