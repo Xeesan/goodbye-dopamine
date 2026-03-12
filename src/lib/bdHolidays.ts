@@ -77,6 +77,12 @@ const HOLIDAYS: PublicHoliday[] = [
   { date: '2027-12-25', name: 'Christmas Day', type: 'religious' },
 ];
 
+/** Check if a date string (YYYY-MM-DD) is a Friday */
+export function isFriday(dateKey: string): boolean {
+  const d = new Date(dateKey + 'T00:00:00');
+  return d.getDay() === 5;
+}
+
 /** Get holidays for a specific month (0-indexed) and year */
 export function getHolidaysForMonth(year: number, month: number): PublicHoliday[] {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
