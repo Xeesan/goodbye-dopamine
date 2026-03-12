@@ -138,6 +138,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       case 'exam': return <FileText className="w-3.5 h-3.5" />;
       case 'task': return <CheckSquare className="w-3.5 h-3.5" />;
       case 'routine': return <Clock className="w-3.5 h-3.5" />;
+      case 'holiday': return <Flag className="w-3.5 h-3.5" />;
       default: return <Calendar className="w-3.5 h-3.5" />;
     }
   };
@@ -147,6 +148,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
       case 'exam': return 'hsl(var(--destructive))';
       case 'task': return 'hsl(var(--primary))';
       case 'routine': return 'hsl(var(--info))';
+      case 'holiday': return 'hsl(var(--warning, 45 93% 47%))';
       default: return 'hsl(var(--muted-foreground))';
     }
   };
