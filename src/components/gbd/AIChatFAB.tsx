@@ -240,7 +240,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           }
         }
         const summary = exams.slice(0, 10).map((e: any) =>
-          `- **${e.subject}** · ${e.date} ${e.time || ''}`
+          `- **${e.subject}** · ${e.date} ${e.time ? formatTime12h(e.time) : ''}`
         ).join('\n');
         if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet… 👀';
         return `📝 **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n\n${summary}\n\nTime to hit the books! 📖`;
