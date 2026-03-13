@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
 import type { TranslationKey } from '@/lib/i18n';
+import { formatTime12h } from '@/lib/helpers';
 
 interface Message {
   role: 'user' | 'assistant';
