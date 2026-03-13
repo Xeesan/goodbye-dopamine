@@ -1,4 +1,4 @@
-import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User, Bell, Globe } from 'lucide-react';
+import { LayoutGrid, Calendar, Clock, FileText, Monitor, Wallet, StickyNote, BookOpen, Timer, Heart, BarChart3, Settings, LogOut, User, Bell, Globe, RefreshCw } from 'lucide-react';
 import appLogo from '@/assets/icon.png';
 import { useI18n } from '@/hooks/useI18n';
 import type { TranslationKey } from '@/lib/i18n';
@@ -89,6 +89,20 @@ const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarPro
           <span className="ml-auto text-[0.6rem] font-bold tracking-wider px-2 py-0.5 rounded-full" style={{ background: 'hsl(var(--accent-dim))', color: 'hsl(var(--primary))' }}>
             {lang === 'en' ? 'EN' : 'বা'}
           </span>
+        </button>
+
+        {/* Refresh / Update App */}
+        <button
+          onClick={() => {
+            if ((window as any).__updateSW) {
+              (window as any).__updateSW(true);
+            }
+            window.location.reload();
+          }}
+          className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-medium text-muted-foreground hover:text-foreground w-full transition-all duration-200"
+        >
+          <RefreshCw className="w-5 h-5" />
+          {lang === 'bn' ? 'অ্যাপ রিফ্রেশ করুন' : 'Refresh App'}
         </button>
 
         <button onClick={() => onNavigate('profile')} className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-medium text-muted-foreground hover:text-foreground w-full transition-all duration-200">
