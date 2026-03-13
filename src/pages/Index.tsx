@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import appLogo from '@/assets/icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import AuthScreen from '@/components/gbd/AuthScreen';
 import AppShell from '@/components/gbd/AppShell';
@@ -63,11 +64,7 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'hsl(var(--bg-primary))' }}>
         <div className="text-center">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 76%))',
-          }}>
-            <span className="text-black font-extrabold text-lg">G</span>
-          </div>
+          <img src={appLogo} alt="GBD Logo" className="w-12 h-12 rounded-xl mx-auto mb-3" />
           <p className="text-muted-foreground text-sm animate-pulse">Loading...</p>
         </div>
       </div>
