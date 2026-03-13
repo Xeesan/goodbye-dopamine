@@ -123,8 +123,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
         };
-        Storage.addTransaction(txnData);
-        addTransactionToDB(txnData).catch(() => {});
+        const localTxnId = Storage.addTransaction(txnData);
+        addTransactionToDB(txnData).then((dbId) => {
+          if (dbId && localTxnId) {
+            const txns = Storage.getTransactions().map((t: any) => t.id === localTxnId ? { ...t, id: dbId } : t);
+            Storage.setTransactions(txns);
+          }
+        }).catch(() => {});
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
