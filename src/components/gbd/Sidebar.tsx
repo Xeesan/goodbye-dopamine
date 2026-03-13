@@ -91,6 +91,20 @@ const Sidebar = ({ currentPage, onNavigate, user, onLogout, isOpen }: SidebarPro
           </span>
         </button>
 
+        {/* Refresh / Update App */}
+        <button
+          onClick={() => {
+            if ((window as any).__updateSW) {
+              (window as any).__updateSW(true);
+            }
+            window.location.reload();
+          }}
+          className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-medium text-muted-foreground hover:text-foreground w-full transition-all duration-200"
+        >
+          <RefreshCw className="w-5 h-5" />
+          {lang === 'bn' ? 'অ্যাপ রিফ্রেশ করুন' : 'Refresh App'}
+        </button>
+
         <button onClick={() => onNavigate('profile')} className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-medium text-muted-foreground hover:text-foreground w-full transition-all duration-200">
           {user?.avatar_url ? (
             <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
