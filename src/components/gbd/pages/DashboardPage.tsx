@@ -88,16 +88,29 @@ const DashboardPage = ({ navigateTo, user, refreshKey }: DashboardPageProps) => 
     setTimeout(() => setRefreshSpinning(false), 800);
   }, [navigateTo]);
 
-  const tasks = Storage.getTasks();
-  const completedTasks = tasks.filter(t => t.status === 'done').length;
-  const sessions = Storage.getFocusSessions();
-  const totalFocusMin = sessions.reduce((a: number, s: any) => a + (s.duration || 0), 0);
-  const streak = Storage.get('streak', 0);
-  const enabledTileIds = Storage.getDashboardTiles();
+  // Memoize all Storage reads — avoids JSON.parse on every render
+  const { tasks, completedTasks, sessions, totalFocusMin, streak, enabledTileIds, enabledTiles, quickLinks } = useMemo(() => {
+    const tasks = Storage.getTasks();
+    const sessions = Storage.getFocusSessions();
+    const streak = Storage.get('streak', 0);
+    const enabledTileIds = Storage.getDashboardTiles();
+    const quickLinks = Storage.getQuickLinks();
+    return {
+      tasks,
+      completedTasks: tasks.filter(t => t.status === 'done').length,
+      sessions,
+      totalFocusMin: sessions.reduce((a: number, s: any) => a + (s.duration || 0), 0),
+      streak,
+      enabledTileIds,
+      enabledTiles: ALL_TILES.filter(tile => enabledTileIds.includes(tile.id)),
+      quickLinks,
+    };
+  }, [refreshKey, realtimeTick]);
   // Need to pass ALL_TILES with name property for tile customizer compatibility
-  const allTilesWithName = ALL_TILES.map(tile => ({ ...tile, name: t(tile.nameKey as TranslationKey) }));
-  const enabledTiles = ALL_TILES.filter(tile => enabledTileIds.includes(tile.id));
-  const quickLinks = Storage.getQuickLinks();
+  const allTilesWithName = useMemo(
+    () => ALL_TILES.map(tile => ({ ...tile, name: t(tile.nameKey as TranslationKey) })),
+    [t]
+  );
 
   return (
     <div className="page-enter">

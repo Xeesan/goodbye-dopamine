@@ -19,6 +19,10 @@ const Storage = {
     } catch (e: any) {
       if (e.name === 'QuotaExceededError') {
         console.error('Storage quota exceeded');
+        // Notify the UI so a toast can be shown — see AppShell
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('gbd_quota_exceeded'));
+        }
       }
     }
   },
@@ -358,17 +362,21 @@ const Storage = {
   // Export all gbd_ data as JSON
   exportAllData(): string {
     const data: Record<string, any> = {};
+    // Snapshot keys first — iterating by live index is unreliable on some browsers
+    const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith('gbd_')) {
-        try { data[key] = JSON.parse(localStorage.getItem(key)!); } catch { data[key] = localStorage.getItem(key); }
-      }
+      if (key?.startsWith('gbd_')) keys.push(key);
+    }
+    for (const key of keys) {
+      try { data[key] = JSON.parse(localStorage.getItem(key)!); } catch { data[key] = localStorage.getItem(key); }
     }
     return JSON.stringify(data, null, 2);
   },
 
   // Clear all gbd_ data from localStorage
   clearAllData() {
+    // Snapshot keys first to avoid index shifting during removal
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);

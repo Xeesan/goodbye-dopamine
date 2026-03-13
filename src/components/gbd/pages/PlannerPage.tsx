@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Storage from '@/lib/storage';
 import { syncTasksFromDB, addTaskToDB, updateTaskInDB, deleteTaskFromDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,10 +40,15 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
     }
   }, []);
 
-  const tasks = Storage.getTasks();
-  const todoTasks = tasks.filter(t => t.status === 'todo');
-  const inProgressTasks = tasks.filter(t => t.status === 'in-progress');
-  const doneTasks = tasks.filter(t => t.status === 'done');
+  const { tasks, todoTasks, inProgressTasks, doneTasks } = useMemo(() => {
+    const tasks = Storage.getTasks();
+    return {
+      tasks,
+      todoTasks: tasks.filter(t => t.status === 'todo'),
+      inProgressTasks: tasks.filter(t => t.status === 'in-progress'),
+      doneTasks: tasks.filter(t => t.status === 'done'),
+    };
+  }, [refreshCounter]);
 
   const createTask = async () => {
     const title = (document.getElementById('task-title') as HTMLInputElement)?.value.trim();
@@ -115,7 +120,7 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
     }
   };
 
-  const renderTaskCard = (task: any) => (
+  const renderTaskCard = useCallback((task: any) => (
     <div key={task.id} className="glass-card !p-4 mb-3 group hover:!border-primary/20">
       <div className="font-medium text-foreground text-sm mb-2">{task.title}</div>
       <div className="flex items-center gap-2 text-xs mb-3">
@@ -168,7 +173,7 @@ const PlannerPage = ({ navigateTo, refreshKey }: PlannerPageProps) => {
         </button>
       </div>
     </div>
-  );
+  ), [moveTask, deleteTask, t]);
 
   return (
     <div className="page-enter">

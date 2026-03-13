@@ -10,8 +10,8 @@ import { runAutoBackup } from '@/lib/autoBackup';
 import { useHealthReminders } from '@/hooks/useHealthReminders';
 import { flushQueue, getQueueLength } from '@/lib/syncQueue';
 import { toast } from '@/hooks/use-toast';
-import AIChatFAB from './AIChatFAB';
 import DashboardPage from './pages/DashboardPage';
+const AIChatFAB = lazy(() => import('./AIChatFAB'));
 
 // Lazy-load non-dashboard pages — only downloaded when visited
 const UnifiedCalendarWidget = lazy(() => import('./UnifiedCalendarWidget'));
@@ -94,6 +94,19 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
     }
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Warn user when localStorage is full (dispatched by Storage.set on QuotaExceededError)
+  useEffect(() => {
+    const handleQuota = () => {
+      toast({
+        title: '⚠️ Storage Full',
+        description: 'Your device storage is full. Go to Profile → Export Data to back up, then clear some data.',
+        duration: 10000,
+      });
+    };
+    window.addEventListener('gbd_quota_exceeded', handleQuota);
+    return () => window.removeEventListener('gbd_quota_exceeded', handleQuota);
   }, []);
 
   // Flush offline sync queue on mount and when coming back online
@@ -192,7 +205,9 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
           </main>
         </div>
         <InstallPrompt />
-        <AIChatFAB onDataChanged={() => setRefreshKey(k => k + 1)} currentPage={currentPage} />
+        <Suspense fallback={null}>
+          <AIChatFAB onDataChanged={() => setRefreshKey(k => k + 1)} currentPage={currentPage} />
+        </Suspense>
       </DialogProvider>
     </GamificationProvider>
   );

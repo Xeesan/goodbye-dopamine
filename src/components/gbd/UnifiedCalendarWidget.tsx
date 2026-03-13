@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Storage from '@/lib/storage';
 import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
 import { getHolidaysForMonth } from '@/lib/bdHolidays';
@@ -27,11 +27,20 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [localRefresh, setLocalRefresh] = useState(0);
 
+  // Debounce storage change events — prevents full calendar recompute on every write
+  const debouncedRefresh = useCallback(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    return () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setLocalRefresh(k => k + 1), 150);
+    };
+  }, []);
+
   useEffect(() => {
-    const handler = () => setLocalRefresh(k => k + 1);
+    const handler = debouncedRefresh();
     window.addEventListener('gbd_storage_changed', handler);
     return () => window.removeEventListener('gbd_storage_changed', handler);
-  }, []);
+  }, [debouncedRefresh]);
 
   const eventsMap = useMemo(() => {
     const map: Record<string, DayEvent[]> = {};

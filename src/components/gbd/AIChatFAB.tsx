@@ -726,74 +726,166 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
 
   return (
     <>
-      {/* FAB */}
+      {/* FAB Button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+          className="fixed bottom-5 right-5 z-50 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
           style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 66%))',
+            width: 52, height: 52,
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 60%))',
             color: 'hsl(var(--primary-foreground))',
+            boxShadow: '0 8px 32px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.3)',
           }}
           aria-label="Open AI Assistant"
         >
-          <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Bot className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
         </button>
       )}
 
-      {/* Backdrop — only on desktop (mobile chat is fullscreen) */}
+      {/* Backdrop — desktop only */}
       {open && (
         <div className="hidden sm:block fixed inset-0 z-40" onClick={() => setOpen(false)} />
       )}
 
-      {/* Chat Panel — fullscreen on mobile, floating panel on sm+ */}
+      {/* Chat Panel — bottom-sheet on mobile, floating panel on desktop */}
       {open && (
-        <div className="fixed inset-0 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[380px] sm:max-h-[70vh] flex flex-col sm:rounded-2xl shadow-2xl overflow-hidden"
-          style={{ background: 'hsl(var(--background))', border: 'none', zIndex: 1100 }}>
-          {/* Outer border only on desktop */}
-          <div className="hidden sm:block absolute inset-0 rounded-2xl pointer-events-none" style={{ border: '1px solid hsl(var(--border))' }} />
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 sm:py-3 shrink-0"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 66%))', color: 'hsl(var(--primary-foreground))' }}>
-            <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5" />
-              <span className="font-bold text-sm">GBD Assistant</span>
+        <div
+          className="fixed left-0 right-0 bottom-0 z-[1100] flex flex-col rounded-t-3xl sm:left-auto sm:right-5 sm:bottom-5 sm:w-[400px] sm:rounded-2xl overflow-hidden"
+          style={{
+            maxHeight: '88dvh',
+            background: 'hsl(var(--bg-card))',
+            boxShadow: '0 -4px 60px rgba(0,0,0,0.5), 0 0 0 1px hsl(var(--border))',
+            animation: 'slideUpSheet 0.3s cubic-bezier(0.34,1.2,0.64,1)',
+          }}
+        >
+          {/* Desktop: accent border overlay */}
+          <div className="hidden sm:block absolute inset-0 rounded-2xl pointer-events-none"
+            style={{ border: '1px solid hsl(var(--border-accent))' }} />
+
+          {/* ─── Header ─── */}
+          <div
+            className="flex items-center justify-between px-4 py-3 shrink-0 relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(263 70% 60% / 0.08))',
+              borderBottom: '1px solid hsl(var(--border))',
+            }}
+          >
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse 70% 100% at 0% 50%, hsl(var(--primary) / 0.07), transparent)' }} />
+
+            <div className="flex items-center gap-3 relative">
+              {/* AI Avatar */}
+              <div className="relative shrink-0">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 60%))' }}
+                >
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
+                  style={{ background: 'hsl(var(--green))', borderColor: 'hsl(var(--bg-card))' }} />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-foreground leading-none mb-0.5">GBD Assistant</div>
+                <div className="text-[0.6rem] font-semibold tracking-wide" style={{ color: 'hsl(var(--green))' }}>
+                  ● Online · AI-powered
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
+
+            <div className="flex items-center gap-1 relative">
               {messages.length > 0 && (
-                <button onClick={() => setMessages([])} className="p-1.5 rounded-full hover:bg-white/20 transition-colors" title="Clear chat">
-                  <Trash2 className="w-4 h-4" />
+                <button
+                  onClick={() => setMessages([])}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/60 transition-colors"
+                  style={{ color: 'hsl(var(--muted-foreground))' }}
+                  title="Clear chat"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-full hover:bg-white/20 transition-colors">
-                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+              <button
+                onClick={() => setOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/60 transition-colors"
+                style={{ color: 'hsl(var(--muted-foreground))' }}
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 sm:min-h-[200px] sm:max-h-[50vh]">
+          {/* ─── Messages ─── */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ minHeight: 200 }}>
+
+            {/* Empty state with suggestion chips */}
             {messages.length === 0 && (
-              <div className="text-center py-8 sm:py-8">
-                <Bot className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground font-medium">Hey there! I'm your GBD Assistant 👋</p>
-                <p className="text-xs text-muted-foreground/70 mt-1 italic">Crafted with care by Zisan to keep you on track</p>
-                <p className="text-xs text-muted-foreground/60 mt-3">Try something like:</p>
-                <p className="text-xs text-muted-foreground/70">"Spent 200 on coffee ☕"</p>
-                <p className="text-xs text-muted-foreground/70">"Add exam Physics on March 20"</p>
-                <p className="text-xs text-muted-foreground/70">"What tasks do I have today?"</p>
+              <div className="flex flex-col items-center justify-center h-full py-6 text-center">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(263 70% 60% / 0.1))',
+                    border: '1px solid hsl(var(--border-accent))',
+                  }}
+                >
+                  <Bot className="w-8 h-8" style={{ color: 'hsl(var(--primary))' }} />
+                </div>
+                <p className="text-sm font-semibold text-foreground mb-1">Hey there! 👋</p>
+                <p className="text-xs text-muted-foreground mb-1">I'm your GBD Assistant.</p>
+                <p className="text-[0.65rem] text-muted-foreground/60 italic mb-5">Crafted with care by Zisan</p>
+
+                <div className="flex flex-wrap gap-2 justify-center max-w-[280px]">
+                  {[
+                    'Spent 200 on coffee ☕',
+                    'Add Physics exam Mar 20',
+                    'What tasks do I have today?',
+                    'Summarize my week',
+                  ].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => { setInput(s); setTimeout(() => inputRef.current?.focus(), 50); }}
+                      className="text-[0.68rem] font-medium px-3 py-1.5 rounded-full transition-colors"
+                      style={{
+                        background: 'hsl(var(--accent-dim))',
+                        color: 'hsl(var(--primary))',
+                        border: '1px solid hsl(var(--border-accent))',
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Message bubbles */}
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                  msg.role === 'user'
-                    ? 'rounded-br-md'
-                    : 'rounded-bl-md'
-                }`}
+              <div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                {msg.role === 'assistant' && (
+                  <div
+                    className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center mb-0.5"
+                    style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 60%))' }}
+                  >
+                    <Bot className="w-3 h-3 text-white" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                    msg.role === 'user' ? 'rounded-tr-sm' : 'rounded-tl-sm'
+                  }`}
                   style={msg.role === 'user'
-                    ? { background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }
-                    : { background: 'hsl(var(--muted))' }
-                  }>
+                    ? {
+                        background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.85))',
+                        color: 'hsl(var(--primary-foreground))',
+                        boxShadow: '0 2px 12px hsl(var(--primary) / 0.25)',
+                      }
+                    : {
+                        background: 'hsl(var(--bg-secondary))',
+                        color: 'hsl(var(--foreground))',
+                        border: '1px solid hsl(var(--border))',
+                      }
+                  }
+                >
                   {msg.role === 'assistant' ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p+p]:mt-1.5 [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&_li]:my-0.5 [&_blockquote]:my-1.5 [&_blockquote]:px-2.5 [&_blockquote]:py-1 [&_blockquote]:rounded-lg [&_blockquote]:text-xs [&_blockquote]:not-italic [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -804,26 +896,52 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
                 </div>
               </div>
             ))}
+
+            {/* Typing indicator (animated dots) */}
             {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md px-3 py-2" style={{ background: 'hsl(var(--muted))' }}>
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <div className="flex items-end gap-2">
+                <div className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 60%))' }}>
+                  <Bot className="w-3 h-3 text-white" />
+                </div>
+                <div className="rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1"
+                  style={{ background: 'hsl(var(--bg-secondary))', border: '1px solid hsl(var(--border))' }}>
+                  {[0, 1, 2].map(i => (
+                    <span key={i} className="w-1.5 h-1.5 rounded-full inline-block" style={{
+                      background: 'hsl(var(--primary))',
+                      animation: `gbd-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+                    }} />
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Input — safe area padding on mobile for bottom notch */}
-          <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3 shrink-0" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+          {/* ─── Input ─── */}
+          <div
+            className="p-3 shrink-0"
+            style={{
+              paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+              borderTop: '1px solid hsl(var(--border))',
+              background: 'hsl(var(--bg-secondary))',
+            }}
+          >
             <form onSubmit={e => { e.preventDefault(); send(); }} className="flex items-center gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder={t('ai.placeholder' as TranslationKey) || 'Type a command...'}
-                className="flex-1 text-sm rounded-xl px-3 py-2.5 outline-none transition-colors"
-                style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+                placeholder={t('ai.placeholder' as TranslationKey) || 'Ask me anything...'}
+                className="flex-1 text-sm rounded-xl px-4 py-2.5 outline-none"
+                style={{
+                  background: 'hsl(var(--bg-card))',
+                  color: 'hsl(var(--foreground))',
+                  border: '1px solid hsl(var(--border))',
+                  transition: 'border-color 0.2s ease',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'hsl(var(--primary) / 0.5)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'hsl(var(--border))')}
                 disabled={loading}
                 maxLength={500}
               />
@@ -831,7 +949,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
                 <button
                   type="button"
                   onClick={cancelRequest}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-95"
                   style={{ background: 'hsl(var(--destructive))', color: 'hsl(var(--destructive-foreground))' }}
                   title="Cancel"
                 >
@@ -841,18 +959,35 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
-                  style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(263 70% 60%))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: input.trim() ? '0 4px 12px hsl(var(--primary) / 0.35)' : 'none',
+                    transition: 'opacity 0.2s, transform 0.2s, box-shadow 0.2s',
+                  }}
                 >
                   <Send className="w-4 h-4" />
                 </button>
               )}
             </form>
+            <p className="text-center text-[0.58rem] text-muted-foreground/40 mt-2 tracking-wide">
+              Made with ❤️ by Zisan
+            </p>
           </div>
         </div>
       )}
+
+      {/* Typing animation keyframes */}
+      <style>{`
+        @keyframes gbd-bounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+          30% { transform: translateY(-5px); opacity: 1; }
+        }
+      `}</style>
     </>
   );
 };
 
 export default AIChatFAB;
+

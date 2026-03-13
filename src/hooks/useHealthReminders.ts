@@ -162,10 +162,11 @@ async function showNotification(reminder: HealthReminder) {
 
   // Log to notifications table
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    // Use getSession() — cached, no network roundtrip unlike getUser()
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
       await supabase.from('notifications').insert({
-        user_id: user.id,
+        user_id: session.user.id,
         title: `${reminder.emoji} ${reminder.title}`,
         body: reminder.body,
         tag: reminder.tag,
