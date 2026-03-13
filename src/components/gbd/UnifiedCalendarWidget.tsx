@@ -96,7 +96,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
           addEvent(dateKey, {
             type: 'routine',
             title: period.subject || 'Class',
-            time: period.startTime && period.endTime ? `${period.startTime}-${period.endTime}` : period.startTime,
+            time: period.startTime && period.endTime ? `${formatTime12h(period.startTime)}-${formatTime12h(period.endTime)}` : period.startTime ? formatTime12h(period.startTime) : undefined,
             meta: period.room ? `Room: ${period.room}` : undefined,
           });
         }
