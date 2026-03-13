@@ -82,8 +82,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           type: args.examType || 'exams',
           grade: '',
         };
-        Storage.addExam(examData);
-        addExamToDB(examData).catch(() => {});
+        const localId = Storage.addExam(examData);
+        addExamToDB(examData).then((dbId) => {
+          if (dbId && localId) {
+            const exams = Storage.getExams().map((e: any) => e.id === localId ? { ...e, id: dbId } : e);
+            Storage.setExams(exams);
+          }
+        }).catch(() => {});
         const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
         return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
@@ -98,8 +103,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           endTime: args.endTime,
           room: args.room || '',
         };
-        Storage.addPeriod(args.day, periodData);
-        addPeriodToDB(args.day, periodData).catch(() => {});
+        const localId = Storage.addPeriod(args.day, periodData);
+        addPeriodToDB(args.day, periodData).then((dbId) => {
+          if (dbId && localId) {
+            const routine = Storage.getRoutine();
+            routine[args.day] = (routine[args.day] || []).map((p: any) => p.id === localId ? { ...p, id: dbId } : p);
+            Storage.setRoutine(routine);
+          }
+        }).catch(() => {});
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
@@ -112,8 +123,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
         };
-        Storage.addTransaction(txnData);
-        addTransactionToDB(txnData).catch(() => {});
+        const localTxnId = Storage.addTransaction(txnData);
+        addTransactionToDB(txnData).then((dbId) => {
+          if (dbId && localTxnId) {
+            const txns = Storage.getTransactions().map((t: any) => t.id === localTxnId ? { ...t, id: dbId } : t);
+            Storage.setTransactions(txns);
+          }
+        }).catch(() => {});
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
@@ -145,8 +161,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           debt_type: debtType,
           description: args.description || '',
         };
-        Storage.addDebt(debtData);
-        addDebtToDB({ ...debtData, debtType }).catch(() => {});
+        const localDebtId = Storage.addDebt(debtData);
+        addDebtToDB({ ...debtData, debtType }).then((dbId) => {
+          if (dbId && localDebtId) {
+            const debts = Storage.getDebts().map((d: any) => d.id === localDebtId ? { ...d, id: dbId } : d);
+            Storage.setDebts(debts);
+          }
+        }).catch(() => {});
         const quips = debtType === 'lend'
           ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
           : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
