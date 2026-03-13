@@ -254,7 +254,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         for (const day of days) {
           const periods = routine[day] || [];
           if (periods.length > 0) {
-            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${p.startTime}–${p.endTime}`).join('\n')}\n\n`;
+            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${formatTime12h(p.startTime)}–${formatTime12h(p.endTime)}`).join('\n')}\n\n`;
           }
         }
         if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';
