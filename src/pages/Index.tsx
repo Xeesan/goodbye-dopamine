@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import appLogo from '@/assets/icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import AuthScreen from '@/components/gbd/AuthScreen';
 import AppShell from '@/components/gbd/AppShell';
