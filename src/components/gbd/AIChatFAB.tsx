@@ -103,8 +103,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           endTime: args.endTime,
           room: args.room || '',
         };
-        Storage.addPeriod(args.day, periodData);
-        addPeriodToDB(args.day, periodData).catch(() => {});
+        const localId = Storage.addPeriod(args.day, periodData);
+        addPeriodToDB(args.day, periodData).then((dbId) => {
+          if (dbId && localId) {
+            const routine = Storage.getRoutine();
+            routine[args.day] = (routine[args.day] || []).map((p: any) => p.id === localId ? { ...p, id: dbId } : p);
+            Storage.setRoutine(routine);
+          }
+        }).catch(() => {});
         return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
       }
 
