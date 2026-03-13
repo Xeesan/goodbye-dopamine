@@ -161,8 +161,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           debt_type: debtType,
           description: args.description || '',
         };
-        Storage.addDebt(debtData);
-        addDebtToDB({ ...debtData, debtType }).catch(() => {});
+        const localDebtId = Storage.addDebt(debtData);
+        addDebtToDB({ ...debtData, debtType }).then((dbId) => {
+          if (dbId && localDebtId) {
+            const debts = Storage.getDebts().map((d: any) => d.id === localDebtId ? { ...d, id: dbId } : d);
+            Storage.setDebts(debts);
+          }
+        }).catch(() => {});
         const quips = debtType === 'lend'
           ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
           : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
