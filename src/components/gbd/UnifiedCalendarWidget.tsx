@@ -296,7 +296,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-foreground truncate">{ev.title}</div>
                       <div className="text-muted-foreground flex items-center gap-2">
-                        {ev.time && <span>{ev.time}</span>}
+                        {ev.time && <span>{ev.type === 'exam' || ev.type === 'task' ? formatTime12h(ev.time) : ev.time}</span>}
                         {ev.meta && <span>· {ev.meta}</span>}
                       </div>
                     </div>
