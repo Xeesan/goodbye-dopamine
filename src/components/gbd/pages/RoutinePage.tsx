@@ -184,7 +184,7 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
                 {periods.map((p: any) => (
                   <div key={p.id} className="flex items-center justify-between gap-3 p-3 rounded-lg flex-wrap" style={{ background: 'hsl(var(--bg-input))' }}>
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-wrap">
-                      <span className="text-sm font-semibold text-primary whitespace-nowrap">{p.startTime} - {p.endTime}</span>
+                      <span className="text-sm font-semibold text-primary whitespace-nowrap">{formatTime12h(p.startTime)} - {formatTime12h(p.endTime)}</span>
                       <span className="text-sm font-medium text-foreground truncate">{p.subject}</span>
                       {p.room && <span className="text-xs text-muted-foreground">{p.room}</span>}
                     </div>
