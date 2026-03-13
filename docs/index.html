@@ -142,10 +142,9 @@
       border: 1px solid var(--border2); color: var(--text); background: transparent;
     }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
     /* ── Mock App Preview ── */
     .app-preview-wrap {
-      position: relative; margin-top: 4rem; width: 100%; max-width: 860px;
+      position: relative; margin-top: 4rem; width: 100%; max-width: 900px;
     }
     .app-preview-wrap::before {
       content: ''; position: absolute; inset: -40px;
@@ -153,72 +152,126 @@
       pointer-events: none;
     }
     .app-frame {
-      width: 100%; background: var(--surface);
+      width: 100%; background: #0d1117;
       border: 1px solid var(--border2); border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+      box-shadow: 0 40px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
     }
     .app-frame-bar {
       display: flex; align-items: center; gap: .5rem;
-      padding: .75rem 1rem; background: var(--surface2);
-      border-bottom: 1px solid var(--border);
+      padding: .6rem 1rem; background: #0a0d12;
+      border-bottom: 1px solid #1a1f2e;
     }
     .app-frame-dot { width: 10px; height: 10px; border-radius: 50%; }
     .app-frame-url {
-      flex: 1; text-align: center; font-size: .72rem; color: var(--muted);
-      background: var(--bg); border-radius: 999px; padding: .2rem .75rem;
+      flex: 1; text-align: center; font-size: .7rem; color: var(--muted);
+      background: #141821; border-radius: 999px; padding: .2rem .75rem;
     }
-    .app-inner {
-      display: flex; height: 380px;
+    /* top bar */
+    .app-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .5rem 1rem; background: #0d1117;
+      border-bottom: 1px solid #1a1f2e; font-size: .7rem;
     }
-    /* Sidebar mock */
+    .app-topbar-date { color: var(--muted2); display: flex; align-items: center; gap: .3rem; }
+    .app-topbar-right { display: flex; align-items: center; gap: .75rem; color: var(--muted); font-size: .8rem; }
+    .app-xp-badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: rgba(234,179,8,.1); border: 1px solid rgba(234,179,8,.25);
+      color: #fbbf24; border-radius: 999px; padding: .2rem .65rem;
+      font-size: .65rem; font-weight: 700;
+    }
+    /* inner layout */
+    .app-inner { display: flex; height: 400px; }
+    /* sidebar */
     .mock-sidebar {
-      width: 64px; background: var(--surface2);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; align-items: center;
-      padding: 1rem .5rem; gap: .75rem; shrink: 0;
+      width: 140px; background: #0a0d12; border-right: 1px solid #1a1f2e;
+      display: flex; flex-direction: column; padding: .75rem .5rem; gap: .1rem; shrink: 0;
+      overflow: hidden;
     }
-    .mock-sidebar-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: var(--bg); display: flex; align-items: center;
-      justify-content: center; font-size: 1rem;
+    .mock-sidebar-logo {
+      padding: .35rem .5rem 1rem; margin-bottom: .25rem;
     }
-    .mock-sidebar-icon.active { background: rgba(34,211,238,.12); }
-    /* Main content mock */
-    .mock-main { flex: 1; padding: 1.25rem; overflow: hidden; }
-    .mock-greeting { font-size: .75rem; color: var(--accent); font-weight: 600; margin-bottom: .25rem; }
-    .mock-title { font-size: 1.1rem; font-weight: 700; margin-bottom: .75rem; }
-    .mock-xp-bar-wrap { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
-    .mock-xp-bar { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
-    .mock-xp-fill { height: 100%; width: 62%; background: var(--gradient); border-radius: 999px; }
-    .mock-xp-label { font-size: .65rem; color: var(--muted); white-space: nowrap; }
-    .mock-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
+    .mock-sidebar-logo-name {
+      font-size: .8rem; font-weight: 800; letter-spacing: -.01em;
+      background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .mock-sidebar-logo-sub { font-size: .5rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .mock-section-label {
+      font-size: .5rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--muted); padding: .5rem .5rem .2rem; font-weight: 600;
+    }
+    .mock-nav-item {
+      display: flex; align-items: center; gap: .45rem;
+      padding: .35rem .5rem; border-radius: 7px;
+      font-size: .65rem; color: #94a3b8; cursor: pointer;
+    }
+    .mock-nav-item.active {
+      background: rgba(34,211,238,.1); color: var(--accent);
+    }
+    .mock-nav-icon { font-size: .75rem; }
+    /* main */
+    .mock-main { flex: 1; padding: 1rem 1rem .75rem; overflow: hidden; background: #0d1117; }
+    .mock-welcome { font-size: 1rem; font-weight: 800; color: #e2e8f0; margin-bottom: .1rem; }
+    .mock-welcome-sub { font-size: .6rem; color: var(--muted); margin-bottom: .75rem; }
+    /* Focus Now card */
+    .mock-focus-card {
+      background: #131825; border: 1px solid #1e2535;
+      border-radius: 9px; padding: .6rem .75rem; margin-bottom: .5rem;
+    }
+    .mock-focus-label {
+      font-size: .55rem; font-weight: 700; color: var(--accent2);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: .3rem;
+    }
+    .mock-focus-title { font-size: .75rem; font-weight: 700; margin-bottom: .35rem; }
+    .mock-urgent-badge {
+      display: inline-flex; align-items: center;
+      background: rgba(234,88,12,.15); color: #fb923c;
+      font-size: .5rem; font-weight: 700; border-radius: 999px;
+      padding: .1rem .45rem; margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .mock-time-btns { display: flex; gap: .3rem; }
+    .mock-time-btn {
+      font-size: .6rem; padding: .2rem .5rem; border-radius: 999px;
+      background: #1e2535; color: var(--muted2);
+    }
+    .mock-time-btn.active { background: var(--accent2); color: #000; font-weight: 700; }
+    /* Inspiration card */
+    .mock-inspo-card {
+      background: #131825; border: 1px solid #1e2535;
+      border-radius: 9px; padding: .6rem .75rem; margin-bottom: .5rem;
+    }
+    .mock-inspo-label {
+      font-size: .55rem; font-weight: 700; color: var(--purple);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: .3rem;
+    }
+    .mock-inspo-quote { font-size: .68rem; font-style: italic; color: #cbd5e1; line-height: 1.4; margin-bottom: .2rem; }
+    .mock-inspo-author { font-size: .58rem; color: var(--muted); }
+    /* Quick tiles */
+    .mock-tiles-label {
+      font-size: .55rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: .4rem;
+    }
+    .mock-tiles { display: flex; gap: .4rem; }
     .mock-tile {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: .6rem .5rem; text-align: center;
+      flex: 1; background: #131825; border: 1px solid #1e2535;
+      border-radius: 9px; padding: .5rem .3rem; text-align: center;
     }
-    .mock-tile-icon { font-size: 1.1rem; margin-bottom: .2rem; }
-    .mock-tile-label { font-size: .6rem; color: var(--muted); }
-    .mock-tile-val { font-size: .85rem; font-weight: 700; color: var(--text); }
-    .mock-tasks { display: flex; flex-direction: column; gap: .4rem; }
-    .mock-task {
-      display: flex; align-items: center; gap: .5rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; padding: .4rem .7rem; font-size: .72rem;
-    }
-    .mock-task-dot { width: 7px; height: 7px; border-radius: 50%; shrink: 0; }
-    .mock-task-text { color: var(--muted2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mock-task-badge {
-      font-size: .58rem; padding: .1rem .35rem; border-radius: 999px;
-      background: rgba(34,211,238,.12); color: var(--accent); font-weight: 600;
-    }
-    /* FAB mock */
+    .mock-tile-icon { font-size: .95rem; margin-bottom: .2rem; }
+    .mock-tile-label { font-size: .55rem; color: var(--muted2); }
+    /* FAB */
     .mock-fab {
-      position: absolute; bottom: 20px; right: 20px;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--gradient);
+      position: absolute; bottom: 14px; right: 14px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #22d3ee, #6366f1);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; box-shadow: 0 4px 16px rgba(34,211,238,.3);
+      font-size: .85rem; box-shadow: 0 4px 16px rgba(34,211,238,.35);
+    }
+    @media (max-width: 640px) {
+      .app-inner { height: 320px; }
+      .mock-sidebar { width: 44px; }
+      .mock-sidebar-logo, .mock-section-label, .mock-nav-item span { display: none; }
+      .mock-nav-item { justify-content: center; padding: .4rem; }
     }
 
     /* ── Stats bar ── */
@@ -444,58 +497,67 @@
           <div class="app-frame-dot" style="background:#28c840"></div>
           <div class="app-frame-url">goodbye-dopamine.lovable.app</div>
         </div>
+        <!-- Top bar -->
+        <div class="app-topbar">
+          <span style="font-size:.8rem;color:#64748b">☰</span>
+          <div class="app-topbar-date">📅 13/03/2026</div>
+          <div class="app-topbar-right">
+            ☀️ 🔔
+            <span class="app-xp-badge">⭐ 1555 XP</span>
+          </div>
+        </div>
         <div class="app-inner" style="position:relative">
           <!-- Sidebar -->
           <div class="mock-sidebar">
-            <div class="mock-sidebar-icon active">📊</div>
-            <div class="mock-sidebar-icon">📅</div>
-            <div class="mock-sidebar-icon">⏰</div>
-            <div class="mock-sidebar-icon">📝</div>
-            <div class="mock-sidebar-icon">💰</div>
-            <div class="mock-sidebar-icon">📚</div>
-            <div class="mock-sidebar-icon">🧘</div>
+            <div class="mock-sidebar-logo">
+              <div class="mock-sidebar-logo-name">GBD</div>
+              <div class="mock-sidebar-logo-sub">Good Bye Dopamine</div>
+            </div>
+            <div class="mock-section-label">Academic</div>
+            <div class="mock-nav-item active"><span class="mock-nav-icon">📊</span><span>Dashboard</span></div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">📅</span><span>Planner</span></div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">⏰</span><span>Routine</span></div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">📝</span><span>Exams</span></div>
+            <div class="mock-section-label">Personal</div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">💰</span><span>Money</span></div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">📓</span><span>Notes</span></div>
+            <div class="mock-section-label">Wellness</div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">🧘</span><span>Detox</span></div>
+            <div class="mock-nav-item"><span class="mock-nav-icon">❤️</span><span>Health</span></div>
           </div>
           <!-- Main -->
           <div class="mock-main">
-            <div class="mock-greeting">Good evening, Zisan 👋</div>
-            <div class="mock-title">Dashboard</div>
-            <div class="mock-xp-bar-wrap">
-              <div class="mock-xp-bar"><div class="mock-xp-fill"></div></div>
-              <div class="mock-xp-label">Level 7 · 62 / 100 XP</div>
+            <div class="mock-welcome">Welcome back, Zia</div>
+            <div class="mock-welcome-sub">Here's your productivity overview for this week.</div>
+
+            <!-- Focus Now -->
+            <div class="mock-focus-card">
+              <div class="mock-focus-label">🎯 Focus Now</div>
+              <div class="mock-focus-title">Study: CSE-123 Discrete Mathematics</div>
+              <div class="mock-urgent-badge">Most Urgent</div>
+              <div class="mock-time-btns">
+                <div class="mock-time-btn">15 min</div>
+                <div class="mock-time-btn active">25 min</div>
+                <div class="mock-time-btn">45 min</div>
+                <div class="mock-time-btn">60 min</div>
+              </div>
             </div>
+
+            <!-- Daily Inspiration -->
+            <div class="mock-inspo-card">
+              <div class="mock-inspo-label">💭 Daily Inspiration</div>
+              <div class="mock-inspo-quote">"The only impossible journey is the one you never begin."</div>
+              <div class="mock-inspo-author">— Tony Robbins</div>
+            </div>
+
+            <!-- Quick Tiles -->
+            <div class="mock-tiles-label">⚡ Quick Tiles</div>
             <div class="mock-tiles">
-              <div class="mock-tile">
-                <div class="mock-tile-icon">📅</div>
-                <div class="mock-tile-val">5</div>
-                <div class="mock-tile-label">Tasks</div>
-              </div>
-              <div class="mock-tile">
-                <div class="mock-tile-icon">📝</div>
-                <div class="mock-tile-val">2</div>
-                <div class="mock-tile-label">Exams</div>
-              </div>
-              <div class="mock-tile">
-                <div class="mock-tile-icon">🔥</div>
-                <div class="mock-tile-val">4</div>
-                <div class="mock-tile-label">Streak</div>
-              </div>
-            </div>
-            <div class="mock-tasks">
-              <div class="mock-task">
-                <div class="mock-task-dot" style="background:#22d3ee"></div>
-                <div class="mock-task-text">Finish Physics assignment</div>
-                <div class="mock-task-badge">High</div>
-              </div>
-              <div class="mock-task">
-                <div class="mock-task-dot" style="background:#8b5cf6"></div>
-                <div class="mock-task-text">Review DSA notes</div>
-                <div class="mock-task-badge">Medium</div>
-              </div>
-              <div class="mock-task">
-                <div class="mock-task-dot" style="background:#22c55e"></div>
-                <div class="mock-task-text">Submit lab report</div>
-                <div class="mock-task-badge">Done ✓</div>
-              </div>
+              <div class="mock-tile"><div class="mock-tile-icon">📅</div><div class="mock-tile-label">Planner</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon">⏰</div><div class="mock-tile-label">Routine</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon">📝</div><div class="mock-tile-label">Exams</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon">💰</div><div class="mock-tile-label">Money</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon">📓</div><div class="mock-tile-label">Notes</div></div>
             </div>
           </div>
           <!-- FAB -->
@@ -504,6 +566,7 @@
       </div>
     </div>
   </div>
+
 
   <!-- ── Stats Bar ── -->
   <div class="stats-bar">
