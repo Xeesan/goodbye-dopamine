@@ -82,8 +82,13 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           type: args.examType || 'exams',
           grade: '',
         };
-        Storage.addExam(examData);
-        addExamToDB(examData).catch(() => {});
+        const localId = Storage.addExam(examData);
+        addExamToDB(examData).then((dbId) => {
+          if (dbId && localId) {
+            const exams = Storage.getExams().map((e: any) => e.id === localId ? { ...e, id: dbId } : e);
+            Storage.setExams(exams);
+          }
+        }).catch(() => {});
         const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
         return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
       }
