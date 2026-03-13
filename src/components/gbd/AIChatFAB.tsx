@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
 import type { TranslationKey } from '@/lib/i18n';
+import { formatTime12h } from '@/lib/helpers';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -111,7 +112,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
             Storage.setRoutine(routine);
           }
         }).catch(() => {});
-        return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
+        return `📅 **${args.subject}** locked in for **${args.day}** (${formatTime12h(args.startTime)}-${formatTime12h(args.endTime)}). Consistency is key! 🔑`;
       }
 
       if (section === 'transaction') {
@@ -239,7 +240,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           }
         }
         const summary = exams.slice(0, 10).map((e: any) =>
-          `- **${e.subject}** · ${e.date} ${e.time || ''}`
+          `- **${e.subject}** · ${e.date} ${e.time ? formatTime12h(e.time) : ''}`
         ).join('\n');
         if (exams.length === 0) return '🎉 No exams found! Either you\'re done or haven\'t added them yet… 👀';
         return `📝 **${exams.length} exam${exams.length > 1 ? 's' : ''}** coming up:\n\n${summary}\n\nTime to hit the books! 📖`;
@@ -253,7 +254,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         for (const day of days) {
           const periods = routine[day] || [];
           if (periods.length > 0) {
-            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${p.startTime}–${p.endTime}`).join('\n')}\n\n`;
+            summary += `**${day.charAt(0).toUpperCase() + day.slice(1)}**\n${periods.map((p: any) => `- ${p.subject} · ${formatTime12h(p.startTime)}–${formatTime12h(p.endTime)}`).join('\n')}\n\n`;
           }
         }
         if (!summary) return '🗓️ Your routine is emptier than a lecture hall on Friday afternoon! Add some classes?';

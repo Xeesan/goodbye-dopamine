@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Storage from '@/lib/storage';
 import { ChevronLeft, ChevronRight, Calendar, FileText, Clock, CheckSquare, Plus, Flag } from 'lucide-react';
 import { getHolidaysForMonth } from '@/lib/bdHolidays';
+import { formatTime12h } from '@/lib/helpers';
 
 interface UnifiedCalendarWidgetProps {
   navigateTo: (page: string) => void;
@@ -95,7 +96,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
           addEvent(dateKey, {
             type: 'routine',
             title: period.subject || 'Class',
-            time: period.startTime && period.endTime ? `${period.startTime}-${period.endTime}` : period.startTime,
+            time: period.startTime && period.endTime ? `${formatTime12h(period.startTime)}-${formatTime12h(period.endTime)}` : period.startTime ? formatTime12h(period.startTime) : undefined,
             meta: period.room ? `Room: ${period.room}` : undefined,
           });
         }
@@ -295,7 +296,7 @@ const UnifiedCalendarWidget = ({ navigateTo, refreshKey }: UnifiedCalendarWidget
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-foreground truncate">{ev.title}</div>
                       <div className="text-muted-foreground flex items-center gap-2">
-                        {ev.time && <span>{ev.time}</span>}
+                        {ev.time && <span>{ev.type === 'exam' || ev.type === 'task' ? formatTime12h(ev.time) : ev.time}</span>}
                         {ev.meta && <span>· {ev.meta}</span>}
                       </div>
                     </div>
