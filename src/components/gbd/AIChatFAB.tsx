@@ -112,7 +112,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
             Storage.setRoutine(routine);
           }
         }).catch(() => {});
-        return `📅 **${args.subject}** locked in for **${args.day}** (${args.startTime}-${args.endTime}). Consistency is key! 🔑`;
+        return `📅 **${args.subject}** locked in for **${args.day}** (${formatTime12h(args.startTime)}-${formatTime12h(args.endTime)}). Consistency is key! 🔑`;
       }
 
       if (section === 'transaction') {
