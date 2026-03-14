@@ -11,6 +11,7 @@ import { useHealthReminders } from '@/hooks/useHealthReminders';
 import { flushQueue, getQueueLength } from '@/lib/syncQueue';
 import { toast } from '@/hooks/use-toast';
 import DashboardPage from './pages/DashboardPage';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 const AIChatFAB = lazy(() => import('./AIChatFAB'));
 
 // Lazy-load non-dashboard pages — only downloaded when visited
