@@ -81,7 +81,6 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   }, []);
 
   const { containerRef, indicatorRef } = usePullToRefresh({ onRefresh: handlePullRefresh });
-  const { restart: restartHealthReminders } = useHealthReminders();
 
   // Run silent auto-backup on mount (once per 24h)
   // Also show local backup reminder every 7 days
