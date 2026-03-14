@@ -947,3 +947,24 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* Pull-to-refresh indicator */
+.ptr-indicator {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.2s ease, opacity 0.2s ease;
+}
+.ptr-indicator .ptr-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid hsl(var(--muted));
+  border-top-color: hsl(var(--primary));
+  border-radius: 50%;
+}
+.ptr-indicator.ptr-active .ptr-spinner {
+  animation: spin 0.6s linear infinite;
+}
