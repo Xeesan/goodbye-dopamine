@@ -700,7 +700,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
           const result = await executeToolCall(tc);
           results.push(result);
         }
-        const toolResultText = (assistantContent ? assistantContent + '\n\n' : '') + results.join('\n\n');
+        // Only use tool results — assistantContent often duplicates what tools return
+        const toolResultText = results.join('\n\n');
         updateAssistant(toolResultText);
 
         // Notify parent that data changed — always trigger after any tool execution
