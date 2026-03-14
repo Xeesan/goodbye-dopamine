@@ -74,6 +74,15 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
 
+  const handlePullRefresh = useCallback(async () => {
+    setRefreshKey(k => k + 1);
+    // Small delay so spinner is visible
+    await new Promise(r => setTimeout(r, 600));
+  }, []);
+
+  const { containerRef, indicatorRef } = usePullToRefresh({ onRefresh: handlePullRefresh });
+  const { restart: restartHealthReminders } = useHealthReminders();
+
   // Run silent auto-backup on mount (once per 24h)
   // Also show local backup reminder every 7 days
   useEffect(() => {
