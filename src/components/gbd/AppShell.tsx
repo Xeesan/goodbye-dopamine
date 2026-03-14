@@ -11,6 +11,7 @@ import { useHealthReminders } from '@/hooks/useHealthReminders';
 import { flushQueue, getQueueLength } from '@/lib/syncQueue';
 import { toast } from '@/hooks/use-toast';
 import DashboardPage from './pages/DashboardPage';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 const AIChatFAB = lazy(() => import('./AIChatFAB'));
 
 // Lazy-load non-dashboard pages — only downloaded when visited
@@ -72,6 +73,14 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { restart: restartHealthReminders } = useHealthReminders();
+
+  const handlePullRefresh = useCallback(async () => {
+    setRefreshKey(k => k + 1);
+    // Small delay so spinner is visible
+    await new Promise(r => setTimeout(r, 600));
+  }, []);
+
+  const { containerRef, indicatorRef } = usePullToRefresh({ onRefresh: handlePullRefresh });
 
   // Run silent auto-backup on mount (once per 24h)
   // Also show local backup reminder every 7 days
@@ -188,7 +197,10 @@ const AppShell = ({ user, onLogout }: AppShellProps) => {
               theme={theme}
               onToggleTheme={toggleTheme}
             />
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
+            <div ref={containerRef} className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
+              <div ref={indicatorRef} className="ptr-indicator">
+                <div className="ptr-spinner" />
+              </div>
               <div className="max-w-[1200px] mx-auto w-full">
                 {calendarOpen && (
                   <div className="mb-5 animate-[slideUp_0.2s_ease]">
