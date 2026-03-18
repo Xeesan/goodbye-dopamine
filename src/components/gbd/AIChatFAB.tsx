@@ -732,11 +732,23 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
                   function: { name: tc.name, arguments: tc.args },
                 });
               }
+              toolCallBuffer = {}; // Clear to prevent re-push on duplicate finish events
             }
           } catch {
             // partial JSON, skip
           }
         }
+      }
+
+      // Deduplicate identical tool calls (AI models sometimes return the same call twice)
+      if (pendingToolCalls.length > 1) {
+        const seen = new Set<string>();
+        pendingToolCalls = pendingToolCalls.filter(tc => {
+          const key = `${tc.function.name}:${tc.function.arguments}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
       }
 
       // Execute tool calls if any
