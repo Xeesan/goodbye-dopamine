@@ -683,7 +683,10 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         ]);
       };
 
-      while (true) {
+      let streamDone = false;
+      let toolCallsFlushed = false;
+
+      while (!streamDone) {
         const { done, value } = await readWithTimeout();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
@@ -695,7 +698,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
           if (line.endsWith('\r')) line = line.slice(0, -1);
           if (!line.startsWith('data: ')) continue;
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
@@ -708,7 +711,7 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
               updateAssistant(assistantContent);
             }
 
-            // Handle tool calls
+            // Handle tool calls — accumulate chunks
             if (delta.tool_calls) {
               for (const tc of delta.tool_calls) {
                 const idx = tc.index ?? 0;
@@ -724,18 +727,32 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
               }
             }
 
-            // Check finish reason
+            // Flush tool calls on finish_reason (only once)
             const finishReason = parsed.choices?.[0]?.finish_reason;
-            if (finishReason === 'tool_calls') {
+            if (finishReason && !toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
               for (const [, tc] of Object.entries(toolCallBuffer)) {
-                pendingToolCalls.push({
-                  function: { name: tc.name, arguments: tc.args },
-                });
+                if (tc.name) {
+                  pendingToolCalls.push({
+                    function: { name: tc.name, arguments: tc.args },
+                  });
+                }
               }
-              toolCallBuffer = {}; // Clear to prevent re-push on duplicate finish events
+              toolCallsFlushed = true;
+              toolCallBuffer = {};
             }
           } catch {
             // partial JSON, skip
+          }
+        }
+      }
+
+      // Safety net: flush any remaining tool calls that weren't caught by finish_reason
+      if (!toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
+        for (const [, tc] of Object.entries(toolCallBuffer)) {
+          if (tc.name) {
+            pendingToolCalls.push({
+              function: { name: tc.name, arguments: tc.args },
+            });
           }
         }
       }
@@ -744,9 +761,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       if (pendingToolCalls.length > 1) {
         const seen = new Set<string>();
         pendingToolCalls = pendingToolCalls.filter(tc => {
-          const key = `${tc.function.name}:${tc.function.arguments}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
+          // Normalize JSON to catch whitespace/ordering differences
+          let normalizedKey = tc.function.name + ':';
+          try { normalizedKey += JSON.stringify(JSON.parse(tc.function.arguments)); } catch { normalizedKey += tc.function.arguments; }
+          if (seen.has(normalizedKey)) return false;
+          seen.add(normalizedKey);
           return true;
         });
       }
