@@ -210,6 +210,7 @@
       background: rgba(34,211,238,.1); color: var(--accent);
     }
     .mock-nav-icon { font-size: .75rem; }
+    .mock-nav-svg { width: 14px; height: 14px; flex-shrink: 0; }
     /* main */
     .mock-main { flex: 1; padding: 1rem 1rem .75rem; overflow: hidden; background: #0d1117; }
     .mock-welcome { font-size: 1rem; font-weight: 800; color: #e2e8f0; margin-bottom: .1rem; }
@@ -510,11 +511,18 @@
         </div>
         <!-- Top bar -->
         <div class="app-topbar">
-          <span style="font-size:.8rem;color:#64748b">☰</span>
-          <div class="app-topbar-date">📅 13/03/2026</div>
+          <svg style="width:16px;height:16px;color:#64748b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          <div class="app-topbar-date">
+            <svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            18/03/2026
+          </div>
           <div class="app-topbar-right">
-            ☀️ 🔔
-            <span class="app-xp-badge">⭐ 1555 XP</span>
+            <svg style="width:14px;height:14px;color:#94a3b8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span style="position:relative">
+              <svg style="width:14px;height:14px;color:#94a3b8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span style="position:absolute;top:-4px;right:-5px;width:7px;height:7px;border-radius:50%;background:#ef4444;border:1.5px solid #0a0d12"></span>
+            </span>
+            <svg style="width:14px;height:14px;color:#94a3b8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
         </div>
         <div class="app-inner" style="position:relative">
@@ -525,27 +533,41 @@
               <div class="mock-sidebar-logo-sub">Good Bye Dopamine</div>
             </div>
             <div class="mock-section-label">Academic</div>
-            <div class="mock-nav-item active"><span class="mock-nav-icon">📊</span><span>Dashboard</span></div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">📅</span><span>Planner</span></div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">⏰</span><span>Routine</span></div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">📝</span><span>Exams</span></div>
+            <div class="mock-nav-item active"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span>Dashboard</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg><span>Planner</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Routine</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span>Exams</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span>Academic Hub</span></div>
             <div class="mock-section-label">Personal</div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">💰</span><span>Money</span></div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">📓</span><span>Notes</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg><span>Money</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><polyline points="14 2 14 8 20 8"/></svg><span>Notes</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h6"/><path d="M8 11h8"/></svg><span>Booklist</span></div>
             <div class="mock-section-label">Wellness</div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">🧘</span><span>Detox</span></div>
-            <div class="mock-nav-item"><span class="mock-nav-icon">❤️</span><span>Health</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg><span>Detox</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span>Health</span></div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span>Reports</span></div>
+            <div class="mock-section-label">System</div>
+            <div class="mock-nav-item"><svg class="mock-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Notifications</span></div>
           </div>
           <!-- Main -->
           <div class="mock-main">
-            <div class="mock-welcome">Welcome back, Zia</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.1rem;">
+              <div class="mock-welcome">Welcome back, Zia</div>
+              <span class="app-xp-badge">⭐ 1610 XP</span>
+            </div>
             <div class="mock-welcome-sub">Here's your productivity overview for this week.</div>
 
             <!-- Focus Now -->
             <div class="mock-focus-card">
-              <div class="mock-focus-label">🎯 Focus Now</div>
+              <div class="mock-focus-label" style="display:flex;align-items:center;gap:.3rem;">
+                <svg style="width:10px;height:10px;color:#0ea5e9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                FOCUS NOW
+              </div>
               <div class="mock-focus-title">Study: CSE-123 Discrete Mathematics</div>
-              <div class="mock-urgent-badge">Most Urgent</div>
+              <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem">
+                <div class="mock-urgent-badge">MOST URGENT</div>
+                <span style="font-size:.5rem;color:#94a3b8">Exam in 9 days (3 cr)</span>
+              </div>
               <div class="mock-time-btns">
                 <div class="mock-time-btn">15 min</div>
                 <div class="mock-time-btn active">25 min</div>
@@ -556,25 +578,40 @@
 
             <!-- Daily Inspiration -->
             <div class="mock-inspo-card">
-              <div class="mock-inspo-label">💭 Daily Inspiration</div>
-              <div class="mock-inspo-quote">"The only impossible journey is the one you never begin."</div>
-              <div class="mock-inspo-author">— Tony Robbins</div>
+              <div class="mock-inspo-label" style="display:flex;align-items:center;gap:.3rem;">
+                <svg style="width:10px;height:10px;color:#8b5cf6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                DAILY INSPIRATION
+              </div>
+              <div class="mock-inspo-quote">"Knowing is not enough; we must apply. Willing is not enough; we must do."</div>
+              <div class="mock-inspo-author">— Johann Wolfgang von Goethe</div>
             </div>
 
             <!-- Quick Tiles -->
-            <div class="mock-tiles-label">⚡ Quick Tiles</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem;">
+              <div class="mock-tiles-label" style="display:flex;align-items:center;gap:.3rem;margin-bottom:0">
+                <svg style="width:10px;height:10px;color:#94a3b8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                QUICK TILES
+              </div>
+              <span style="font-size:.48rem;color:#64748b;display:flex;align-items:center;gap:.2rem">
+                <svg style="width:8px;height:8px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                CUSTOMIZE
+              </span>
+            </div>
             <div class="mock-tiles">
-              <div class="mock-tile"><div class="mock-tile-icon">📅</div><div class="mock-tile-label">Planner</div></div>
-              <div class="mock-tile"><div class="mock-tile-icon">⏰</div><div class="mock-tile-label">Routine</div></div>
-              <div class="mock-tile"><div class="mock-tile-icon">📝</div><div class="mock-tile-label">Exams</div></div>
-              <div class="mock-tile"><div class="mock-tile-icon">💰</div><div class="mock-tile-label">Money</div></div>
-              <div class="mock-tile"><div class="mock-tile-icon">📓</div><div class="mock-tile-label">Notes</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon" style="display:flex;justify-content:center"><svg style="width:18px;height:18px;color:#22c55e" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div><div class="mock-tile-label">Planner</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon" style="display:flex;justify-content:center"><svg style="width:18px;height:18px;color:#a855f7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="mock-tile-label">Routine</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon" style="display:flex;justify-content:center"><svg style="width:18px;height:18px;color:#ef4444" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div><div class="mock-tile-label">Exams</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon" style="display:flex;justify-content:center"><svg style="width:18px;height:18px;color:#3b82f6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></div><div class="mock-tile-label">Money</div></div>
+              <div class="mock-tile"><div class="mock-tile-icon" style="display:flex;justify-content:center"><svg style="width:18px;height:18px;color:#f59e0b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="mock-tile-label">Notes</div></div>
             </div>
           </div>
           <!-- FAB -->
-          <div class="mock-fab">🤖</div>
+          <div class="mock-fab">
+            <svg style="width:16px;height:16px;color:#fff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 
@@ -783,7 +820,7 @@
   <!-- ── About GBD ── -->
   <section id="about" style="border-top:1px solid var(--border);">
     <div class="section-label">About</div>
-    <div class="section-title">Built by Students, for Students</div>
+    <div class="section-title">Built by a Student, for Students</div>
     <div style="max-width:720px;">
       <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.25rem;"><strong style="color:var(--text)">Good Bye Dopamine</strong> was born out of frustration with generic productivity apps that don't understand student life. We needed something that handles <strong style="color:var(--text)">exams, class routines, money tracking, lend/borrow management, GPA calculation, and focus sessions</strong> — all in one place, without switching between a dozen apps.</p>
       <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.25rem;">GBD uses a <strong style="color:var(--text)">local-first architecture</strong> — your data lives on your device and works completely offline. No loading spinners, no lag, just instant access. When you're online, everything syncs to the cloud automatically via Supabase, with full Row-Level Security ensuring your data stays private.</p>
