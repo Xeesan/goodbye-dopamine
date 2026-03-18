@@ -304,26 +304,36 @@
     .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1rem; }
     .feature-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.5rem;
-      transition: border-color .25s, transform .25s;
+      border-radius: 14px; padding: 1.5rem;
+      transition: border-color .3s, transform .3s, box-shadow .3s;
       position: relative; overflow: hidden;
     }
     .feature-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: var(--gradient); opacity: 0; transition: opacity .25s;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--gradient); opacity: 0; transition: opacity .3s;
     }
-    .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .feature-card:hover {
+      border-color: var(--border2); transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.3), 0 0 0 1px rgba(34,211,238,.05);
+    }
     .feature-card:hover::before { opacity: 1; }
-    .feature-icon { font-size: 1.65rem; margin-bottom: .75rem; }
-    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .35rem; }
-    .feature-card p { font-size: .875rem; color: var(--muted2); line-height: 1.55; }
+    .feature-card:hover .feature-icon-wrap { transform: scale(1.1); }
+    .feature-icon-wrap {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: .875rem; transition: transform .3s;
+    }
+    .feature-icon-wrap svg { width: 22px; height: 22px; stroke-width: 2; }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .4rem; }
+    .feature-card p { font-size: .875rem; color: var(--muted2); line-height: 1.6; }
     .tag {
       display: inline-block; font-size: .62rem; text-transform: uppercase;
-      letter-spacing: .08em; padding: .15rem .55rem; border-radius: 999px;
-      margin-top: .6rem; font-weight: 700;
+      letter-spacing: .08em; padding: .2rem .6rem; border-radius: 999px;
+      margin-top: .75rem; font-weight: 700;
     }
     .tag-ai { background: rgba(139,92,246,.15); color: #a78bfa; }
     .tag-new { background: rgba(34,211,238,.12); color: var(--accent); }
+    .tag-money { background: rgba(245,158,11,.12); color: #f59e0b; }
 
     /* ── AI Demo ── */
     .ai-demo {
@@ -464,6 +474,7 @@
       <li><a href="#features">Features</a></li>
       <li><a href="#ai-assistant">AI</a></li>
       <li><a href="#gamification">XP</a></li>
+      <li><a href="#about">About</a></li>
       <li><a href="#tech">Tech</a></li>
     </ul>
     <a href="https://goodbye-dopamine.lovable.app" class="nav-cta" target="_blank">🚀 Launch App</a>
@@ -594,22 +605,74 @@
     <div class="section-title">Everything a student needs. In one place.</div>
     <p class="section-desc">Plan, track, learn, and grow — without switching between a dozen apps.</p>
     <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">📊</div><h3>Dashboard</h3><p>Personalized welcome, daily quotes, XP progress, customizable tiles and quick-access links.</p></div>
-      <div class="feature-card"><div class="feature-icon">📅</div><h3>Planner</h3><p>Create tasks with priority, dates, and reminders. Kanban workflow: Todo → In Progress → Done.</p></div>
-      <div class="feature-card"><div class="feature-icon">⏰</div><h3>Routine</h3><p>Weekly schedule builder. Snap a photo of your timetable and AI-import it instantly.</p><span class="tag tag-ai">AI OCR</span></div>
-      <div class="feature-card"><div class="feature-icon">📝</div><h3>Exams</h3><p>Track exams with countdown timers, urgency indicators, and AI-powered bulk import from photos.</p><span class="tag tag-ai">AI OCR</span></div>
-      <div class="feature-card"><div class="feature-icon">🎓</div><h3>Academic Hub</h3><p>GPA Tracker, Calculator, and Simulator — log courses and project your target CGPA.</p></div>
-      <div class="feature-card"><div class="feature-icon">💰</div><h3>Money Manager</h3><p>Income &amp; expense tracker, debt manager with settle/repay, and savings goals with visual progress.</p></div>
-      <div class="feature-card"><div class="feature-icon">📓</div><h3>Notes</h3><p>Rich notes with categories, full-text search, and an inline viewer.</p></div>
-      <div class="feature-card"><div class="feature-icon">📚</div><h3>Booklist</h3><p>Personal reading library with status tabs, page tracking, and star ratings.</p></div>
-      <div class="feature-card"><div class="feature-icon">🧘</div><h3>Digital Detox</h3><p>Focus timer with ambient sounds, growing tree visualization, and session history.</p></div>
-      <div class="feature-card"><div class="feature-icon">❤️</div><h3>Health</h3><p>Breathing exercises and customizable health reminders — water, posture, eye breaks, stretching.</p></div>
-      <div class="feature-card"><div class="feature-icon">📈</div><h3>Reports</h3><p>Productivity analytics and insights to see how you're improving over time.</p></div>
-      <div class="feature-card"><div class="feature-icon">🗓️</div><h3>Global Calendar</h3><p>Unified calendar accessible from any page. Tap events to jump directly to exams, tasks, or routine.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔔</div><h3>Notifications</h3><p>Push notifications for task reminders and health alerts. In-app notification center to review history.</p></div>
-      <div class="feature-card"><div class="feature-icon">🌐</div><h3>Multi-language</h3><p>Full English and Bengali (বাংলা) support with one-tap language toggle from the sidebar.</p></div>
-      <div class="feature-card"><div class="feature-icon">📱</div><h3>PWA &amp; Offline</h3><p>Install on any device. Works offline with automatic sync queue when back online.</p></div>
-      <div class="feature-card"><div class="feature-icon">🤖</div><h3>AI Assistant</h3><p>Floating AI chat — add tasks, settle debts, query your data, and get study advice via natural language.</p><span class="tag tag-ai">AI Powered</span></div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(34,211,238,.12);color:#22d3ee"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></div>
+        <h3>Dashboard</h3><p>Personalized welcome screen with daily motivation, XP progress tracking, customizable quick-access tiles, and at-a-glance productivity overview.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(34,197,94,.12);color:#22c55e"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Smart Planner</h3><p>Create tasks with priority levels, due dates, and time slots. Full Kanban workflow: Todo → In Progress → Done with drag-and-drop feel.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(168,85,247,.12);color:#a855f7"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Class Routine</h3><p>Build your weekly class schedule with subjects, times, and room locations. Snap a photo of your timetable and AI-import it instantly.</p><span class="tag tag-ai">AI OCR</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
+        <h3>Exam Tracker</h3><p>Track exams with live countdown timers, urgency color-coding, room and teacher info, and AI-powered bulk import from photos of exam schedules.</p><span class="tag tag-ai">AI OCR</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(236,72,153,.12);color:#ec4899"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+        <h3>Academic Hub</h3><p>GPA Tracker, Calculator, and CGPA Simulator — log all your courses, track credits, and project your target cumulative GPA with what-if scenarios.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(245,158,11,.12);color:#f59e0b"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></div>
+        <h3>Money Manager</h3><p>Full income &amp; expense tracker with category breakdown, visual spending reports, and savings goals with animated progress bars.</p><span class="tag tag-money">Finance</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(20,184,166,.12);color:#14b8a6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></svg></div>
+        <h3>Lend &amp; Borrow</h3><p>Track who owes you and who you owe. Per-person breakdown, settle debts with one tap, and detailed debt reports with net position analysis.</p><span class="tag tag-new">New</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(251,191,36,.12);color:#fbbf24"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3>Notes</h3><p>Rich markdown notes with categories, full-text search, inline preview, and cloud sync. Your digital notebook, always available.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(249,115,22,.12);color:#f97316"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h6"/><path d="M8 11h8"/></svg></div>
+        <h3>Booklist</h3><p>Personal reading library with status tabs (reading, completed, wishlist), page tracking, star ratings, and reading progress visualization.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(16,185,129,.12);color:#10b981"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></div>
+        <h3>Digital Detox</h3><p>Focus timer with ambient sounds (rain, forest, lo-fi), growing tree visualization that dies if you leave, and detailed session history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(239,68,68,.12);color:#ef4444"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+        <h3>Health &amp; Wellness</h3><p>Guided breathing exercises (4-7-8, box breathing), and smart reminders for water intake, posture, eye breaks, and stretching.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(99,102,241,.12);color:#6366f1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+        <h3>Reports &amp; Analytics</h3><p>Beautiful productivity charts, money donut graphs, lend/borrow breakdowns, and focus time trends — all with 7-day history views.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div>
+        <h3>Global Calendar</h3><p>Unified calendar overlay accessible from any page. Color-coded events from exams, tasks, and routine. Tap to jump directly to the source.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(244,114,182,.12);color:#f472b6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+        <h3>Smart Notifications</h3><p>Web push notifications for exam reminders and health alerts. In-app notification center to review and manage your alert history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(148,163,184,.12);color:#94a3b8"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <h3>Multi-language</h3><p>Full English and Bengali (বাংলা) UI support with one-tap language toggle. Every label, button, and message is translated.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(34,211,238,.12);color:#22d3ee"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg></div>
+        <h3>PWA &amp; Offline</h3><p>Install on any device like a native app. Works fully offline with an automatic sync queue — your data uploads when you're back online.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap" style="background:rgba(139,92,246,.12);color:#8b5cf6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+        <h3>AI Assistant</h3><p>Floating AI chat that understands your data. Add tasks, settle debts, query exams, manage money — all via natural conversation in English or Bangla.</p><span class="tag tag-ai">Gemini AI</span>
+      </div>
     </div>
   </section>
 
@@ -628,11 +691,11 @@
       </div>
       <div class="ai-demo-msgs">
         <div class="ai-msg ai-msg-user">Add a task: finish physics assignment by Friday</div>
-        <div class="ai-msg ai-msg-bot">🔥 Locked in! Task <strong>"Finish physics assignment"</strong> added for Friday. Now go crush it!</div>
-        <div class="ai-msg ai-msg-user">Settle the debt from Rahim</div>
-        <div class="ai-msg ai-msg-bot">Clean slate! ✨ Settled <strong>1 debt</strong> with Rahim (total: ৳500).</div>
+        <div class="ai-msg ai-msg-bot">Bro woke up and chose productivity 💪<br/><br/>📋 <strong>"Finish physics assignment"</strong> added for <strong>Friday</strong></div>
+        <div class="ai-msg ai-msg-user">Ami minhaz theke 50tk pai</div>
+        <div class="ai-msg ai-msg-bot">The debt arc has begun 💀 no ghosting allowed<br/><br/><strong>🤲 Borrowed ৳50</strong> from <strong>Minhaz</strong></div>
         <div class="ai-msg ai-msg-user">How many exams do I have this week?</div>
-        <div class="ai-msg ai-msg-bot">📝 <strong>2 exams</strong> coming up:<br/>• <strong>Calculus II</strong> · Tue<br/>• <strong>Digital Logic</strong> · Thu<br/>Time to hit the books! 📖</div>
+        <div class="ai-msg ai-msg-bot">📝 <strong>2 exams</strong> incoming — your semester is NOT playing around 💀<br/>• <strong>Calculus II</strong> · Tue<br/>• <strong>Digital Logic</strong> · Thu<br/>Start studying now, not the night before... we both know you will tho 😅</div>
       </div>
     </div>
   </section>
@@ -717,10 +780,29 @@
     </div>
   </section>
 
+  <!-- ── About GBD ── -->
+  <section id="about" style="border-top:1px solid var(--border);">
+    <div class="section-label">About</div>
+    <div class="section-title">Built by Students, for Students</div>
+    <div style="max-width:720px;">
+      <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.25rem;"><strong style="color:var(--text)">Good Bye Dopamine</strong> was born out of frustration with generic productivity apps that don't understand student life. We needed something that handles <strong style="color:var(--text)">exams, class routines, money tracking, lend/borrow management, GPA calculation, and focus sessions</strong> — all in one place, without switching between a dozen apps.</p>
+      <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.25rem;">GBD uses a <strong style="color:var(--text)">local-first architecture</strong> — your data lives on your device and works completely offline. No loading spinners, no lag, just instant access. When you're online, everything syncs to the cloud automatically via Supabase, with full Row-Level Security ensuring your data stays private.</p>
+      <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.25rem;">The built-in <strong style="color:var(--text)">AI assistant</strong> (powered by Google Gemini) lets you manage your entire dashboard just by chatting naturally — in English or Bangla. Add tasks, track money, settle debts, query your exams, all hands-free. It even roasts you when you procrastinate 💀</p>
+      <p style="color:var(--muted2);line-height:1.8;margin-bottom:1.5rem;">The <strong style="color:var(--text)">gamification system</strong> turns every productive action into XP — complete a task (+20 XP), finish a book (+25 XP), do a focus session (+duration XP). Level up every 100 XP with celebratory toasts and unlock titles. It's server-validated so no cheating. Your discipline, your progress, your bragging rights.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.25rem .75rem;border-radius:999px;background:rgba(34,211,238,.08);color:var(--accent);border:1px solid rgba(34,211,238,.15);text-transform:uppercase;">Open Source</span>
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.25rem .75rem;border-radius:999px;background:rgba(34,197,94,.08);color:#22c55e;border:1px solid rgba(34,197,94,.15);text-transform:uppercase;">100% Free</span>
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.25rem .75rem;border-radius:999px;background:rgba(139,92,246,.08);color:#a78bfa;border:1px solid rgba(139,92,246,.15);text-transform:uppercase;">PWA + Offline</span>
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.25rem .75rem;border-radius:999px;background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.15);text-transform:uppercase;">Gemini AI</span>
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.25rem .75rem;border-radius:999px;background:rgba(236,72,153,.08);color:#ec4899;border:1px solid rgba(236,72,153,.15);text-transform:uppercase;">Bilingual EN/BN</span>
+      </div>
+    </div>
+  </section>
+
   <!-- ── CTA ── -->
   <div class="cta-section">
     <h2>Ready to quit doomscrolling?</h2>
-    <p>Join students who are building discipline one XP at a time.</p>
+    <p>Join students who are building discipline one XP at a time. 16+ features, AI assistant, gamification — all free, forever.</p>
     <a href="https://goodbye-dopamine.lovable.app" class="btn btn-primary" target="_blank">🚀 Get Started — It's Free</a>
   </div>
 
