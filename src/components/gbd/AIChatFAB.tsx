@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
-import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, addExamToDB, addTransactionToDB, addDebtToDB, addPeriodToDB, settleDebtInDB, deletePeriodFromDB, updateExamInDB } from '@/lib/dbSync';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, settleDebtInDB, deletePeriodFromDB, updateExamInDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
@@ -68,8 +68,15 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           priority: args.priority || 'medium',
           status: 'todo',
         });
-        const hype = ['Locked in! 🔥', 'On it, boss! 💪', 'Added, let\'s get it! ⚡', 'Done! You\'re being productive fr 🫡'][Math.floor(Math.random() * 4)];
-        return `${hype} Task **"${args.title}"** added${args.date ? ` for ${args.date}` : ''}. Now go crush it!`;
+        const hype = [
+          'Say less, it\'s on the list now 🔥',
+          'Bro woke up and chose productivity 💪',
+          'Added! Now put the phone down and actually do it 📱❌',
+          'Task locked and loaded, soldier 🫡',
+          'Your future self is gonna thank you fr fr ⚡',
+          'Added! One step closer to not being a procrastinator 🏃‍♂️',
+        ][Math.floor(Math.random() * 6)];
+        return `${hype}\n\n📋 **"${args.title}"** added${args.date ? ` for **${args.date}**` : ''}${args.priority === 'high' ? ' ⚠️ _High priority — no excuses!_' : ''}`;
       }
 
       if (section === 'exam') {
@@ -83,20 +90,21 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           type: args.examType || 'exams',
           grade: '',
         };
-        const localId = Storage.addExam(examData);
-        addExamToDB(examData).then((dbId) => {
-          if (dbId && localId) {
-            const exams = Storage.getExams().map((e: any) => e.id === localId ? { ...e, id: dbId } : e);
-            Storage.setExams(exams);
-          }
-        }).catch(() => {});
-        const quips = ['Another exam? Your semester is built different 💀', 'Noted! Time to lock in and study 📚', 'Added! May the curve be in your favor 🙏', 'Exam tracked! You got this fr 🫡'][Math.floor(Math.random() * 4)];
-        return `${quips} **${args.subject}** exam on **${args.date || 'today'}** — don't forget to actually study!`;
+        Storage.addExam(examData);
+        const quips = [
+          'Another exam? Bro your semester is NOT playing around 💀',
+          'Exam added! Now close TikTok and open the textbook 📚🫠',
+          'Added! May the bell curve gods be in your favor 🙏✨',
+          'Exam locked in! You\'re either brave or delusional and I respect both 🫡',
+          'RIP your free time, but you got this 🔥',
+          'Noted! Start studying now, not the night before... we both know you will tho 💀',
+        ][Math.floor(Math.random() * 6)];
+        return `${quips}\n\n📝 **${args.subject}** exam on **${args.date || 'today'}**${args.time ? ` at ${formatTime12h(args.time)}` : ''}${args.room ? ` in ${args.room}` : ''}`;
       }
 
       if (section === 'routine') {
         if (!args.day || !args.subject || !args.startTime || !args.endTime) {
-          return '😅 I need the **day**, **subject**, **startTime**, and **endTime** to set up your routine!';
+          return '😅 Bestie, I need the **day**, **subject**, **startTime**, and **endTime** to lock in your routine!';
         }
         const periodData = {
           subject: args.subject,
@@ -104,55 +112,65 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           endTime: args.endTime,
           room: args.room || '',
         };
-        const localId = Storage.addPeriod(args.day, periodData);
-        addPeriodToDB(args.day, periodData).then((dbId) => {
-          if (dbId && localId) {
-            const routine = Storage.getRoutine();
-            routine[args.day] = (routine[args.day] || []).map((p: any) => p.id === localId ? { ...p, id: dbId } : p);
-            Storage.setRoutine(routine);
-          }
-        }).catch(() => {});
-        return `📅 **${args.subject}** locked in for **${args.day}** (${formatTime12h(args.startTime)}-${formatTime12h(args.endTime)}). Consistency is key! 🔑`;
+        Storage.addPeriod(args.day, periodData);
+        const quips = [
+          'Class scheduled! Now you have no excuse to skip 😤',
+          'Your routine just got buffed 💪',
+          'Added! Your future organized self is proud rn 🥹',
+          'Locked in! Discipline beats motivation every time 🔑',
+        ][Math.floor(Math.random() * 4)];
+        return `${quips}\n\n📅 **${args.subject}** on **${args.day}** (${formatTime12h(args.startTime)}–${formatTime12h(args.endTime)})${args.room ? ` 📍 ${args.room}` : ''}`;
       }
 
       if (section === 'transaction') {
         if (!args.description || !args.amount) {
-          return '😅 I need at least a **description** and **amount** for the transaction!';
+          return '💀 Bro I need at least a **description** and **amount** — I can\'t read your mind (yet)';
         }
         const txnData = {
           description: args.description,
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
         };
-        const localTxnId = Storage.addTransaction(txnData);
-        addTransactionToDB(txnData).then((dbId) => {
-          if (dbId && localTxnId) {
-            const txns = Storage.getTransactions().map((t: any) => t.id === localTxnId ? { ...t, id: dbId } : t);
-            Storage.setTransactions(txns);
-          }
-        }).catch(() => {});
+        Storage.addTransaction(txnData);
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
-          ? ['Money coming in! 💰', 'Cha-ching! 🤑', 'Securing the bag! 💼'][Math.floor(Math.random() * 3)]
-          : ['RIP wallet 💸', 'And it\'s gone... 🫠', 'Your wallet felt that 😬'][Math.floor(Math.random() * 3)];
-        return `${quips} **${type === 'income' ? '+' : '-'}${args.amount}** for **${args.description}** recorded!`;
+          ? [
+              'MONEY INCOMING LET\'S GOOO 💰🎉',
+              'Cha-ching! The grind is paying off 🤑',
+              'Securing the bag like a sigma 💼✨',
+              'Income era activated! Keep stacking 📈',
+            ][Math.floor(Math.random() * 4)]
+          : [
+              'RIP wallet, you will be remembered 💸🪦',
+              'And it\'s gone... just like your savings 🫠',
+              'Your wallet is filing a restraining order 😭',
+              'Expense tracked! Your bank account definitely felt that 😬',
+              'Another day, another ৳ gone... the broke student life 💀',
+            ][Math.floor(Math.random() * 5)];
+        return `${quips}\n\n${type === 'income' ? '💚' : '🔴'} **${type === 'income' ? '+' : '-'}৳${args.amount}** — ${args.description}`;
       }
 
       if (section === 'note') {
         if (!args.title && !args.content) {
-          return '😅 I need at least a **title** or some **content** for the note!';
+          return '📝 Gonna need at least a **title** or some **content** — can\'t save vibes alone bestie';
         }
         Storage.addNote({
           title: args.title || 'Untitled Note',
           content: args.content || '',
         });
-        const quips = ['Noted! 📝', 'Written down before you forget! 🧠', 'Saved for future you! 📌'][Math.floor(Math.random() * 3)];
-        return `${quips} Note **"${args.title || 'Untitled'}"** saved.`;
+        const quips = [
+          'Noted before your goldfish memory kicks in! 🧠',
+          'Saved! Your shower thoughts are safe with me 🚿💭',
+          'Written down so you don\'t forget (again) 📌',
+          'Brain dump? More like brain upgrade 🧠⬆️',
+          'Note saved! Future you will be grateful, trust 📝✨',
+        ][Math.floor(Math.random() * 5)];
+        return `${quips}\n\n📝 **"${args.title || 'Untitled'}"** saved${args.content ? ` — _${args.content.slice(0, 60)}${args.content.length > 60 ? '…' : ''}_` : ''}`;
       }
 
       if (section === 'debt') {
         if (!args.person || !args.amount) {
-          return '😅 I need at least a **person** name and **amount** for the lend/borrow entry!';
+          return '🤝 Need a **person** and **amount** — I\'m an AI, not a mind reader 🔮';
         }
         const debtType = args.debtType || 'lend';
         const debtData = {
@@ -162,20 +180,26 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           debt_type: debtType,
           description: args.description || '',
         };
-        const localDebtId = Storage.addDebt(debtData);
-        addDebtToDB({ ...debtData, debtType }).then((dbId) => {
-          if (dbId && localDebtId) {
-            const debts = Storage.getDebts().map((d: any) => d.id === localDebtId ? { ...d, id: dbId } : d);
-            Storage.setDebts(debts);
-          }
-        }).catch(() => {});
+        Storage.addDebt(debtData);
         const quips = debtType === 'lend'
-          ? ['You just became a bank lol 🏦', 'Generous era activated 👑', 'Hope they remember this favor fr 🤞', 'Your wallet is crying rn 😭'][Math.floor(Math.random() * 4)]
-          : ['Adding this to the "pay back someday" list 😬', 'Oof, the debt arc begins 💀', 'Noted! Don\'t ghost them about this one 👀', 'You owe money now bestie, no forgetting 🫣'][Math.floor(Math.random() * 4)];
+          ? [
+              'Congrats, you\'re now a walking ATM 🏦😂',
+              'Generous king/queen behavior 👑 hope they actually pay back tho',
+              'Your wallet: "why do you hate me" 😭',
+              'Friendship tested in 3... 2... 1... 🤞💀',
+              'You just unlocked the "chasing people for money" side quest 🎮',
+            ][Math.floor(Math.random() * 5)]
+          : [
+              'The debt arc has begun 💀 no ghosting allowed',
+              'Added to the "I\'ll pay you back bro I promise" list 😬🫣',
+              'You owe money now bestie, your conscience won\'t let you forget 👀',
+              'Noted! Your wallet is already anxiety-scrolling 📱😰',
+              'Debt logged! Set a reminder before you "forget" 🧠❌',
+            ][Math.floor(Math.random() * 5)];
         return `${quips}\n\n**${debtType === 'lend' ? '💸 Lent' : '🤲 Borrowed'} ৳${args.amount}** ${debtType === 'lend' ? 'to' : 'from'} **${args.person}**${args.description ? ` — _${args.description}_` : ''}`;
       }
 
-      return '🤔 Hmm, not sure where to put that. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
+      return '🤔 Hmm, my brain lagged — try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note** and I\'ll sort it out!';
     }
 
     if (toolCall.function.name === 'query_data') {
@@ -327,21 +351,22 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         return `🤝 **${Object.keys(byPerson).length} person${Object.keys(byPerson).length > 1 ? 's' : ''}** · ${debts.length} entries\n\n> Lent: **${totalLent}** · Borrowed: **${totalBorrowed}** · ${netLabel}\n\n${summary}`;
       }
 
-      return '🤷 Not sure what to look up. Try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
+      return '🤷 404 brain not found — try asking about **tasks**, **exams**, **routine**, **transactions**, **debts**, or **notes**!';
     }
 
     if (toolCall.function.name === 'delete_entry') {
       const { section, identifier } = args;
-      if (!identifier) return '😅 I need to know **which** entry to delete. Give me a name, subject, or title!';
+      if (!identifier) return '😅 Delete what exactly? Give me a name, subject, or title — I\'m not a psychic bestie 🔮';
 
       const idLower = identifier.toLowerCase();
 
       if (section === 'task') {
         const tasks = Storage.getTasks();
         const matches = idLower === 'all' ? tasks : tasks.filter((t: any) => t.title?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any task matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 Can't find any task matching **"${identifier}"** — sure it exists?`;
         matches.forEach((m: any) => Storage.deleteTask(m.id));
-        return `🗑️ Deleted **${matches.length}** task${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
+        const delQuip = ['Yeeted into the void! 🕳️', 'Gone, reduced to atoms ⚛️', 'Task said bye-bye 👋', 'Deleted! That task never existed 🫥'][Math.floor(Math.random() * 4)];
+        return `${delQuip} Removed **${matches.length}** task${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
       }
 
       if (section === 'exam') {
@@ -356,25 +381,26 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         } else {
           matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
         }
-        if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No exam matching **"${identifier}"** found — maybe it already ran away 🏃`;
         for (const m of matches) { Storage.deleteExam(m.id); await deleteExamFromDB(m.id); }
-        return `🗑️ Deleted **${matches.length}** exam${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].subject}" (${matches[0].date})` : ''}.`;
+        const examDelQuip = ['One less exam to stress about 🎉', 'Poof! Gone like your study motivation 💨', 'Exam deleted! Your stress level: 📉'][Math.floor(Math.random() * 3)];
+        return `${examDelQuip} Removed **${matches.length}** exam${matches.length > 1 ? 's' : ''}${matches.length === 1 ? ` — "${matches[0].subject}" (${matches[0].date})` : ''}.`;
       }
 
       if (section === 'transaction') {
         const txns = Storage.getTransactions();
         const matches = idLower === 'all' ? txns : txns.filter((t: any) => t.description?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any transaction matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No transaction matching **"${identifier}"** — are you sure that purchase happened? 👀`;
         for (const m of matches) { Storage.deleteTransaction(m.id); await deleteTransactionFromDB(m.id); }
-        return `🗑️ Deleted **${matches.length}** transaction${matches.length > 1 ? 's' : ''}.`;
+        return `🗑️ Erased **${matches.length}** transaction${matches.length > 1 ? 's' : ''} from existence. Your wallet has amnesia now 🧠❌`;
       }
 
       if (section === 'note') {
         const notes = Storage.getNotes();
         const matches = idLower === 'all' ? notes : notes.filter((n: any) => n.title?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any note matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No note matching **"${identifier}"** — did your cat walk on the keyboard? 🐱`;
         matches.forEach((m: any) => Storage.deleteNote(m.id));
-        return `🗑️ Deleted **${matches.length}** note${matches.length > 1 ? 's' : ''}.`;
+        return `🗑️ **${matches.length}** note${matches.length > 1 ? 's' : ''} sent to the shadow realm 🌑 Hope you didn't need ${matches.length > 1 ? 'those' : 'that'}!`;
       }
 
       if (section === 'routine') {
@@ -395,8 +421,8 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
             }
           }
           Storage.setRoutine(routine);
-          if (totalDeleted === 0) return '🤔 No routine periods to delete!';
-          return `🗑️ Cleared **${totalDeleted}** routine period${totalDeleted > 1 ? 's' : ''}${day ? ` from **${day}**` : ''}.`;
+          if (totalDeleted === 0) return '🤔 Nothing to delete — your routine is already empty like a Friday lecture hall 😴';
+          return `🗑️ Wiped **${totalDeleted}** class${totalDeleted > 1 ? 'es' : ''}${day ? ` from **${day}**` : ''}. Freedom tastes good doesn\'t it? 😎`;
         }
         // Match by subject
         const daysToSearch = day ? [day] : Object.keys(routine);
@@ -408,58 +434,72 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           routine[d] = periods.filter((p: any) => !p.subject?.toLowerCase().includes(idLower));
         }
         Storage.setRoutine(routine);
-        if (totalDeleted === 0) return `🤔 Couldn't find any routine period matching **"${identifier}"**.`;
-        return `🗑️ Deleted **${totalDeleted}** routine period${totalDeleted > 1 ? 's' : ''} for **${identifier}**.`;
+        if (totalDeleted === 0) return `🤔 Can't find any class matching **"${identifier}"** — did you already skip it? 😏`;
+        return `🗑️ Dropped **${totalDeleted}** class${totalDeleted > 1 ? 'es' : ''} for **${identifier}**. Your schedule just got lighter 🪶`;
       }
 
       if (section === 'debt') {
         const debts = Storage.getDebts();
         const matches = idLower === 'all' ? debts : debts.filter((d: any) => d.person?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any debt entry for **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No debt entry for **"${identifier}"** — are you hallucinating money? 💭💸`;
         for (const m of matches) { Storage.deleteDebt(m.id); await deleteDebtFromDB(m.id); }
-        return `🗑️ Deleted **${matches.length}** debt entr${matches.length > 1 ? 'ies' : 'y'}.`;
+        return `🗑️ Wiped **${matches.length}** debt record${matches.length > 1 ? 's' : ''}. *pretending it never happened* 🙈`;
       }
 
-      return '🤔 Not sure what section to delete from. Try specifying **task**, **exam**, **routine**, **transaction**, **debt**, or **note**!';
+      return '🤔 Delete from where tho? Try **task**, **exam**, **routine**, **transaction**, **debt**, or **note** — I got you 🫡';
     }
 
     if (toolCall.function.name === 'update_entry') {
       const { section, identifier } = args;
-      if (!identifier) return '😅 I need to know **which** entry to update. Give me a name or title!';
+      if (!identifier) return '😅 Update what exactly? Drop a name or title — I can\'t just vibe-check the whole database 🎯';
       const idLower = identifier.toLowerCase();
 
       if (section === 'task') {
         const tasks = Storage.getTasks();
         const matches = tasks.filter((t: any) => t.title?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any task matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 Can't find any task matching **"${identifier}"** — did it ghosted you? 👻`;
         const newStatus = args.status || 'done';
         matches.forEach((m: any) => Storage.updateTask(m.id, { status: newStatus }));
         const statusEmoji = newStatus === 'done' ? '✅' : newStatus === 'in-progress' ? '⚡' : '📋';
         const quips = newStatus === 'done'
-          ? ['Task crushed! 🔥', 'Look at you being productive! 💪', 'Another one bites the dust! ✨', 'W moment fr 🏆'][Math.floor(Math.random() * 4)]
+          ? [
+              'TASK DESTROYED 🔥 You\'re actually goated',
+              'Look at you being a functional human! 💪 So proud rn',
+              'Another one bites the dust! DJ Khaled voice: "another one" 🏆',
+              'Completed! You\'re speedrunning productivity today ⚡',
+              'DONE! Your discipline is scary ngl 😤✨',
+            ][Math.floor(Math.random() * 5)]
           : newStatus === 'in-progress'
-          ? ['Let\'s get to work! ⚡', 'Grinding mode activated 🎯', 'On it! 💨'][Math.floor(Math.random() * 3)]
-          : ['Back to the drawing board 📋', 'Reopened! Round 2 🔄'][Math.floor(Math.random() * 2)];
-        return `${quips} ${statusEmoji} **${matches.length}** task${matches.length > 1 ? 's' : ''} moved to **${newStatus}**${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
+          ? [
+              'Let\'s get to work! Main character energy activated 🎬',
+              'Grinding mode: ON. Touch grass mode: OFF 🎯',
+              'On it! Your motivation arc is fire rn 💨🔥',
+            ][Math.floor(Math.random() * 3)]
+          : [
+              'Back from the dead! Zombie task edition 🧟',
+              'Reopened! The sequel nobody asked for 🔄🎬',
+              'Round 2 — this time it\'s personal 👊',
+            ][Math.floor(Math.random() * 3)];
+        return `${quips} ${statusEmoji} **${matches.length}** task${matches.length > 1 ? 's' : ''} → **${newStatus}**${matches.length === 1 ? ` — "${matches[0].title}"` : ''}.`;
       }
 
       if (section === 'note') {
         const notes = Storage.getNotes();
         const matches = notes.filter((n: any) => n.title?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any note matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No note matching **"${identifier}"** — your notes are playing hide and seek 🙈`;
         const target = matches[0];
         const updates: any = {};
         if (args.title) updates.title = args.title;
         if (args.content) updates.content = args.content;
-        if (Object.keys(updates).length === 0) return '😅 Nothing to update! Tell me what to change — **title** or **content**?';
+        if (Object.keys(updates).length === 0) return '😅 Nothing to change! Tell me the new **title** or **content** — I\'m not a mind reader (working on it tho 🧠)';
         Storage.updateNote(target.id, updates);
-        return `✏️ Note **"${target.title}"** updated!${args.title ? ` New title: **${args.title}**` : ''}${args.content ? ' Content updated.' : ''}`;
+        return `✏️ Note **"${target.title}"** glow-up complete! ✨${args.title ? ` New title: **${args.title}**` : ''}${args.content ? ' Content refreshed 🔄' : ''}`;
       }
 
       if (section === 'exam') {
         const exams = Storage.getExams();
         const matches = exams.filter((e: any) => e.subject?.toLowerCase().includes(idLower));
-        if (matches.length === 0) return `🤔 Couldn't find any exam matching **"${identifier}"**.`;
+        if (matches.length === 0) return `🤔 No exam matching **"${identifier}"** — maybe it was all a dream? 💭`;
         const target = matches[0];
         const updates: any = {};
         if (args.subject) updates.subject = args.subject;
@@ -467,19 +507,19 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (args.time) updates.time = args.time;
         if (args.room) updates.room = args.room;
         if (args.teacher) updates.teacher = args.teacher;
-        if (Object.keys(updates).length === 0) return '😅 Nothing to update! Tell me what to change.';
+        if (Object.keys(updates).length === 0) return '😅 What should I change tho? Drop the deets — **subject**, **date**, **time**, **room**, or **teacher** 🎯';
         Storage.updateExam({ ...target, ...updates });
         updateExamInDB({ ...target, ...updates }).catch(() => {});
         const changes = Object.entries(updates).map(([k, v]) => `**${k}**: ${v}`).join(', ');
-        return `✏️ Exam **"${target.subject}"** updated! ${changes}`;
+        return `✏️ Exam **"${target.subject}"** got a glow-up! ✨ ${changes}`;
       }
 
-      return '🤔 I can update **tasks**, **notes**, and **exams**. Which one?';
+      return '🤔 I can update **tasks**, **notes**, and **exams** — which one needs a glow-up? ✨';
     }
 
     if (toolCall.function.name === 'settle_debt') {
       const { person } = args;
-      if (!person) return '😅 I need to know **whose** debt to settle!';
+      if (!person) return '😅 Settle with WHO? Drop a name bestie, I need specifics 🎯';
 
       const personLower = person.toLowerCase();
       const debts = Storage.getDebts();
@@ -487,7 +527,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         ? debts.filter((d: any) => !d.settled)
         : debts.filter((d: any) => !d.settled && d.person?.toLowerCase().includes(personLower));
 
-      if (matches.length === 0) return `🤔 No unsettled debts found for **"${person}"**.`;
+      if (matches.length === 0) return `🤔 No debts found for **"${person}"** — either they\'re clear or you never tracked it 👀`;
 
       for (const m of matches) {
         Storage.settleDebt(m.id);
@@ -495,14 +535,20 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       }
 
       const totalAmount = matches.reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
-      const quips = ['Debt-free era! 🎉', 'Clean slate! ✨', 'That\'s what we like to see! 🤝', 'Money matters handled! 💯'][Math.floor(Math.random() * 4)];
-      return `${quips} Settled **${matches.length}** debt${matches.length > 1 ? 's' : ''} with **${matches[0]?.person || person}** (total: ৳${totalAmount}).`;
+      const quips = [
+        'DEBT FREE ERA LET\'S GOOO 🎉🎊',
+        'Clean slate! You can sleep peacefully tonight ✨😴',
+        'Settled! Friendship saved, dignity restored 🤝💯',
+        'Money drama: RESOLVED. Now that\'s character development 📈',
+        'All square! The financial anxiety can chill now 🧘‍♂️',
+      ][Math.floor(Math.random() * 5)];
+      return `${quips}\n\n✅ Settled **${matches.length}** debt${matches.length > 1 ? 's' : ''} with **${matches[0]?.person || person}** (total: **৳${totalAmount}**)`;
     }
 
-    return '🤔 Hmm, that one went over my head. Try again?';
+    return '🤔 That one went over my head like a 8 AM lecture 😴 Try again?';
   } catch (e) {
     console.error('Tool execution error:', e);
-    return '😅 Something went wrong on my end. Mind trying that again?';
+    return '😭 Bruh something broke on my end — give it another shot, I promise I\'ll do better this time 🙏';
   }
 }
 
