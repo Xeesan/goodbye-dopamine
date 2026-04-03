@@ -3,6 +3,9 @@ import appLogo from '@/assets/icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import AuthScreen from '@/components/gbd/AuthScreen';
 import AppShell from '@/components/gbd/AppShell';
+import Storage from '@/lib/storage';
+
+const PROFILE_CACHE_KEY = 'cached_profile';
 
 const Index = () => {
   const [session, setSession] = useState<any>(null);
@@ -13,49 +16,90 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        // Defer profile fetch to avoid deadlock
         setTimeout(() => fetchProfile(session.user.id), 0);
       } else {
         setProfile(null);
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) fetchProfile(session.user.id);
-      setLoading(false);
-    });
+    // Race getSession against a timeout so the app doesn't hang offline
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
+
+    Promise.race([sessionPromise, timeoutPromise])
+      .then((result) => {
+        if (result && 'data' in result) {
+          const sess = result.data.session;
+          setSession(sess);
+          if (sess?.user) fetchProfile(sess.user.id);
+        } else {
+          // Timeout or error — try to use cached profile for offline access
+          const cached = Storage.get(PROFILE_CACHE_KEY, null);
+          if (cached) {
+            setSession({ user: { id: cached.id, email: cached.email, user_metadata: {} } });
+            setProfile(cached);
+          }
+        }
+      })
+      .catch(() => {
+        // Network error — use cached profile
+        const cached = Storage.get(PROFILE_CACHE_KEY, null);
+        if (cached) {
+          setSession({ user: { id: cached.id, email: cached.email, user_metadata: {} } });
+          setProfile(cached);
+        }
+      })
+      .finally(() => setLoading(false));
 
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    if (data) {
-      // Resolve avatar to signed URL for private bucket
-      if (data.avatar_url) {
-        let avatarPath = data.avatar_url;
-        if (avatarPath.startsWith('http')) {
-          const match = avatarPath.match(/\/avatars\/(.+)$/);
-          if (match) avatarPath = match[1];
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      if (data) {
+        // Resolve avatar to signed URL for private bucket
+        if (data.avatar_url) {
+          try {
+            let avatarPath = data.avatar_url;
+            if (avatarPath.startsWith('http')) {
+              const match = avatarPath.match(/\/avatars\/(.+)$/);
+              if (match) avatarPath = match[1];
+            }
+            const { data: signedData } = await supabase.storage
+              .from('avatars')
+              .createSignedUrl(avatarPath, 3600);
+            if (signedData?.signedUrl) {
+              data.avatar_url = signedData.signedUrl;
+            }
+          } catch {
+            // Avatar URL resolution failed — keep raw path
+          }
         }
-        const { data: signedData } = await supabase.storage
-          .from('avatars')
-          .createSignedUrl(avatarPath, 3600);
-        if (signedData?.signedUrl) {
-          data.avatar_url = signedData.signedUrl;
-        }
+        setProfile(data);
+        // Cache profile for offline use
+        Storage.set(PROFILE_CACHE_KEY, { ...data, email: (await supabase.auth.getUser()).data?.user?.email });
       }
-      setProfile(data);
+    } catch {
+      // Network error — fall back to cached profile
+      const cached = Storage.get(PROFILE_CACHE_KEY, null);
+      if (cached && cached.id === userId) {
+        setProfile(cached);
+      }
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Offline sign-out — clear local state anyway
+    }
+    Storage.remove(PROFILE_CACHE_KEY);
     setSession(null);
     setProfile(null);
   };
