@@ -737,8 +737,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         }
       }
 
-      // Safety net: flush any remaining tool calls that weren't caught by finish_reason
-      if (!toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
+      // Flush all accumulated tool calls after stream ends
+      if (Object.keys(toolCallBuffer).length > 0) {
         for (const [, tc] of Object.entries(toolCallBuffer)) {
           if (tc.name) {
             pendingToolCalls.push({
