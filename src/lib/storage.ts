@@ -84,6 +84,16 @@ const Storage = {
     routine[day] = routine[day].filter(p => p.id !== id);
     this.setRoutine(routine);
   },
+  updatePeriod(day: string, id: string, updates: any) {
+    if (!day || !id || !updates) return;
+    const routine = this.getRoutine();
+    if (!Array.isArray(routine[day])) return;
+    const idx = routine[day].findIndex(p => p.id === id);
+    if (idx !== -1) {
+      routine[day][idx] = { ...routine[day][idx], ...updates, updatedAt: new Date().toISOString() };
+      this.setRoutine(routine);
+    }
+  },
   clearRoutine() {
     this.setRoutine({ monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] });
   },

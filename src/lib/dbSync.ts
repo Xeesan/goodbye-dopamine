@@ -387,6 +387,21 @@ export async function addPeriodToDB(day: string, period: any): Promise<string | 
   }
 }
 
+export async function updatePeriodInDB(id: string, period: any) {
+  const userId = await getUserId();
+  if (!userId || !isDbId(id)) return;
+  try {
+    await supabase.from('user_routine').update({
+      subject: period.subject,
+      start_time: period.startTime,
+      end_time: period.endTime,
+      room: period.room || '',
+    }).eq('id', id).eq('user_id', userId);
+  } catch (e) {
+    console.error('Update period DB error:', e);
+  }
+}
+
 export async function deletePeriodFromDB(id: string) {
   const userId = await getUserId();
   if (!userId || !isDbId(id)) return;
