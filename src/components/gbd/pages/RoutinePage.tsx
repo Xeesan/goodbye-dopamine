@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import Storage from '@/lib/storage';
-import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB } from '@/lib/dbSync';
+import { syncRoutineFromDB, addPeriodToDB, deletePeriodFromDB, clearRoutineInDB, updatePeriodInDB } from '@/lib/dbSync';
 import { getCurrentDayName, formatTime12h } from '@/lib/helpers';
-import { Trash2, ArrowLeft, Download, GraduationCap, Briefcase } from 'lucide-react';
+import { Trash2, ArrowLeft, Download, GraduationCap, Briefcase, Pencil } from 'lucide-react';
 import { exportRoutineToICS } from '@/lib/icsExport';
 import ImageOCRImport from '../ImageOCRImport';
 import { useDialog } from '../DialogProvider';
@@ -24,6 +24,7 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
   const [activeTab, setActiveTab] = useState<'class' | 'office'>('class');
   const [selectedDay, setSelectedDay] = useState(getCurrentDayName());
   const [showModal, setShowModal] = useState(false);
+  const [editingPeriod, setEditingPeriod] = useState<any>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const { showDialog } = useDialog();
   const { addXP } = useGamification();
@@ -52,7 +53,17 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
   const routine = Storage.getRoutine();
   const periods = routine[selectedDay] || [];
 
-  const addPeriod = async () => {
+  const openAddModal = () => {
+    setEditingPeriod(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (period: any) => {
+    setEditingPeriod(period);
+    setShowModal(true);
+  };
+
+  const handleSave = async () => {
     const subject = (document.getElementById('period-subject') as HTMLInputElement)?.value.trim();
     if (!subject) {
       await showDialog({ title: 'Missing Info', message: 'Please enter a subject name.', type: 'alert' });
@@ -62,19 +73,30 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
     const endTime = (document.getElementById('period-end') as HTMLInputElement)?.value;
     const room = (document.getElementById('period-room') as HTMLInputElement)?.value.trim();
     const periodData = { subject, startTime, endTime, room };
-    Storage.addPeriod(selectedDay, periodData);
-    addPeriodToDB(selectedDay, periodData).then(dbId => {
-      if (dbId) {
-        const r = Storage.getRoutine();
-        const dayPeriods = r[selectedDay] || [];
-        const last = dayPeriods[dayPeriods.length - 1];
-        if (last) { last.id = dbId; Storage.setRoutine(r); refresh(); }
-      }
-    });
-    addXP(5);
+
+    if (editingPeriod) {
+      // Update existing
+      Storage.updatePeriod(selectedDay, editingPeriod.id, periodData);
+      updatePeriodInDB(editingPeriod.id, periodData);
+      toast({ title: 'Period updated', description: subject });
+    } else {
+      // Add new
+      Storage.addPeriod(selectedDay, periodData);
+      addPeriodToDB(selectedDay, periodData).then(dbId => {
+        if (dbId) {
+          const r = Storage.getRoutine();
+          const dayPeriods = r[selectedDay] || [];
+          const last = dayPeriods[dayPeriods.length - 1];
+          if (last) { last.id = dbId; Storage.setRoutine(r); refresh(); }
+        }
+      });
+      addXP(5);
+      toast({ title: t('routine.add_period'), description: subject });
+    }
+
     setShowModal(false);
+    setEditingPeriod(null);
     refresh();
-    toast({ title: t('routine.add_period'), description: `${subject}` });
   };
 
   const deletePeriod = async (id: string) => {
@@ -144,7 +166,7 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
               <Download className="w-4 h-4" /> .ics
             </button>
             <ImageOCRImport mode="routine" onImport={handleOCRImport} />
-            <button className="btn-green" onClick={() => setShowModal(true)}><span>+</span> {t('routine.add_period')}</button>
+            <button className="btn-green" onClick={openAddModal}><span>+</span> {t('routine.add_period')}</button>
           </div>
         )}
       </div>
@@ -177,20 +199,25 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
             {periods.length === 0 ? (
               <div className="empty-state">
                 <p>{t('routine.no_classes')} {selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}</p>
-                <button className="btn-outline mt-3" onClick={() => setShowModal(true)}>{t('routine.add_period_btn')}</button>
+                <button className="btn-outline mt-3" onClick={openAddModal}>{t('routine.add_period_btn')}</button>
               </div>
             ) : (
               <div className="space-y-3">
                 {periods.map((p: any) => (
                   <div key={p.id} className="flex items-center justify-between gap-3 p-3 rounded-lg flex-wrap" style={{ background: 'hsl(var(--bg-input))' }}>
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-wrap">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-wrap cursor-pointer flex-1" onClick={() => openEditModal(p)}>
                       <span className="text-sm font-semibold text-primary whitespace-nowrap">{formatTime12h(p.startTime)} - {formatTime12h(p.endTime)}</span>
                       <span className="text-sm font-medium text-foreground truncate">{p.subject}</span>
                       {p.room && <span className="text-xs text-muted-foreground">{p.room}</span>}
                     </div>
-                    <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => deletePeriod(p.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button className="icon-btn !w-8 !h-8 !text-muted-foreground hover:!text-primary" onClick={() => openEditModal(p)} title="Edit">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button className="icon-btn !w-8 !h-8 !text-destructive shrink-0" onClick={() => deletePeriod(p.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -210,18 +237,18 @@ const RoutinePage = ({ navigateTo, refreshKey }: RoutinePageProps) => {
       )}
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingPeriod(null); }}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foreground mb-4">{t('routine.add_period')}</h2>
+            <h2 className="text-lg font-bold text-foreground mb-4">{editingPeriod ? 'Edit Period' : t('routine.add_period')}</h2>
             <div className="space-y-3">
-              <div><label className="form-label">{t('routine.subject')}</label><input type="text" id="period-subject" className="input-simple" placeholder="e.g. Mathematics" /></div>
-              <div><label className="form-label">{t('routine.start_time')}</label><input type="time" id="period-start" className="input-simple" defaultValue="09:00" /></div>
-              <div><label className="form-label">{t('routine.end_time')}</label><input type="time" id="period-end" className="input-simple" defaultValue="10:00" /></div>
-              <div><label className="form-label">{t('routine.room')}</label><input type="text" id="period-room" className="input-simple" placeholder="e.g. Room 302" /></div>
+              <div><label className="form-label">{t('routine.subject')}</label><input type="text" id="period-subject" className="input-simple" placeholder="e.g. Mathematics" defaultValue={editingPeriod?.subject || ''} /></div>
+              <div><label className="form-label">{t('routine.start_time')}</label><input type="time" id="period-start" className="input-simple" defaultValue={editingPeriod?.startTime || '09:00'} /></div>
+              <div><label className="form-label">{t('routine.end_time')}</label><input type="time" id="period-end" className="input-simple" defaultValue={editingPeriod?.endTime || '10:00'} /></div>
+              <div><label className="form-label">{t('routine.room')}</label><input type="text" id="period-room" className="input-simple" placeholder="e.g. Room 302" defaultValue={editingPeriod?.room || ''} /></div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button className="btn-outline flex-1" onClick={() => setShowModal(false)}>{t('common.cancel')}</button>
-              <button className="btn-green flex-1" onClick={addPeriod}>{t('routine.add_period')}</button>
+              <button className="btn-outline flex-1" onClick={() => { setShowModal(false); setEditingPeriod(null); }}>{t('common.cancel')}</button>
+              <button className="btn-green flex-1" onClick={handleSave}>{editingPeriod ? 'Save Changes' : t('routine.add_period')}</button>
             </div>
           </div>
         </div>
