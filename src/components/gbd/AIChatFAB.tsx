@@ -55,7 +55,13 @@ function buildContext() {
 
 async function executeToolCall(toolCall: ToolCall): Promise<string> {
   try {
-    const args = JSON.parse(toolCall.function.arguments);
+    let args: any;
+    try {
+      args = JSON.parse(toolCall.function.arguments);
+    } catch (parseErr) {
+      console.error('Tool call JSON parse failed:', toolCall.function.name, toolCall.function.arguments);
+      return '😵 Got a garbled response from AI — try rephrasing your request!';
+    }
 
     if (toolCall.function.name === 'add_entry') {
       const { section } = args;
