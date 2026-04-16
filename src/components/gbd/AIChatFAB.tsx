@@ -684,8 +684,6 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       };
 
       let streamDone = false;
-      let toolCallsFlushed = false;
-
       while (!streamDone) {
         const { done, value } = await readWithTimeout();
         if (done) break;
