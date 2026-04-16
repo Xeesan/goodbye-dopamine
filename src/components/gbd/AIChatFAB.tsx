@@ -55,7 +55,13 @@ function buildContext() {
 
 async function executeToolCall(toolCall: ToolCall): Promise<string> {
   try {
-    const args = JSON.parse(toolCall.function.arguments);
+    let args: any;
+    try {
+      args = JSON.parse(toolCall.function.arguments);
+    } catch (parseErr) {
+      console.error('Tool call JSON parse failed:', toolCall.function.name, toolCall.function.arguments);
+      return '😵 Got a garbled response from AI — try rephrasing your request!';
+    }
 
     if (toolCall.function.name === 'add_entry') {
       const { section } = args;
@@ -684,8 +690,6 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
       };
 
       let streamDone = false;
-      let toolCallsFlushed = false;
-
       while (!streamDone) {
         const { done, value } = await readWithTimeout();
         if (done) break;
@@ -727,18 +731,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
               }
             }
 
-            // Flush tool calls on finish_reason (only once)
+            // Track finish_reason but DON'T flush tool calls yet —
+            // some models send argument chunks AFTER finish_reason
             const finishReason = parsed.choices?.[0]?.finish_reason;
-            if (finishReason && !toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
-              for (const [, tc] of Object.entries(toolCallBuffer)) {
-                if (tc.name) {
-                  pendingToolCalls.push({
-                    function: { name: tc.name, arguments: tc.args },
-                  });
-                }
-              }
-              toolCallsFlushed = true;
-              toolCallBuffer = {};
+            if (finishReason) {
+              streamDone = true;
             }
           } catch {
             // partial JSON, skip
@@ -746,8 +743,8 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
         }
       }
 
-      // Safety net: flush any remaining tool calls that weren't caught by finish_reason
-      if (!toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
+      // Flush all accumulated tool calls after stream ends
+      if (Object.keys(toolCallBuffer).length > 0) {
         for (const [, tc] of Object.entries(toolCallBuffer)) {
           if (tc.name) {
             pendingToolCalls.push({
