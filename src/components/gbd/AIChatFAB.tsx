@@ -727,18 +727,11 @@ const AIChatFAB = ({ onDataChanged, currentPage }: AIChatFABProps) => {
               }
             }
 
-            // Flush tool calls on finish_reason (only once)
+            // Track finish_reason but DON'T flush tool calls yet —
+            // some models send argument chunks AFTER finish_reason
             const finishReason = parsed.choices?.[0]?.finish_reason;
-            if (finishReason && !toolCallsFlushed && Object.keys(toolCallBuffer).length > 0) {
-              for (const [, tc] of Object.entries(toolCallBuffer)) {
-                if (tc.name) {
-                  pendingToolCalls.push({
-                    function: { name: tc.name, arguments: tc.args },
-                  });
-                }
-              }
-              toolCallsFlushed = true;
-              toolCallBuffer = {};
+            if (finishReason) {
+              streamDone = true;
             }
           } catch {
             // partial JSON, skip
