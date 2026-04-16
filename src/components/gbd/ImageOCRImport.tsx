@@ -94,40 +94,54 @@ const ImageOCRImport = ({ mode, onImport, buttonClassName = 'btn-outline' }: Ima
   const getSystemPrompt = () => {
     if (mode === 'routine') {
       return `You are an OCR assistant that extracts class routine/timetable data from images of university schedules.
-The image may be a table with days as rows and time slots as columns. Each cell may contain:
-- A course code (e.g. CSE-121, MATH-123, CHEM-111)
-- A teacher's initials or short name (e.g. MNH, AQT, SS)
-- A room (e.g. Room: C7, Room: Online, D6, H1+H2)
-- Sometimes notes like "(Odd Weeks)" or "(Even Weeks)"
 
-The header row usually contains time ranges like "9:30AM-10:10AM", "10:10AM-10:50AM" etc.
-The first column usually contains day names like FRIDAY, SATURDAY, MONDAY etc.
+The image typically contains TWO tables:
+1. **Class Routine Table**: A grid with days as rows (FRIDAY, SATURDAY, MONDAY, etc.) and time slots as columns (e.g. "10AM-11:30AM", "3PM-4:30PM"). Each cell may contain:
+   - A course code (e.g. CSE-121, MATH-123, CHEM-111, BAN-121, HUM-123)
+   - A teacher's initials (e.g. MNH, AQT, SS, NS, IS)
+   - A room (e.g. Room: C7, Room: Online, D6, H1+H2)
+   - Notes like "(Odd Weeks)" or "(Even Weeks)"
 
-Extract ALL class periods visible. For each period return:
+2. **Course Details Table**: Lists course codes with their full names, credit hours, and teacher names. Example:
+   - CSE-121 = Structured Programming Language
+   - MATH-123 = Co-ordinate Geometry and Differential Equations
+   - BAN-121 = Functional Bengali Language (note: may appear as BNG-121 in the routine due to typos)
+
+**IMPORTANT INSTRUCTIONS:**
+- Extract ALL class periods from the routine table.
+- Cross-reference each course code with the course details table to get full names.
+- For the "subject" field, use the format: "Course Code - Full Course Name" (e.g. "CSE-121 - Structured Programming Language").
+- If a course code in the routine table has a slight typo (e.g. "BNG-121" instead of "BAN-121"), match it to the closest code in the course details table and use the CORRECT code and name.
+- If no course details table is found, just use the course code as-is.
+- For the "room" field, extract room info. Clean up "Room:" prefix, keep just the value (e.g. "C7", "Online", "D6").
+
+For each period return:
 - day: the day of the week (lowercase: monday, tuesday, etc.)
-- subject: the course code (e.g. "CSE-121", "MATH-123") — use code only, not full name
+- subject: "CODE - Full Name" format (e.g. "CSE-121 - Structured Programming Language")
 - startTime: start time in HH:MM 24-hour format
 - endTime: end time in HH:MM 24-hour format
-- room: room info if visible (e.g. "C7", "Online", "D6", "H1+H2"), empty string if not
+- room: room info if visible, empty string if not
 
 Return ONLY a valid JSON array. No markdown, no explanation, no wrapping.
-Example: [{"day":"friday","subject":"CSE-122","startTime":"09:30","endTime":"10:10","room":"D6"}]
+Example: [{"day":"friday","subject":"CSE-122 - Structured Programming Language Laboratory","startTime":"10:00","endTime":"11:30","room":"D6"}]
 If you cannot read anything, return: []`;
     }
     return `You are an OCR assistant that extracts exam schedule data from university exam routine images.
 The image is typically a table with columns like: Date, Day, Time, Course Code, Course Name, Faculty Member.
 
+The image may also contain a separate course details table listing course codes, full names, credit hours, and teachers. If present, cross-reference to get full course names and teacher info.
+
 Extract ALL exams visible. For each exam return:
-- subject: the course name (e.g. "Engineering Economics", "Chemistry"). Include course code if visible as prefix like "HUM-123 Engineering Economics"
+- subject: "CODE - Full Name" format (e.g. "HUM-123 - Engineering Economics"). If no details table, use whatever is visible.
 - date: the date in YYYY-MM-DD format (convert from DD-MM-YYYY if needed)
 - time: start time in HH:MM 24-hour format (extract from time ranges like "02:00pm-03:30pm")
 - room: room if visible, empty string if not
-- teacher: faculty member name if visible, empty string if not
+- teacher: faculty member full name if visible, empty string if not
 - credits: credit hours as a number if visible, 3 as default
 - grade: empty string
 
 Return ONLY a valid JSON array. No markdown, no explanation, no wrapping.
-Example: [{"subject":"HUM-123 Engineering Economics","date":"2026-03-06","time":"14:00","room":"","teacher":"Md. Abdul Quader Talukdar","credits":3,"grade":""}]
+Example: [{"subject":"HUM-123 - Engineering Economics","date":"2026-03-06","time":"14:00","room":"","teacher":"Prof. Abdul Quader Talukdar","credits":3,"grade":""}]
 If you cannot read anything, return: []`;
   };
 
