@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    if (!systemPrompt || typeof systemPrompt !== "string" || systemPrompt.length > 2000) {
+    if (!systemPrompt || typeof systemPrompt !== "string" || systemPrompt.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Invalid prompt" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
