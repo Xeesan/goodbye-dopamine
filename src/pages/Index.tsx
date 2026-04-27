@@ -7,10 +7,36 @@ import Storage from '@/lib/storage';
 
 const PROFILE_CACHE_KEY = 'cached_profile';
 
+// Synchronously read Supabase's persisted session from localStorage so the app
+// can render instantly on cold start without waiting for getSession() to resolve.
+const readPersistedSession = (): any => {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        // supabase-js stores either the session directly or wrapped
+        const sess = parsed?.currentSession || parsed?.session || parsed;
+        if (sess?.user?.id) return sess;
+      }
+    }
+  } catch {}
+  return null;
+};
+
 const Index = () => {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
+  // Initialize from cache synchronously — no spinner needed if we already have a session
+  const [session, setSession] = useState<any>(() => {
+    const persisted = readPersistedSession();
+    if (persisted) return persisted;
+    const cached = Storage.get(PROFILE_CACHE_KEY, null);
+    if (cached) return { user: { id: cached.id, email: cached.email, user_metadata: {} } };
+    return null;
+  });
+  const [profile, setProfile] = useState<any>(() => Storage.get(PROFILE_CACHE_KEY, null));
+  const [loading, setLoading] = useState(() => !readPersistedSession() && !Storage.get(PROFILE_CACHE_KEY, null));
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -22,33 +48,16 @@ const Index = () => {
       }
     });
 
-    // Race getSession against a timeout so the app doesn't hang offline
-    const sessionPromise = supabase.auth.getSession();
-    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
-
-    Promise.race([sessionPromise, timeoutPromise])
-      .then((result) => {
-        if (result && 'data' in result) {
-          const sess = result.data.session;
+    // Background session validation — never blocks UI
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        const sess = data.session;
+        if (sess) {
           setSession(sess);
-          if (sess?.user) fetchProfile(sess.user.id);
-        } else {
-          // Timeout or error — try to use cached profile for offline access
-          const cached = Storage.get(PROFILE_CACHE_KEY, null);
-          if (cached) {
-            setSession({ user: { id: cached.id, email: cached.email, user_metadata: {} } });
-            setProfile(cached);
-          }
+          fetchProfile(sess.user.id);
         }
       })
-      .catch(() => {
-        // Network error — use cached profile
-        const cached = Storage.get(PROFILE_CACHE_KEY, null);
-        if (cached) {
-          setSession({ user: { id: cached.id, email: cached.email, user_metadata: {} } });
-          setProfile(cached);
-        }
-      })
+      .catch(() => { /* offline — keep cached session */ })
       .finally(() => setLoading(false));
 
     return () => subscription.unsubscribe();
