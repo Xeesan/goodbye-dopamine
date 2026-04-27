@@ -67,13 +67,21 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       const { section } = args;
 
       if (section === 'task') {
-        Storage.addTask({
+        const taskData = {
           title: args.title || 'Untitled task',
           date: args.date || '',
           time: args.time || '',
           priority: args.priority || 'medium',
           status: 'todo',
-        });
+        };
+        const tempId = Storage.addTask(taskData);
+        addTaskToDB(taskData).then(dbId => {
+          if (dbId && tempId) {
+            const current = Storage.getTasks();
+            const target = current.find((t: any) => t.id === tempId);
+            if (target) { target.id = dbId; Storage.setTasks(current); }
+          }
+        }).catch(e => console.error('AI task DB sync failed', e));
         const hype = [
           'Say less, it\'s on the list now 🔥',
           'Bro woke up and chose productivity 💪',
