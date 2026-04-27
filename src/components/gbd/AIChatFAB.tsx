@@ -104,7 +104,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           type: args.examType || 'exams',
           grade: '',
         };
-        Storage.addExam(examData);
+        const tempId = Storage.addExam(examData);
+        addExamToDB(examData).then(dbId => {
+          if (dbId && tempId) {
+            const current = Storage.getExams();
+            const target = current.find((e: any) => e.id === tempId);
+            if (target) { target.id = dbId; Storage.setExams(current); }
+          }
+        }).catch(e => console.error('AI exam DB sync failed', e));
         const quips = [
           'Another exam? Bro your semester is NOT playing around 💀',
           'Exam added! Now close TikTok and open the textbook 📚🫠',
@@ -126,7 +133,15 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           endTime: args.endTime,
           room: args.room || '',
         };
-        Storage.addPeriod(args.day, periodData);
+        const tempId = Storage.addPeriod(args.day, periodData);
+        addPeriodToDB(args.day, periodData).then(dbId => {
+          if (dbId && tempId) {
+            const routine = Storage.getRoutine();
+            const arr = routine[args.day] || [];
+            const target = arr.find((p: any) => p.id === tempId);
+            if (target) { target.id = dbId; Storage.setRoutine(routine); }
+          }
+        }).catch(e => console.error('AI routine DB sync failed', e));
         const quips = [
           'Class scheduled! Now you have no excuse to skip 😤',
           'Your routine just got buffed 💪',
@@ -145,7 +160,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           amount: Math.abs(args.amount),
           type: args.transactionType || 'expense',
         };
-        Storage.addTransaction(txnData);
+        const tempId = Storage.addTransaction(txnData);
+        addTransactionToDB(txnData).then(dbId => {
+          if (dbId && tempId) {
+            const current = Storage.getTransactions();
+            const target = current.find((t: any) => t.id === tempId);
+            if (target) { target.id = dbId; Storage.setTransactions(current); }
+          }
+        }).catch(e => console.error('AI transaction DB sync failed', e));
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? [
@@ -168,10 +190,18 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
         if (!args.title && !args.content) {
           return '📝 Gonna need at least a **title** or some **content** — can\'t save vibes alone bestie';
         }
-        Storage.addNote({
+        const noteData = {
           title: args.title || 'Untitled Note',
           content: args.content || '',
-        });
+        };
+        const tempId = Storage.addNote(noteData);
+        addNoteToDB(noteData).then(dbId => {
+          if (dbId && tempId) {
+            const current = Storage.getNotes();
+            const target = current.find((n: any) => n.id === tempId);
+            if (target) { target.id = dbId; Storage.setNotes(current); }
+          }
+        }).catch(e => console.error('AI note DB sync failed', e));
         const quips = [
           'Noted before your goldfish memory kicks in! 🧠',
           'Saved! Your shower thoughts are safe with me 🚿💭',
@@ -194,7 +224,14 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           debt_type: debtType,
           description: args.description || '',
         };
-        Storage.addDebt(debtData);
+        const tempId = Storage.addDebt(debtData);
+        addDebtToDB(debtData).then(dbId => {
+          if (dbId && tempId) {
+            const current = Storage.getDebts();
+            const target = current.find((d: any) => d.id === tempId);
+            if (target) { target.id = dbId; Storage.setDebts(current); }
+          }
+        }).catch(e => console.error('AI debt DB sync failed', e));
         const quips = debtType === 'lend'
           ? [
               'Congrats, you\'re now a walking ATM 🏦😂',
