@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Storage from '@/lib/storage';
-import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, settleDebtInDB, deletePeriodFromDB, updateExamInDB } from '@/lib/dbSync';
+import { deleteExamFromDB, deleteTransactionFromDB, deleteDebtFromDB, settleDebtInDB, deletePeriodFromDB, updateExamInDB, addTaskToDB, addExamToDB, addPeriodToDB, addTransactionToDB, addDebtToDB, addNoteToDB } from '@/lib/dbSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from '@/hooks/use-toast';
