@@ -94,6 +94,7 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
       }
 
       if (section === 'exam') {
+        const examCategory = args.examType === 'assignments' ? 'assignments' : 'exams';
         const examData = {
           subject: args.subject || 'Untitled',
           date: args.date || new Date().toISOString().split('T')[0],
@@ -101,17 +102,20 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           room: args.room || '',
           teacher: args.teacher || '',
           credits: args.credits || 3,
-          type: args.examType || 'exams',
+          type: examCategory,
           grade: '',
         };
         const tempId = Storage.addExam(examData);
-        addExamToDB(examData).then(dbId => {
+        try {
+          const dbId = await addExamToDB(examData);
           if (dbId && tempId) {
             const current = Storage.getExams();
             const target = current.find((e: any) => e.id === tempId);
             if (target) { target.id = dbId; Storage.setExams(current); }
           }
-        }).catch(e => console.error('AI exam DB sync failed', e));
+        } catch (e) {
+          console.error('AI exam DB sync failed', e);
+        }
         const quips = [
           'Another exam? Bro your semester is NOT playing around 💀',
           'Exam added! Now close TikTok and open the textbook 📚🫠',
@@ -161,13 +165,16 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           type: args.transactionType || 'expense',
         };
         const tempId = Storage.addTransaction(txnData);
-        addTransactionToDB(txnData).then(dbId => {
+        try {
+          const dbId = await addTransactionToDB(txnData);
           if (dbId && tempId) {
             const current = Storage.getTransactions();
             const target = current.find((t: any) => t.id === tempId);
             if (target) { target.id = dbId; Storage.setTransactions(current); }
           }
-        }).catch(e => console.error('AI transaction DB sync failed', e));
+        } catch (e) {
+          console.error('AI transaction DB sync failed', e);
+        }
         const type = args.transactionType || 'expense';
         const quips = type === 'income'
           ? [
@@ -225,13 +232,16 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           description: args.description || '',
         };
         const tempId = Storage.addDebt(debtData);
-        addDebtToDB(debtData).then(dbId => {
+        try {
+          const dbId = await addDebtToDB(debtData);
           if (dbId && tempId) {
             const current = Storage.getDebts();
             const target = current.find((d: any) => d.id === tempId);
             if (target) { target.id = dbId; Storage.setDebts(current); }
           }
-        }).catch(e => console.error('AI debt DB sync failed', e));
+        } catch (e) {
+          console.error('AI debt DB sync failed', e);
+        }
         const quips = debtType === 'lend'
           ? [
               'Congrats, you\'re now a walking ATM 🏦😂',
