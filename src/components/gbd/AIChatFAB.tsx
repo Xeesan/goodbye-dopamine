@@ -224,12 +224,15 @@ async function executeToolCall(toolCall: ToolCall): Promise<string> {
           return '🤝 Need a **person** and **amount** — I\'m an AI, not a mind reader 🔮';
         }
         const debtType = args.debtType || 'lend';
+        const debtDate = args.date || new Date().toISOString();
         const debtData = {
           person: args.person,
           amount: Math.abs(args.amount),
           debtType: debtType,
           debt_type: debtType,
           description: args.description || '',
+          date: debtDate,
+          dueDate: args.dueDate || undefined,
         };
         const tempId = Storage.addDebt(debtData);
         try {

@@ -606,8 +606,9 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       return localDebts;
     }
 
-    // Remote is the source of truth — use remote data directly.
-    // Only push local settled-status changes to DB if local is newer.
+    // Remote is the source of truth for persisted rows, but preserve/push
+    // local-only rows so freshly added AI/manual entries do not vanish during
+    // the next sync before the insert response is reconciled.
     const localByIdMap = new Map(localDebts.filter(d => !String(d.id).includes('_')).map(d => [String(d.id), d]));
     for (const remote of remoteDebts) {
       const local = localByIdMap.get(String(remote.id));
@@ -622,8 +623,15 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       }
     }
 
-    // Use remote data as final truth, discard all local-only entries
-    const finalDebts = remoteDebts;
+    const localOnlyDebts = localDebts.filter(d => String(d.id).includes('_'));
+    for (const debt of localOnlyDebts) {
+      const dbId = await addDebtToDB(debt);
+      if (dbId) debt.id = dbId;
+    }
+
+    const finalDebts = [...remoteDebts, ...localOnlyDebts].sort(
+      (a, b) => new Date(a.date || a.updatedAt || 0).getTime() - new Date(b.date || b.updatedAt || 0).getTime()
+    );
     Storage.setDebts(finalDebts);
     return finalDebts;
   } catch (e) {
