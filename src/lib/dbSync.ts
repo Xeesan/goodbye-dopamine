@@ -542,6 +542,20 @@ export async function deleteTransactionFromDB(id: string) {
 
 // ── Debts Sync ──
 
+function buildDebtSignature(debt: any): string {
+  return JSON.stringify({
+    debtType: debt.debtType || debt.debt_type || 'lend',
+    person: String(debt.person || '').trim().toLowerCase(),
+    amount: Number(debt.amount) || 0,
+    description: String(debt.description || '').trim(),
+    date: debt.date || '',
+    dueDate: debt.dueDate || debt.due_date || '',
+    originalId: debt.originalId || debt.original_debt_id || '',
+    settled: Boolean(debt.settled),
+    settledDate: debt.settledDate || debt.settled_date || '',
+  });
+}
+
 export async function syncDebtsFromDB(): Promise<any[]> {
   const userId = await getUserId();
   if (!userId) return Storage.getDebts();
@@ -623,13 +637,29 @@ export async function syncDebtsFromDB(): Promise<any[]> {
       }
     }
 
-    const localOnlyDebts = localDebts.filter(d => String(d.id).includes('_'));
-    for (const debt of localOnlyDebts) {
-      const dbId = await addDebtToDB(debt);
-      if (dbId) debt.id = dbId;
+    const unmatchedRemoteBySignature = new Map<string, any[]>();
+    for (const remote of remoteDebts) {
+      const signature = buildDebtSignature(remote);
+      const matches = unmatchedRemoteBySignature.get(signature) || [];
+      matches.push(remote);
+      unmatchedRemoteBySignature.set(signature, matches);
     }
 
-    const finalDebts = [...remoteDebts, ...localOnlyDebts].sort(
+    const pendingLocalDebts: any[] = [];
+    for (const debt of localDebts.filter(d => String(d.id).includes('_'))) {
+      const signature = buildDebtSignature(debt);
+      const matchedRemote = unmatchedRemoteBySignature.get(signature)?.shift();
+
+      if (matchedRemote) {
+        continue;
+      }
+
+      const dbId = await addDebtToDB(debt);
+      if (dbId) debt.id = dbId;
+      pendingLocalDebts.push(debt);
+    }
+
+    const finalDebts = [...remoteDebts, ...pendingLocalDebts].sort(
       (a, b) => new Date(a.date || a.updatedAt || 0).getTime() - new Date(b.date || b.updatedAt || 0).getTime()
     );
     Storage.setDebts(finalDebts);
